@@ -1,19 +1,24 @@
 const express = require('express');
 const router = express.Router();
-const upload = require('../Config/Multer'); 
-const chaletsController = require('../Controllers/ChaletsController');
+const chaletController = require('../Controllers/ChaletsController');
+const multer = require('../Config/Multer');
 
 
-router.post('/createchalets', upload.single('image'), chaletsController.createChalet);
+router.post('/createchalet', multer.single('image'), chaletController.createChalet);
 
 
-router.put('/updatechaletshero/:id', upload.single('image'), chaletsController.updateChalet);
+router.get('/getallchalets/:lang', chaletController.getAllChalets);
+router.get('/getallchaletsbystatus/:status_id/:lang', chaletController.getChaletByStatus);
 
 
-router.get('/getchaletsbyid/:id/:lang', chaletsController.getChaletById);
-router.get('/getAllChalets/:lang', chaletsController.getAllChalets);
+router.get('/getchaletbyid/:id', chaletController.getChaletById);
 
 
-router.delete('/deleteChalets/:id', chaletsController.deleteChalet);
+router.get('/getchaletsbydetailtype/:type/:lang', chaletController.getChaletsByDetailType);
+
+router.put('/updatechalet/:id', multer.single('image'), chaletController.updateChalet);
+
+
+router.delete('/deletechalet/:id/:lang', chaletController.deleteChalet);
 
 module.exports = router;
