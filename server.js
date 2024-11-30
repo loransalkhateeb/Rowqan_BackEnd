@@ -14,6 +14,18 @@ const FooterIconRoutes = require('./Routes/FooterIconsRoutes')
 const HeroChaletsRoutes = require('./Routes/ChaletsHeroRoutes')
 const ChaletsRoutes = require('./Routes/ChaletsRoutes')
 const statusChaletRoutes = require('./Routes/StatusChaletsRoutes')
+const ChaletImagesRoutes = require('./Routes/ChaletsImagesRoutes')
+const BreifDetailsChaletsRoutes = require('./Routes/BreifDetailsChaletsRoutes')
+const ReservatioDatesRoutes = require('./Routes/ReservationsDateRoutes')
+const ContactUsRoutes = require('./Routes/ContactUsRoutes')
+const RightTimeRoutes = require('./Routes/RightTimeRoutes')
+const StatusRoutes = require('./Routes/StatusChaletsRoutes')
+const ChaletsDetailsRoutes = require('./Routes/ChaletsDetailsRoutes')
+const HeroEventsRoutes = require('./Routes/EventsHeroRoutes')
+const EventsTypesRoutes = require('./Routes/TypesEventsRoutes')
+
+
+
 
 
 
@@ -29,6 +41,15 @@ app.use('/footericons',FooterIconRoutes)
 app.use('/heroChalets',HeroChaletsRoutes)
 app.use('/chalets',ChaletsRoutes)
 app.use('/statuschalets',statusChaletRoutes)
+app.use('/chaletsimages',ChaletImagesRoutes)
+app.use('/BreifDetailsChalets',BreifDetailsChaletsRoutes)
+app.use('/ReservationDates',ReservatioDatesRoutes)
+app.use('/ContactUs',ContactUsRoutes)
+app.use('/RightTimes',RightTimeRoutes)
+app.use('/status',StatusRoutes)
+app.use('/chaletsdetails',ChaletsDetailsRoutes)
+app.use('/heroevents',HeroEventsRoutes)
+app.use('/events',EventsTypesRoutes)
 
 
 

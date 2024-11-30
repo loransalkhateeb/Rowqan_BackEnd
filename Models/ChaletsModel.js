@@ -1,5 +1,13 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../Config/dbConnect');
+const chaletsImages = require('../Models/ChaletsImagesModel');
+const BreifDetailsChalets = require('../Models/BreifDetailsChalets');
+const RightTimeModel = require('../Models/RightTimeModel');
+const ReservationDate = require('../Models/ReservationDatesModel');
+const Status = require('../Models/StatusModel');
+const ChaletsDetails = require('../Models/ChaletsDetails')
+const Location = require('../Models/LocationsModel')
+
 
 const Chalet = sequelize.define('Chalet', {
   id: {
@@ -7,40 +15,52 @@ const Chalet = sequelize.define('Chalet', {
     primaryKey: true,
     autoIncrement: true,
   },
-  image: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
   title: {
     type: DataTypes.STRING,
-    allowNull: false, 
-  },
-  price: {
-    type: DataTypes.FLOAT, 
-    allowNull: false, 
-  },
-  location: {
-    type: DataTypes.STRING,
-    allowNull: false, 
-  },
-  status: {
-    type: DataTypes.STRING,
-    allowNull: false, 
-  },
-  description: {
-    type: DataTypes.TEXT, 
     allowNull: false,
   },
-  number_of_persons: {
-    type: DataTypes.INTEGER,
+  image: {
+    type: DataTypes.STRING,
     allowNull: false,
   },
   lang: {
     type: DataTypes.STRING,
     allowNull: false,
+    validate: {
+      isIn: [['ar', 'en']],
+    },
   },
 }, {
   timestamps: false, 
 });
+
+
+Chalet.hasMany(chaletsImages, { foreignKey: 'chalet_id', onDelete: 'CASCADE' });
+chaletsImages.belongsTo(Chalet, { foreignKey: 'chalet_id' });
+
+Chalet.hasMany(BreifDetailsChalets, { foreignKey: 'chalet_id', onDelete: 'CASCADE' });
+BreifDetailsChalets.belongsTo(Chalet, { foreignKey: 'chalet_id' });
+
+Chalet.hasMany(RightTimeModel, { foreignKey: 'chalet_id', onDelete: 'CASCADE' });
+RightTimeModel.belongsTo(Chalet, { foreignKey: 'chalet_id' });
+
+Chalet.hasMany(ReservationDate, { foreignKey: 'chalet_id', onDelete: 'CASCADE' });
+ReservationDate.belongsTo(Chalet, { foreignKey: 'chalet_id' });
+
+
+Chalet.belongsTo(Status, { foreignKey: 'status_id' });
+Status.hasOne(Chalet, { foreignKey: 'status_id'});
+
+
+
+Chalet.hasMany(ChaletsDetails, { foreignKey: 'chalet_id', onDelete: 'CASCADE' });
+ChaletsDetails.belongsTo(Chalet, { foreignKey: 'chalet_id' });
+
+
+
+
+
+
+
 
 module.exports = Chalet;
