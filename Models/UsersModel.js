@@ -1,5 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../Config/dbConnect'); 
+const ReservationModel = require('../Models/ReservationsModel')
+
 
 const User = sequelize.define('User', {
   id: {
@@ -40,5 +42,11 @@ const User = sequelize.define('User', {
 }, {
   timestamps: false,
 });
+
+User.hasMany(ReservationModel, { foreignKey: 'User_id' });
+ReservationModel.belongsTo(User, { foreignKey: 'User_id' });
+
+
+
 
 module.exports = User;

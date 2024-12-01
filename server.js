@@ -23,8 +23,17 @@ const StatusRoutes = require('./Routes/StatusChaletsRoutes')
 const ChaletsDetailsRoutes = require('./Routes/ChaletsDetailsRoutes')
 const HeroEventsRoutes = require('./Routes/EventsHeroRoutes')
 const EventsTypesRoutes = require('./Routes/TypesEventsRoutes')
-
-
+const SubEventsRoutes = require('./Routes/SubEventsRoutes')
+const AvailableEventsRoutes = require('./Routes/AvailableEventsRoutes')
+const AvailableImages = require('./Routes/AvailableImagesRoutes')
+const PlansRoutes = require('./Routes/PlansRoutes')
+const ReservatioEventsRoutes = require('./Routes/ReservationsEventsRoutes')
+const CategoryLandsRoutes = require('./Routes/CategoriesLandsRoutes')
+const PrpertyLandsRoutes = require('./Routes/PropertiesLandsRoutes')
+const ImagesLandsRoutes = require('./Routes/CategoriesImagesRoutes')
+const BreifLandsRoutes = require('./Routes/BriefLandsRoutes')
+const ReservationeLandsRoutes = require('./Routes/ReservationsLandsRoutes')
+const ReservationsRoutes = require('./Routes/ReservationsRoutes')
 
 
 
@@ -50,6 +59,20 @@ app.use('/status',StatusRoutes)
 app.use('/chaletsdetails',ChaletsDetailsRoutes)
 app.use('/heroevents',HeroEventsRoutes)
 app.use('/events',EventsTypesRoutes)
+app.use('/subevents',SubEventsRoutes)
+app.use('/availablevents',AvailableEventsRoutes)
+app.use('/availableimages',AvailableImages)
+app.use('/plans',PlansRoutes)
+app.use('/reservationsEvents',ReservatioEventsRoutes)
+app.use('/categorieslands',CategoryLandsRoutes)
+app.use('/propertyLands',PrpertyLandsRoutes)
+app.use('/imageslands',ImagesLandsRoutes)
+app.use('/BreifLands',BreifLandsRoutes)
+app.use('/reservationLands',ReservationeLandsRoutes)
+app.use('/reservations',ReservationsRoutes)
+
+
+
 
 
 

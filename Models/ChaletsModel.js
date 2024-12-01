@@ -6,7 +6,7 @@ const RightTimeModel = require('../Models/RightTimeModel');
 const ReservationDate = require('../Models/ReservationDatesModel');
 const Status = require('../Models/StatusModel');
 const ChaletsDetails = require('../Models/ChaletsDetails')
-const Location = require('../Models/LocationsModel')
+const ReservationsModel = require('../Models/ReservationsModel')
 
 
 const Chalet = sequelize.define('Chalet', {
@@ -58,7 +58,8 @@ ChaletsDetails.belongsTo(Chalet, { foreignKey: 'chalet_id' });
 
 
 
-
+Chalet.hasMany(ReservationsModel, { foreignKey: 'Chalet_id' });
+ReservationsModel.belongsTo(Chalet, { foreignKey: 'Chalet_id' });
 
 
 
