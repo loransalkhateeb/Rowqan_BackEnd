@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../Config/dbConnect'); 
 const ReservationModel = require('../Models/ReservationsModel')
-
+const UserTypes = require('../Models/UsersTypes')
 
 const User = sequelize.define('User', {
   id: {
@@ -30,11 +30,6 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  role_user: {
-    type: DataTypes.ENUM('admin', 'user','superAdmin'),
-    defaultValue: 'user',
-    allowNull: false,
-  },
   lang: {
     type: DataTypes.ENUM('ar', 'en'),
     allowNull: false,  
@@ -46,6 +41,9 @@ const User = sequelize.define('User', {
 User.hasMany(ReservationModel, { foreignKey: 'User_id' });
 ReservationModel.belongsTo(User, { foreignKey: 'User_id' });
 
+
+User.belongsTo(UserTypes, { foreignKey: 'user_type_id' });
+UserTypes.hasMany(User, { foreignKey: 'user_type_id' });
 
 
 
