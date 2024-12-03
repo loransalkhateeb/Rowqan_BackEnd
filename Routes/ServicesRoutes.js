@@ -9,7 +9,7 @@ router.post('/createService', multer.single('image'), servicesController.createS
 
 
 router.get('/getAllServices/:lang', servicesController.getAllServices);
-router.get('/getAllServicesByServiceStatus/:lang', servicesController.getServiceByStatus);
+router.get('/getAllServicesByServiceStatus/:status_service/:lang', servicesController.getServiceByStatus);
 router.get('/getservicebyid/:id/:lang', servicesController.getServiceById);
 
 

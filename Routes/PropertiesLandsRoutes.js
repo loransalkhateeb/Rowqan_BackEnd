@@ -11,6 +11,7 @@ router.post("/createPropertyLand", multer.single("image"), PropertiesLandsContro
 
 
 router.get("/getAllPrpertiesLands/:lang", PropertiesLandsController.getAllPropertyLands);
+router.get("/getAllPropertyLandsByLandId/:category_land_id/:lang", PropertiesLandsController.getPropertyLandByland_id);
 
 
 router.get("/getPropertyLandById/:id/:lang", PropertiesLandsController.getPropertyLandById);
