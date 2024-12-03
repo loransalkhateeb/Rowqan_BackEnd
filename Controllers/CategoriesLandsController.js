@@ -1,17 +1,16 @@
 const CategoriesLandsModel = require('../Models/CategoriesLandsModel');
-
+const PropertiesLands = require("../Models/PropertiesLandsModel");
 
 
 exports.createCategoryLand = async (req, res) => {
   try {
-    const { title, price, location, description, lang } = req.body;
+    const { title, price, location, lang } = req.body;
     const image = req.file ? req.file.filename : null; 
 
     const newCategoryLand = await CategoriesLandsModel.create({
       title,
       price,
       location,
-      description,
       lang,
       image,
     });
@@ -31,16 +30,19 @@ exports.getAllCategoryLands = async (req, res) => {
   try {
     const { lang } = req.params;
 
-    const categoryLands = await CategoriesLandsModel.findAll({ where: { lang } });
+    const categoryLands = await CategoriesLandsModel.findAll({
+      where: { lang },
+      include: {
+        model: PropertiesLands, // Include the PropertiesLands model
+        attributes: ['id', 'property', 'image'], // specify the attributes you want from PropertiesLands
+      },
+    });
 
     if (categoryLands.length === 0) {
       return res.status(404).json({ error: lang === 'en' ? 'No Category Lands found' : 'لا توجد فئات' });
     }
 
-    res.status(200).json({
-      message: lang === 'en' ? 'Category Lands retrieved successfully' : 'تم استرجاع الفئات بنجاح',
-      categoryLands,
-    });
+    res.status(200).json(categoryLands);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to retrieve Category Lands' });
@@ -72,7 +74,7 @@ exports.getCategoryLandById = async (req, res) => {
 exports.updateCategoryLand = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, price, location, description, lang } = req.body;
+    const { title, price, location, lang } = req.body;
     const image = req.file ? req.file.filename : null;
 
     const categoryLand = await CategoriesLandsModel.findByPk(id);
@@ -83,7 +85,6 @@ exports.updateCategoryLand = async (req, res) => {
     categoryLand.title = title || categoryLand.title;
     categoryLand.price = price || categoryLand.price;
     categoryLand.location = location || categoryLand.location;
-    categoryLand.description = description || categoryLand.description;
     categoryLand.lang = lang || categoryLand.lang;
     categoryLand.image = image || categoryLand.image;
 

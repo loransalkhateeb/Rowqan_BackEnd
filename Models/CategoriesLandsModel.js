@@ -28,10 +28,6 @@ const CategoriesLandsModel = sequelize.define('CategoriesLands', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  description: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
   lang: {
     type: DataTypes.STRING,
     allowNull: false,
