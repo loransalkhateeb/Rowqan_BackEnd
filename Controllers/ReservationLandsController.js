@@ -6,7 +6,24 @@ exports.createReservationLand = async (req, res) => {
   try {
     const { date, time, lang, available_land_id } = req.body;
 
-    
+   
+    const existingReservation = await ReservationLandsModel.findOne({
+      where: {
+        date: date,
+        time: time,
+        available_land_id: available_land_id,
+      },
+    });
+
+
+    if (existingReservation) {
+      return res.status(400).json({
+        message: lang === 'en' 
+          ? 'This date and time are already reserved' 
+          : 'هذا التاريخ والوقت محجوزين بالفعل',
+      });
+    }
+
     const newReservation = await ReservationLandsModel.create({
       date,
       time,
@@ -20,11 +37,12 @@ exports.createReservationLand = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ 
-      error: lang === 'en' ? 'Failed to create reservation' : 'فشل في إنشاء الحجز' 
+    res.status(500).json({
+      error: 'Failed to create reservation',
     });
   }
 };
+
 
 
 exports.getAllReservations = async (req, res) => {

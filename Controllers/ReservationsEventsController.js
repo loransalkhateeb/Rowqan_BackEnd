@@ -1,153 +1,198 @@
-const Reservation_Events  = require('../Models/ReservationEventsModel');
-const Available_Events = require('../Models/AvailableEvents'); 
+const Reservation_Events = require('../Models/ReservationEventsModel');  
+const Available_Events = require('../Models/AvailableEvents');
+
+const { Op } = require('sequelize');
+
+
 
 
 exports.createReservationEvent = async (req, res) => {
   try {
-    const { date, time, lang, available_event_id } = req.body;
+    const { date, start_time, end_time, lang, available_event_id } = req.body;
 
-
-    const availableEvent = await Available_Events.findByPk(available_event_id);
-    if (!availableEvent) {
+   
+    const event = await Available_Events.findByPk(available_event_id);
+    if (!event) {
       return res.status(404).json({
-        error: lang === 'en' ? 'Available Event not found' : 'حدث متاح غير موجود',
+        message: lang === 'en' ? 'Event not found' : 'الحدث غير موجود',
       });
     }
 
- 
-    const newReservationEvent = await Reservation_Events.create({
+
+    const existingReservation = await Reservation_Events.findOne({
+      where: {
+        date: date,
+        available_event_id: available_event_id,
+        [Op.or]: [
+          {
+            start_time: {
+              [Op.lte]: end_time,  
+            },
+            end_time: {
+              [Op.gte]: start_time,  
+            },
+          },
+        ],
+      },
+    });
+
+
+    if (existingReservation) {
+      return res.status(400).json({
+        message: 'This time slot is already reserved',
+      });
+    }
+
+
+    const newReservation = await Reservation_Events.create({
       date,
-      time,
+      start_time,
+      end_time,
       lang,
       available_event_id,
     });
 
     res.status(201).json({
-      message: lang === 'en' ? 'Reservation Event created successfully' : 'تم إنشاء الحدث المحجوز بنجاح',
-      reservation_event: newReservationEvent,
+      message: lang === 'en' ? 'Reservation created successfully' : 'تم إنشاء الحجز بنجاح',
+      reservation: newReservation,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to create Reservation Event' });
-  }
-};
-
-
-exports.getReservationEventById = async (req, res) => {
-  try {
-    const { id, lang } = req.params;
-
-    const reservationEvent = await Reservation_Events.findOne({
-      where: { id },
-      include: {
-        model: Available_Events,
-        attributes: ['id', 'title'], 
-      },
+    res.status(500).json({
+      error: 'Failed to create reservation',
     });
-
-    if (!reservationEvent) {
-      return res.status(404).json({
-        error: lang === 'en' ? `Reservation Event with ID ${id} not found` : `الحدث المحجوز بالرقم ${id} غير موجود`,
-      });
-    }
-
-    res.status(200).json({
-      message: lang === 'en' ? 'Reservation Event retrieved successfully' : 'تم جلب الحدث المحجوز بنجاح',
-      reservation_event: reservationEvent,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to retrieve Reservation Event' });
   }
 };
 
 
 exports.updateReservationEvent = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { date, time, lang, available_event_id } = req.body;
+    const { id } = req.params;  
+    const { date, start_time, end_time, lang, available_event_id } = req.body;
 
- 
-    const reservationEvent = await Reservation_Events.findByPk(id);
-    if (!reservationEvent) {
+   
+    const reservation = await Reservation_Events.findByPk(id);
+    if (!reservation) {
       return res.status(404).json({
-        error: lang === 'en' ? `Reservation Event with ID ${id} not found` : `الحدث المحجوز بالرقم ${id} غير موجود`,
-      });
-    }
-
-    
-    const availableEvent = await Available_Events.findByPk(available_event_id);
-    if (!availableEvent) {
-      return res.status(404).json({
-        error: lang === 'en' ? 'Available Event not found' : 'حدث متاح غير موجود',
+        message: lang === 'en' ? 'Reservation not found' : 'لم يتم العثور على الحجز',
       });
     }
 
 
-    reservationEvent.date = date || reservationEvent.date;
-    reservationEvent.time = time || reservationEvent.time;
-    reservationEvent.lang = lang || reservationEvent.lang;
-    reservationEvent.available_event_id = available_event_id || reservationEvent.available_event_id;
+    const event = await Available_Events.findByPk(available_event_id);
+    if (!event) {
+      return res.status(404).json({
+        message: lang === 'en' ? 'Event not found' : 'الحدث غير موجود',
+      });
+    }
 
-    await reservationEvent.save();
+
+    reservation.date = date;
+    reservation.start_time = start_time;
+    reservation.end_time = end_time;
+    reservation.lang = lang;
+    reservation.available_event_id = available_event_id;
+
+    await reservation.save();  
 
     res.status(200).json({
-      message: lang === 'en' ? 'Reservation Event updated successfully' : 'تم تحديث الحدث المحجوز بنجاح',
-      reservation_event: reservationEvent,
+      message: lang === 'en' ? 'Reservation updated successfully' : 'تم تحديث الحجز بنجاح',
+      reservation: reservation,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to update Reservation Event' });
+    res.status(500).json({
+      error: 'Failed to update reservation',
+    });
   }
 };
 
 
 exports.deleteReservationEvent = async (req, res) => {
   try {
-    const { id, lang } = req.params;
+    const { id } = req.params;  
 
-    const reservationEvent = await Reservation_Events.findByPk(id);
-    if (!reservationEvent) {
+
+    const reservation = await Reservation_Events.findByPk(id);
+    if (!reservation) {
       return res.status(404).json({
-        error: lang === 'en' ? `Reservation Event with ID ${id} not found` : `الحدث المحجوز بالرقم ${id} غير موجود`,
+        message: 'Reservation not found',
       });
     }
 
-    await reservationEvent.destroy();
+
+    await reservation.destroy();
 
     res.status(200).json({
-      message: lang === 'en' ? 'Reservation Event deleted successfully' : 'تم حذف الحدث المحجوز بنجاح',
+      message: 'Reservation deleted successfully',
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to delete Reservation Event' });
+    res.status(500).json({
+      error: 'Failed to delete reservation',
+    });
   }
 };
 
 
 exports.getAllReservationEvents = async (req, res) => {
   try {
-    const { lang } = req.query;
+    const { lang } = req.params;  
 
-    const reservationEvents = await Reservation_Events.findAll({
+
+    const reservations = await Reservation_Events.findAll({
+      where: { lang },  
+      include: {
+        model: Available_Events,
+        attributes: ['id', 'title'],  
+      },
+    });
+
+    if (reservations.length === 0) {
+      return res.status(404).json({
+        message: lang === 'en' ? 'No reservations found' : 'لم يتم العثور على حجوزات',
+      });
+    }
+
+    res.status(200).json({
+      message: lang === 'en' ? 'Reservations retrieved successfully' : 'تم جلب الحجوزات بنجاح',
+      reservations,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: 'Failed to retrieve reservations',
+    });
+  }
+};
+
+
+exports.getReservationEventById = async (req, res) => {
+  try {
+    const { id } = req.params;  
+
+   
+    const reservation = await Reservation_Events.findByPk(id, {
       include: {
         model: Available_Events,
         attributes: ['id', 'title'],
       },
     });
 
-    if (reservationEvents.length === 0) {
+    if (!reservation) {
       return res.status(404).json({
-        error: lang === 'en' ? 'No Reservation Events found' : 'لم يتم العثور على أحداث محجوزة',
+        message: 'Reservation not found',
       });
     }
 
     res.status(200).json({
-      message: lang === 'en' ? 'Reservation Events retrieved successfully' : 'تم جلب الأحداث المحجوزة بنجاح',
-      reservation_events: reservationEvents,
+      message: 'Reservation retrieved successfully',
+      reservation,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to retrieve Reservation Events' });
+    res.status(500).json({
+      error: 'Failed to retrieve reservation',
+    });
   }
 };

@@ -9,9 +9,7 @@ const CashBack = require('../Models/CashBackModel')
 exports.createReservation = async (req, res) => {
   try {
     const { total_amount, lang, land_id, Chalet_id, Event_id, User_id } = req.body;
-
     console.log('Total amount received:', total_amount);
-
 
     if (isNaN(total_amount) || total_amount <= 0) {
       return res.status(400).json({

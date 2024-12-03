@@ -62,7 +62,7 @@ exports.getAllDetails = async (req, res) => {
 
   exports.getChaletDetailsByChaletId = async (req, res) => {
     try {
-      const { chalet_id, lang, id } = req.params; 
+      const { chalet_id, lang} = req.params; 
   
       const chalet = await Chalet.findByPk(chalet_id);
       if (!chalet) {
@@ -73,7 +73,6 @@ exports.getAllDetails = async (req, res) => {
         where: {
           chalet_id,
           lang,
-          id, 
         },
       });
   

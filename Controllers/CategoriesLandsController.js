@@ -1,5 +1,9 @@
 const CategoriesLandsModel = require('../Models/CategoriesLandsModel');
+
+const PropertiesLandsModel = require("../Models/PropertiesLandsModel");
+
 const PropertiesLands = require("../Models/PropertiesLandsModel");
+
 
 
 exports.createCategoryLand = async (req, res) => {
@@ -30,22 +34,41 @@ exports.getAllCategoryLands = async (req, res) => {
   try {
     const { lang } = req.params;
 
+
+  
+    const categoryLands = await CategoriesLandsModel.findAll({
+      where: { lang },
+      include: [
+        {
+          model: PropertiesLandsModel,
+          as: "properties", 
+        },
+      ],
+
     const categoryLands = await CategoriesLandsModel.findAll({
       where: { lang },
       include: {
         model: PropertiesLands, // Include the PropertiesLands model
         attributes: ['id', 'property', 'image'], // specify the attributes you want from PropertiesLands
       },
+
     });
 
     if (categoryLands.length === 0) {
-      return res.status(404).json({ error: lang === 'en' ? 'No Category Lands found' : 'لا توجد فئات' });
+      return res.status(404).json({ error: lang === "en" ? "No Category Lands found" : "لا توجد فئات" });
     }
 
+
+    res.status(200).json({
+      message: lang === "en" ? "Category Lands retrieved successfully" : "تم استرجاع الفئات بنجاح",
+      categoryLands,
+    });
+
     res.status(200).json(categoryLands);
+
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to retrieve Category Lands' });
+    res.status(500).json({ error: "Failed to retrieve Category Lands" });
   }
 };
 

@@ -7,6 +7,7 @@ router.post('/createreservationevents', reservationEventsController.createReserv
 
 
 router.get('/reservation-events/:id/:lang', reservationEventsController.getReservationEventById);
+router.get('/getAllreservationevents/:lang', reservationEventsController.getAllReservationEvents);
 
 
 router.put('/reservation-events/:id', reservationEventsController.updateReservationEvent);

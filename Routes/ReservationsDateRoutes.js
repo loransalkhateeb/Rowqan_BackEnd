@@ -8,6 +8,8 @@ router.post('/createreservationdate', reservationDatesController.createReservati
 
 router.get('/getreservationdatesbychalet/:chalet_id/:lang', reservationDatesController.getReservationDatesByChaletId);
 
+router.get('/getAllReservationDates/:lang', reservationDatesController.getAllReservationsDates);
+
 
 router.get('/getreservationdatebyid/:id/:lang', reservationDatesController.getReservationDateById);
 
