@@ -9,6 +9,8 @@ router.post('/createreservationslands', ResevationLandsController.createReservat
 router.get('/getreservationslands/:lang', ResevationLandsController.getAllReservations);
 
 
+
+
 router.get('/getreservationslands/:id/:lang', ResevationLandsController.getReservationById);
 
 

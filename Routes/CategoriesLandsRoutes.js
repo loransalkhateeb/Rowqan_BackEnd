@@ -10,7 +10,7 @@ router.post('/createcategoryland', multer.single('image'), CategoriesLandsContro
 router.get('/getAllcategoryLand/:lang', CategoriesLandsController.getAllCategoryLands);
 
 
-router.get('/getCategoryLandBtId/:id/:lang', CategoriesLandsController.getCategoryLandById);
+router.get('/getCategoryLandById/:id/:lang', CategoriesLandsController.getCategoryLandById);
 
 
 router.put('/UpdateCategoryLand/:id', multer.single('image'), CategoriesLandsController.updateCategoryLand);

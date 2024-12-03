@@ -10,7 +10,7 @@ router.get('/getalldetails/:lang', chaletsDetailsController.getAllDetails);
 
 
 router.get('/getdetailsbychaletid/:id/:lang', chaletsDetailsController.getChaletDetailsByChaletId);
-router.get('/getChaletDetailsByChaletId/:chalet_id/:lang/:id', chaletsDetailsController.getChaletDetailsByChaletId);
+router.get('/getChaletDetailsByChaletId/:chalet_id/:lang', chaletsDetailsController.getChaletDetailsByChaletId);
 
 
 router.put('/updatedetails/:id', chaletsDetailsController.updateChaletDetail);

@@ -481,7 +481,7 @@ exports.deleteUserType = async (req, res) => {
 
 exports.updateChaletOwner = async (req, res) => {
   const { id } = req.params;
-  const { name, email, phone_number, country, password,lang } = req.body;
+  const { name, email, phone_number, country, password,lang, user_type_id } = req.body;
 
   try {
     if (!['ar', 'en'].includes(lang)) {
@@ -490,15 +490,8 @@ exports.updateChaletOwner = async (req, res) => {
       });
     }
 
-
     const user = await User.findOne({
       where: { id },
-      include: [
-        {
-          model: Users_Types,
-          where: { type: 'chalets_owners', lang },
-        },
-      ],
     });
 
     if (!user) {
@@ -506,13 +499,25 @@ exports.updateChaletOwner = async (req, res) => {
         error: lang === 'en' ? 'Chalet owner not found' : 'مالك الشاليه غير موجود',
       });
     }
-  
+
+
+    if (user_type_id) {
+      const validUserType = await Users_Types.findOne({ where: { id: user_type_id, lang } });
+      if (!validUserType) {
+        return res.status(400).json({
+          error: lang === 'en' ? 'Invalid user type ID' : 'معرف نوع المستخدم غير صالح',
+        });
+      }
+    }
+
     await user.update({
       name: name || user.name,
       email: email || user.email,
       phone_number: phone_number || user.phone_number,
       country: country || user.country,
       password: password ? await bcrypt.hash(password, 10) : user.password,
+      lang: lang || user.lang,
+      user_type_id: user_type_id || user.user_type_id,
     });
 
     res.status(200).json({
@@ -532,7 +537,7 @@ exports.updateChaletOwner = async (req, res) => {
 
 exports.updateEventsOwner = async (req, res) => {
   const { id } = req.params;
-  const { name, email, phone_number, country, password,lang } = req.body;
+  const { name, email, phone_number, country, password,lang,user_type_id } = req.body;
 
   try {
     if (!['ar', 'en'].includes(lang)) {
@@ -544,18 +549,21 @@ exports.updateEventsOwner = async (req, res) => {
 
     const user = await User.findOne({
       where: { id },
-      include: [
-        {
-          model: Users_Types,
-          where: { type: 'events_owners', lang },
-        },
-      ],
     });
 
     if (!user) {
       return res.status(404).json({
         error: lang === 'en' ? 'Event owner not found' : 'مالك الشاليه غير موجود',
       });
+    }
+
+    if (user_type_id) {
+      const validUserType = await Users_Types.findOne({ where: { id: user_type_id, lang } });
+      if (!validUserType) {
+        return res.status(400).json({
+          error: lang === 'en' ? 'Invalid user type ID' : 'معرف نوع المستخدم غير صالح',
+        });
+      }
     }
   
     await user.update({
@@ -564,6 +572,7 @@ exports.updateEventsOwner = async (req, res) => {
       phone_number: phone_number || user.phone_number,
       country: country || user.country,
       password: password ? await bcrypt.hash(password, 10) : user.password,
+      user_type_id: user_type_id || user.user_type_id,
     });
 
     res.status(200).json({
@@ -583,7 +592,7 @@ exports.updateEventsOwner = async (req, res) => {
 
 exports.updateLandsOwner = async (req, res) => {
   const { id } = req.params;
-  const { name, email, phone_number, country, password,lang } = req.body;
+  const { name, email, phone_number, country, password,lang,user_type_id } = req.body;
 
   try {
     if (!['ar', 'en'].includes(lang)) {
@@ -595,12 +604,6 @@ exports.updateLandsOwner = async (req, res) => {
 
     const user = await User.findOne({
       where: { id },
-      include: [
-        {
-          model: Users_Types,
-          where: { type: 'lands_owners', lang },
-        },
-      ],
     });
 
     if (!user) {
@@ -608,13 +611,27 @@ exports.updateLandsOwner = async (req, res) => {
         error: lang === 'en' ? 'Land owner not found' : 'مالك الشاليه غير موجود',
       });
     }
-  
+
+
+
+    if (user_type_id) {
+      const validUserType = await Users_Types.findOne({ where: { id: user_type_id, lang } });
+      if (!validUserType) {
+        return res.status(400).json({
+          error: lang === 'en' ? 'Invalid user type ID' : 'معرف نوع المستخدم غير صالح',
+        });
+      }
+    }
+    
+
+
     await user.update({
       name: name || user.name,
       email: email || user.email,
       phone_number: phone_number || user.phone_number,
       country: country || user.country,
       password: password ? await bcrypt.hash(password, 10) : user.password,
+      user_type_id: user_type_id || user.user_type_id,
     });
 
     res.status(200).json({

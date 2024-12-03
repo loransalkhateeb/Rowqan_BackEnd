@@ -1,8 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../Config/dbConnect');
 const Available_Events = require('../Models/AvailableEvents'); 
-const plansModel = require('../Models/PlansModel')
-
 
 
 const Reservation_Events = sequelize.define('Reservation_Events', {
@@ -15,7 +13,11 @@ const Reservation_Events = sequelize.define('Reservation_Events', {
     type: DataTypes.DATEONLY,
     allowNull: false,
   },
-  time: {
+  start_time: {
+    type: DataTypes.TIME,
+    allowNull: false,
+  },
+  end_time: {
     type: DataTypes.TIME,
     allowNull: false,
   },
@@ -38,13 +40,7 @@ const Reservation_Events = sequelize.define('Reservation_Events', {
   timestamps: false,
 });
 
-
 Available_Events.hasOne(Reservation_Events, { foreignKey: 'available_event_id' });
 Reservation_Events.belongsTo(Available_Events, { foreignKey: 'available_event_id' });
-
-
-
-
-
 
 module.exports = Reservation_Events;
