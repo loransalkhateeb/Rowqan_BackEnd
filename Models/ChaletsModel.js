@@ -23,6 +23,10 @@ const Chalet = sequelize.define('Chalet', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  reserve_price:{
+    type: DataTypes.FLOAT,
+    allowNull: false,
+  },
   lang: {
     type: DataTypes.STRING,
     allowNull: false,

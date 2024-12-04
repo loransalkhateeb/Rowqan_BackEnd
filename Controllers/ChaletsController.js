@@ -2,21 +2,23 @@ const Chalet = require('../Models/ChaletsModel');
 const Status = require('../Models/StatusModel');
 const multer = require('../Config/Multer');
 const path = require('path');
-const ChaletsDetails = require('../Models/ChaletsDetails')
-
+const ChaletsDetails = require('../Models/ChaletsDetails');
+const chaletsImages = require('../Models/ChaletsImagesModel');
+const BreifDetailsChalets = require('../Models/BreifDetailsChalets');
+const RightTimeModel = require('../Models/RightTimeModel');
+const ReservationDate = require('../Models/ReservationDatesModel');
+const ReservationsModel = require('../Models/ReservationsModel');
 
 exports.createChalet = async (req, res) => {
   try {
-    const { title, lang, status_id } = req.body;
+    const { title, lang, status_id, reserve_price } = req.body;
     const image = req.file ? req.file.filename : null;
 
-
-    if (!title || !lang || !status_id) {
+    if (!title || !lang || !status_id || !reserve_price) {
       return res.status(400).json({
-        error: 'Title, language, and status_id are required',
+        error: 'Title, language, status_id, and reserve_price are required',
       });
     }
-
 
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
@@ -29,12 +31,12 @@ exports.createChalet = async (req, res) => {
       return res.status(404).json({ error: 'Status not found' });
     }
 
-
     const newChalet = await Chalet.create({
       title,
       image,
       lang,
       status_id,
+      reserve_price,
     });
 
     res.status(201).json({
@@ -49,8 +51,7 @@ exports.createChalet = async (req, res) => {
 
 exports.getAllChalets = async (req, res) => {
   try {
-    const { lang } = req.params; 
-
+    const { lang } = req.params;
 
     if (lang && !['ar', 'en'].includes(lang)) {
       return res.status(400).json({
@@ -58,11 +59,18 @@ exports.getAllChalets = async (req, res) => {
       });
     }
 
-
     const whereClause = lang ? { lang } : {};
     const chalets = await Chalet.findAll({
       where: whereClause,
-      include: [{ model: Status, attributes: ['status'] }],
+      include: [
+        { model: Status, attributes: ['status'] },
+        { model: chaletsImages, attributes: ['image'] },
+        { model: BreifDetailsChalets, attributes: ['detail'] },
+        { model: RightTimeModel, attributes: ['time'] },
+        { model: ReservationDate, attributes: ['date'] },
+        { model: ChaletsDetails, attributes: ['detail_type'] },
+        { model: ReservationsModel, attributes: ['reservation_id'] }
+      ],
     });
 
     res.status(200).json({ chalets });
@@ -75,7 +83,7 @@ exports.getAllChalets = async (req, res) => {
 exports.getChaletById = async (req, res) => {
   try {
     const { id } = req.params;
-    const { lang } = req.query; 
+    const { lang } = req.query;
 
     const whereClause = { id };
     if (lang) {
@@ -89,7 +97,15 @@ exports.getChaletById = async (req, res) => {
 
     const chalet = await Chalet.findOne({
       where: whereClause,
-      include: [{ model: Status, attributes: ['status'] }],
+      include: [
+        { model: Status, attributes: ['status'] },
+        { model: chaletsImages, attributes: ['image'] },
+        { model: BreifDetailsChalets, attributes: ['detail'] },
+        { model: RightTimeModel, attributes: ['time'] },
+        { model: ReservationDate, attributes: ['date'] },
+        { model: ChaletsDetails, attributes: ['detail_type'] },
+        { model: ReservationsModel, attributes: ['reservation_id'] }
+      ],
     });
 
     if (!chalet) {
@@ -105,94 +121,10 @@ exports.getChaletById = async (req, res) => {
   }
 };
 
-
-exports.getChaletByStatus = async (req, res) => {
-  try {
-    const { status_id, lang } = req.params; 
-
-    if (!status_id) {
-      return res.status(400).json({ error: 'status_id is required' });
-    }
-
-  
-    if (lang && !['ar', 'en'].includes(lang)) {
-      return res.status(400).json({
-        error: 'Invalid language. Supported languages are "ar" and "en".',
-      });
-    }
-
- 
-    const whereClause = { status_id };
-    if (lang) {
-      whereClause.lang = lang;
-    }
-
-   
-    const chalets = await Chalet.findAll({
-      where: whereClause,
-      include: [{ model: Status, attributes: ['status'] }], 
-    });
-
-    if (chalets.length === 0) {
-      return res.status(404).json({
-        error: `No chalets found with status_id ${status_id} and language ${lang || 'not provided'}.`,
-      });
-    }
-
-    res.status(200).json({ chalets });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to fetch chalets' });
-  }
-};
-
-exports.getChaletsByDetailType = async (req, res) => {
-  try {
-    const { type, lang } = req.params;  
-
-    if (!type || !lang) {
-      return res.status(400).json({ error: 'Detail type and language are required' });
-    }
-
-    if (!['en', 'ar'].includes(lang)) {
-      return res.status(400).json({ error: 'Invalid language' });
-    }
-
-    const chalets = await Chalet.findAll({
-      include: {
-        model: ChaletsDetails,  
-        where: { 
-          lang,       
-          detail_type: type 
-        },
-        required: true, 
-      },
-    });
-
-    if (chalets.length === 0) {
-      return res.status(404).json({ error: 'No chalets found for the given detail type and language' });
-    }
-
-    res.status(200).json({
-      message: 'Chalets retrieved successfully',
-      chalets
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to retrieve chalets' });
-  }
-};
-
-
-
-
-
-
-
 exports.updateChalet = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, lang, status_id } = req.body;
+    const { title, lang, status_id, reserve_price } = req.body;
     const image = req.file ? req.file.filename : null;
 
     const chalet = await Chalet.findByPk(id);
@@ -218,6 +150,7 @@ exports.updateChalet = async (req, res) => {
     chalet.lang = lang || chalet.lang;
     chalet.image = image || chalet.image;
     chalet.status_id = status_id || chalet.status_id;
+    chalet.reserve_price = reserve_price || chalet.reserve_price;
 
     await chalet.save();
 
@@ -230,7 +163,7 @@ exports.updateChalet = async (req, res) => {
 
 exports.deleteChalet = async (req, res) => {
   try {
-    const { id,lang } = req.params;
+    const { id, lang } = req.params;
 
     const whereClause = { id };
     if (lang) {
@@ -256,5 +189,87 @@ exports.deleteChalet = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to delete chalet' });
+  }
+};
+
+exports.getChaletByStatus = async (req, res) => {
+  try {
+    const { status_id, lang } = req.params;
+
+    if (!status_id) {
+      return res.status(400).json({ error: 'status_id is required' });
+    }
+
+    if (lang && !['ar', 'en'].includes(lang)) {
+      return res.status(400).json({
+        error: 'Invalid language. Supported languages are "ar" and "en".',
+      });
+    }
+
+    const whereClause = { status_id };
+    if (lang) {
+      whereClause.lang = lang;
+    }
+
+    const chalets = await Chalet.findAll({
+      where: whereClause,
+      include: [
+        { model: Status, attributes: ['status'] },
+        { model: chaletsImages, attributes: ['image'] },
+        { model: BreifDetailsChalets, attributes: ['detail'] },
+        { model: RightTimeModel, attributes: ['time'] },
+        { model: ReservationDate, attributes: ['date'] },
+        { model: ChaletsDetails, attributes: ['detail_type'] },
+        { model: ReservationsModel, attributes: ['reservation_id'] }
+      ],
+    });
+
+    if (chalets.length === 0) {
+      return res.status(404).json({
+        error: `No chalets found with status_id ${status_id} and language ${lang || 'not provided'}.`,
+      });
+    }
+
+    res.status(200).json({ chalets });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch chalets' });
+  }
+};
+
+exports.getChaletsByDetailType = async (req, res) => {
+  try {
+    const { type, lang } = req.params;
+
+    if (!type || !lang) {
+      return res.status(400).json({ error: 'Detail type and language are required' });
+    }
+
+    if (!['en', 'ar'].includes(lang)) {
+      return res.status(400).json({ error: 'Invalid language' });
+    }
+
+    const chalets = await Chalet.findAll({
+      include: {
+        model: ChaletsDetails,
+        where: {
+          lang,
+          detail_type: type
+        },
+        required: true,
+      },
+    });
+
+    if (chalets.length === 0) {
+      return res.status(404).json({ error: 'No chalets found for the given detail type and language' });
+    }
+
+    res.status(200).json({
+      message: 'Chalets retrieved successfully',
+      chalets
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to retrieve chalets by detail type' });
   }
 };
