@@ -58,7 +58,7 @@ exports.getAllHeroesByLang = async (req, res) => {
       return res.status(404).json({ error: 'No heroes found for this language' });
     }
 
-    res.status(200).json({ heroes });
+    res.status(200).json( heroes );
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to retrieve heroes' });

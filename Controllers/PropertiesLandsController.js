@@ -38,16 +38,34 @@ exports.getAllPropertyLands = async (req, res) => {
       return res.status(404).json({ error: lang === "en" ? "No property lands found" : "لا توجد أراضٍ عقارية" });
     }
 
-    res.status(200).json({
-      message: lang === "en" ? "Property lands retrieved successfully" : "تم استرجاع الأراضي العقارية بنجاح",
+    res.status(200).json(
       propertyLands,
-    });
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to retrieve property lands" });
   }
 };
+exports.getPropertyLandByland_id = async (req, res) => {
+  try {
+    const { category_land_id , lang } = req.params;
 
+    const propertyLand = await PropertiesLands.findAll({
+      where: { category_land_id , lang }
+    });
+
+    if (!propertyLand) {
+      return res.status(404).json({ error: lang === "en" ? "Property land not found" : "الأرض العقارية غير موجودة" });
+    }
+
+    res.status(200).json(
+      propertyLand,
+    );
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to retrieve property land" });
+  }
+};
 exports.getPropertyLandById = async (req, res) => {
   try {
     const { id, lang } = req.params;

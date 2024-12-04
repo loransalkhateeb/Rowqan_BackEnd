@@ -45,7 +45,7 @@ exports.getAllServices = async (req, res) => {
       return res.status(404).json({ error: 'No services found for this language' });
     }
 
-    res.status(200).json({ services });
+    res.status(200).json(services );
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to retrieve services' });
@@ -54,8 +54,7 @@ exports.getAllServices = async (req, res) => {
 
 exports.getServiceByStatus = async (req, res) => {
   try {
-    const { lang } = req.params; 
-    const { status_service } = req.body;  
+    const { status_service,lang } = req.params; 
 
     if (!status_service) {
       return res.status(400).json({ error: 'status_service is required' });
@@ -71,7 +70,7 @@ exports.getServiceByStatus = async (req, res) => {
       return res.status(404).json({ error: 'No services found for this language and status' });
     }
 
-    res.status(200).json({ services });
+    res.status(200).json( services );
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to retrieve services' });
