@@ -35,6 +35,10 @@ const BreifLandsRoutes = require('./Routes/BriefLandsRoutes')
 const ReservationeLandsRoutes = require('./Routes/ReservationsLandsRoutes')
 const ReservationsRoutes = require('./Routes/ReservationsRoutes')
 const UsersTypesRoutes = require('./Routes/UsersTypesRoutes')
+const ReservationsChaletsRoutes = require('./Routes/ReservationsChaletsRoutes')
+const WalletRoutes = require('./Routes/WalletRoutes')
+
+
 
 
 
@@ -71,8 +75,8 @@ app.use('/BreifLands',BreifLandsRoutes)
 app.use('/reservationLands',ReservationeLandsRoutes)
 app.use('/reservations',ReservationsRoutes)
 app.use('/userstypes',UsersTypesRoutes)
-
-
+app.use('/ReservationsChalets',ReservationsChaletsRoutes)
+app.use('/Wallet',WalletRoutes)
 
 
 
