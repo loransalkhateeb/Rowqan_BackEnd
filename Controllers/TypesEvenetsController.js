@@ -44,7 +44,7 @@ exports.getAllEventTypes = async (req, res) => {
       return res.status(404).json({ error: 'No event types found' });
     }
 
-    res.status(200).json({ eventTypes });
+    res.status(200).json( eventTypes );
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch event types' });

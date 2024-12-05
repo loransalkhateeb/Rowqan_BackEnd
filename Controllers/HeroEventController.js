@@ -49,7 +49,7 @@ exports.getAllEventHeroes = async (req, res) => {
       return res.status(404).json({ error: 'No events found for the given language' });
     }
 
-    res.status(200).json({ eventHeroes });
+    res.status(200).json( eventHeroes );
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch event heroes' });

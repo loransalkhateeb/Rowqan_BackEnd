@@ -53,7 +53,7 @@ exports.getAvailableEventsById = async (req, res) => {
         return res.status(404).json({ error: `availablevents with id ${id} and language ${lang} not found` });
       }
 
-      res.status(200).json({ availablevents });
+      res.status(200).json( [availablevents] );
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Failed to fetch availablevents' });
@@ -86,10 +86,9 @@ exports.getAvailableEventsById = async (req, res) => {
         return res.status(404).json({ error: 'No available events found for this sub event.' });
       }
   
-      res.status(200).json({
-        message: 'Available Events retrieved successfully',
-        available_events: availableEvents,
-      });
+      res.status(200).json(
+       availableEvents,
+      );
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Failed to retrieve Available Events' });
