@@ -345,7 +345,7 @@ exports.getReservationsByChaletId = async (req, res) => {
         {
           model: RightTimeModel,
           as: 'rightTime', 
-          attributes: ['id', 'time'], 
+          attributes: ['id', 'time','name'], 
         }
       ]
     });
