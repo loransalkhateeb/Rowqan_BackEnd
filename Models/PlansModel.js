@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../Config/dbConnect');
+const Available_Events = require('../Models/AvailableEvents')
 
 const Plans = sequelize.define('Plans', {
   id: {
@@ -22,6 +23,12 @@ const Plans = sequelize.define('Plans', {
 }, {
   timestamps: false,
 });
+
+
+Available_Events.hasMany(Plans, { foreignKey: 'Avialable_Event_Id' });
+Plans.belongsTo(Available_Events, { foreignKey: 'Avialable_Event_Id' });
+
+
 
 
 module.exports = Plans;
