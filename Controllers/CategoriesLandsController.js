@@ -34,37 +34,28 @@ exports.getAllCategoryLands = async (req, res) => {
   try {
     const { lang } = req.params;
 
-
-  
+    // Retrieve category lands with associated properties
     const categoryLands = await CategoriesLandsModel.findAll({
       where: { lang },
       include: [
         {
           model: PropertiesLandsModel,
-          as: "properties", 
+          as: "properties",
+          attributes: ['id', 'property', 'image'], // specify the attributes you want from PropertiesLands
         },
       ],
-
-    const categoryLands = await CategoriesLandsModel.findAll({
-      where: { lang },
-      include: {
-        model: PropertiesLands, // Include the PropertiesLands model
-        attributes: ['id', 'property', 'image'], // specify the attributes you want from PropertiesLands
-      },
-
     });
 
+    // Check if category lands were found
     if (categoryLands.length === 0) {
       return res.status(404).json({ error: lang === "en" ? "No Category Lands found" : "لا توجد فئات" });
     }
 
-
+    // Return success response with the category lands
     res.status(200).json({
       message: lang === "en" ? "Category Lands retrieved successfully" : "تم استرجاع الفئات بنجاح",
       categoryLands,
     });
-
-    res.status(200).json(categoryLands);
 
   } catch (error) {
     console.error(error);

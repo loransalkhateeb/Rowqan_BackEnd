@@ -3,11 +3,11 @@ require('dotenv').config();
 
 
 const sequelize = new Sequelize(
-  'rowqandb',  
-  'root',  
-  '',  
+  'u670406748_rowqan',  
+  'u670406748_rowqan',  
+  'Rowqan111',  
   {
-    host: 'localhost',  
+    host: '193.203.184.65',  
     dialect: 'mysql',  
     logging: false,  
   }
