@@ -1,31 +1,35 @@
 const Chalet = require('../Models/ChaletsModel');
 const ChaletsImages = require('../Models/ChaletsImagesModel');
-
-exports.createChaletImage = async (req, res) => {
+exports.createChaletImages = async (req, res) => {
   try {
     const { chalet_id } = req.body;
-    const image = req.file ? req.file.filename : null;
+    const images = req.files ? req.files.map((file) => file.filename) : [];
 
-    if (!chalet_id || !image) {
-      return res.status(400).json({ error: 'Chalet ID and image are required' });
+    if (!chalet_id || images.length === 0) {
+      return res.status(400).json({ error: 'Chalet ID and images are required' });
     }
 
+  
     const chalet = await Chalet.findByPk(chalet_id);
     if (!chalet) {
       return res.status(404).json({ error: 'Chalet not found' });
     }
 
-    const newImage = await ChaletsImages.create({ chalet_id, image });
+  
+    const newImages = await Promise.all(
+      images.map((image) => ChaletsImages.create({ chalet_id, image }))
+    );
 
     res.status(201).json({
-      message: 'Chalet image created successfully',
-      chaletImage: newImage,
+      message: 'Chalet images created successfully',
+      chaletImages: newImages,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to create chalet image' });
+    res.status(500).json({ error: 'Failed to create chalet images' });
   }
 };
+
 
 exports.getImagesByChaletId = async (req, res) => {
     try {
