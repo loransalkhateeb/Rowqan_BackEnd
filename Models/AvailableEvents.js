@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../Config/dbConnect');
 const Available_Events_Images = require('../Models/Available_Events_Images')
-const PlansModel = require('../Models/PlansModel')
+
 
 
 const Available_Events = sequelize.define('Available_Events', {

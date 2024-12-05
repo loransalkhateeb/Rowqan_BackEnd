@@ -1,19 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const PlansController = require('../Controllers/PlansController');
+const plansController = require('../Controllers/plansController');
 
-
-router.post('/createplane', PlansController.createPlan);
-
-
-router.get('/getAllPlans/:lang', PlansController.getPlans);
-
-
-router.get('/getPlanById/:id/:lang', PlansController.getPlanById);
-
-
-router.put('/updateplane/:id', PlansController.updatePlan);
-
-router.delete('/deletePlane/:id/:lang', PlansController.deletePlan);
+router.post('/createplan', plansController.createPlan); 
+router.get('/plans/:lang', plansController.getPlans); 
+router.get('/plans/:id/:lang', plansController.getPlanById); 
+router.put('/plans/:id', plansController.updatePlan);
+router.delete('/plans/:id/:lang', plansController.deletePlan); 
+router.get('/plans/event/:available_events_id/:lang', plansController.getPlanByAvailableEventId); 
 
 module.exports = router;
