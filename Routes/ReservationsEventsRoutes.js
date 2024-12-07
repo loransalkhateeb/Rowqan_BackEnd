@@ -10,6 +10,9 @@ router.get('/reservation-events/:id/:lang', reservationEventsController.getReser
 router.get('/getAllreservationevents/:lang', reservationEventsController.getAllReservationEvents);
 
 
+router.get('/getAllreservationeventsByAvailableId/:available_event_id/:lang', reservationEventsController.getAllReservationEventsByAvailableId);
+
+
 router.put('/reservation-events/:id', reservationEventsController.updateReservationEvent);
 
 

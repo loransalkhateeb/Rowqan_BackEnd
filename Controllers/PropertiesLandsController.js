@@ -51,7 +51,11 @@ exports.getPropertyLandByland_id = async (req, res) => {
     const { category_land_id , lang } = req.params;
 
     const propertyLand = await PropertiesLands.findAll({
-      where: { category_land_id , lang }
+      where: { category_land_id , lang },
+      include: {
+        model: CategoriesLandsModel,
+        attributes: ['id', 'title','price','location'], 
+      }
     });
 
     if (!propertyLand) {
