@@ -53,7 +53,7 @@ exports.getAllReservations = async (req, res) => {
       where: { lang },
       include: {
         model: CategoriesLandsModel,
-        attributes: ['id', 'title'], 
+        attributes: ['id', 'title','price'], 
       },
     });
 

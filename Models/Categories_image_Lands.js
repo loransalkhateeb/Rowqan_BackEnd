@@ -9,7 +9,7 @@ const CategoriesImageLands = sequelize.define('CategoriesImageLands', {
   },
   image: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: false, 
   },
 }, {
   timestamps: false, 

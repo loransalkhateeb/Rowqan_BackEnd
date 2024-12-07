@@ -1,7 +1,10 @@
 const Reservation_Events = require('../Models/ReservationEventsModel');  
 const Available_Events = require('../Models/AvailableEvents');
+const sub_event = require('../Models/SubEventsModel')
+
 
 const { Op } = require('sequelize');
+const Sub_Events = require('../Models/SubEventsModel');
 
 
 
@@ -145,6 +148,40 @@ exports.getAllReservationEvents = async (req, res) => {
       include: {
         model: Available_Events,
         attributes: ['id', 'title'],  
+      },
+    });
+
+    if (reservations.length === 0) {
+      return res.status(404).json({
+        message: lang === 'en' ? 'No reservations found' : 'لم يتم العثور على حجوزات',
+      });
+    }
+
+    res.status(200).json({
+      message: lang === 'en' ? 'Reservations retrieved successfully' : 'تم جلب الحجوزات بنجاح',
+      reservations,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: 'Failed to retrieve reservations',
+    });
+  }
+};
+
+
+
+
+
+exports.getAllReservationEventsByAvailableId = async (req, res) => {
+  try {
+    const { available_event_id ,lang } = req.params;  
+
+    const reservations = await Reservation_Events.findAll({
+      where: { available_event_id ,lang },  
+      include: {
+        model: Available_Events,
+        attributes: ['id', 'title','image','no_people','price','rating','location','cashback','time','description'],  
       },
     });
 
