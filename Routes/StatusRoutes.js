@@ -4,7 +4,7 @@ const statusController = require('../Controllers/StatusController');
 
 router.post('/createstatus', statusController.createStatus);
 
-router.get('/getallstatuses', statusController.getAllStatuses);
+router.get('/getallstatuses/:lang', statusController.getAllStatuses);
 
 router.get('/getstatusbyid/:id', statusController.getStatusById);
 

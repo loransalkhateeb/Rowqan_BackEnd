@@ -214,13 +214,11 @@ exports.getChaletByStatus = async (req, res) => {
     const chalets = await Chalet.findAll({
       where: whereClause,
       include: [
-        { model: Status, attributes: ['status'] },
-        { model: chaletsImages, attributes: ['image'] },
-        { model: BreifDetailsChalets, attributes: ['detail'] },
-        { model: RightTimeModel, attributes: ['time'] },
-        { model: ReservationDate, attributes: ['date'] },
-        { model: ChaletsDetails, attributes: ['detail_type'] },
-        { model: ReservationsModel, attributes: ['reservation_id'] }
+        {
+          model: Status,
+          as: "Status",
+          attributes: ["status"], 
+        },
       ],
     });
 

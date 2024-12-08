@@ -112,9 +112,8 @@ exports.createContactUs = async (req, res) => {
   
       const contactUs = await ContactUs.findAll({
         where: {
-          lang: lang,
-          id: id
-        },
+          lang: lang
+                },
       });
   
       if (contactUs.length === 0) {

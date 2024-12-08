@@ -69,21 +69,21 @@ exports.getAllRightTimes = async (req, res) => {
 
 exports.getAllRightTimesByChaletId = async (req, res) => {
   try {
-    const { lang, chaletId } = req.params;
+    const { lang, chalet_id } = req.params;
 
     if (!['en', 'ar'].includes(lang)) {
       return res.status(400).json({ error: 'Invalid language' });
     }
 
   
-    if (!chaletId) {
+    if (!chalet_id) {
       return res.status(400).json({ error: 'Chalet_id is required' });
     }
 
     const rightTimes = await RightTimeModel.findAll({
       where: { 
         lang, 
-        Chalet_id: chaletId  
+        Chalet_id: chalet_id  
       },
     });
 
