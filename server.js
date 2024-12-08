@@ -38,7 +38,7 @@ const UsersTypesRoutes = require('./Routes/UsersTypesRoutes')
 const ReservationsChaletsRoutes = require('./Routes/ReservationsChaletsRoutes')
 const WalletRoutes = require('./Routes/WalletRoutes')
 const MessagesRoutes = require('./Routes/RoutesMessages')
-
+const PropsChaletsRoutes = require('./Routes/ChaletsPropsRoutes')
 
 
 
@@ -78,7 +78,7 @@ app.use('/userstypes',UsersTypesRoutes)
 app.use('/ReservationsChalets',ReservationsChaletsRoutes)
 app.use('/Wallet',WalletRoutes)
 app.use('/messages',MessagesRoutes)
-
+app.use('/propschalets',PropsChaletsRoutes)
 
 
 
