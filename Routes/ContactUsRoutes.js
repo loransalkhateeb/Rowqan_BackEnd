@@ -10,6 +10,7 @@ router.put('/updatecontactus/:id', multer.single('image'),ContactUsController.up
 
 
 router.get('/getcontactusid/:id/:lang', ContactUsController.getContactUsById);
+router.get('/getAllContactUs/:lang', ContactUsController.getALLContactUs);
 
 
 router.delete('/deletecontactus/:id/:lang', ContactUsController.deleteContactUs);
