@@ -20,11 +20,11 @@ exports.createReservation = async (req, res) => {
     } = req.body;
 
   
-    if (!initial_amount || !date || !lang || !additional_visitors || !number_of_days || !user_id || !chalet_id || !right_time_id) {
+    if (!initial_amount || !date || !lang || !user_id || !chalet_id || !right_time_id) {
       return res.status(400).json({
         error: lang === 'en' 
-          ? 'All required fields must be provided: initial_amount, date, lang, additional_visitors, number_of_days, user_id, chalet_id, and right_time_id' 
-          : 'جميع الحقول المطلوبة يجب أن تكون موجودة: initial_amount, date, lang, additional_visitors, number_of_days, user_id, chalet_id, and right_time_id',
+          ? 'All required fields must be provided: initial_amount, date, lang, user_id, chalet_id, and right_time_id' 
+          : 'جميع الحقول المطلوبة يجب أن تكون موجودة: initial_amount, date, lang, user_id, chalet_id, and right_time_id',
       });
     }
 

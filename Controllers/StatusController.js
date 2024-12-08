@@ -32,7 +32,7 @@ exports.createStatus = async (req, res) => {
 
 exports.getAllStatuses = async (req, res) => {
   try {
-    const { lang } = req.query;
+    const { lang } = req.params;
 
     if (!['en', 'ar'].includes(lang)) {
       return res.status(400).json({ error: 'Invalid language' });

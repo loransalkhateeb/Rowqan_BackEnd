@@ -6,16 +6,11 @@ const { Sequelize } = require('sequelize');
 
 exports.createReservationDate = async (req, res) => {
   try {
-    const { date, lang, chalet_id, right_time_id } = req.body;
+    const {chalet_id, right_time_id } = req.body;
     
-    if (!date || !lang || !chalet_id || !right_time_id) {
-      return res.status(400).json({ error: 'Date, language, chalet_id, and right_time_id are required' });
+    if ( !chalet_id || !right_time_id) {
+      return res.status(400).json({ error: 'chalet_id, and right_time_id are required' });
     }
-
-    if (!['en', 'ar'].includes(lang)) {
-      return res.status(400).json({ error: 'Invalid language' });
-    }
-
     const chalet = await Chalet.findByPk(chalet_id);
     if (!chalet) {
       return res.status(404).json({ error: 'Chalet not found' });
@@ -26,26 +21,13 @@ exports.createReservationDate = async (req, res) => {
       return res.status(404).json({ error: 'RightTime not found' });
     }
 
-   
-    const existingReservation = await ReservationDates.findOne({
-      where: { date, lang},
-    });
-
-    if (existingReservation) {
-      return res.status(400).json({
-        error: lang === 'en' ? 'This date already exists' : 'هذا التاريخ موجود مسبقًا',
-      });
-    }
-
     const newReservationDate = await ReservationDates.create({
-      date,
-      lang,
       chalet_id,
       right_time_id,
     });
 
     res.status(201).json({
-      message: lang === 'en' ? 'Reservation Date created successfully' : 'تم إنشاء تاريخ الحجز بنجاح',
+      message:  'Reservation Date created successfully' ,
       reservationDate: newReservationDate,
     });
   } catch (error) {
