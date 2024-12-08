@@ -78,6 +78,28 @@ exports.getServiceByStatus = async (req, res) => {
 };
 
 
+
+exports.getServiceByStatusOnlyLang = async (req, res) => {
+  try {
+    const { lang } = req.params; 
+
+
+    const services = await Services.findAll({
+      where: { 
+        lang,
+      }
+    });
+    if (!services.length) {
+      return res.status(404).json({ error: 'No services found for this language and status' });
+    }
+
+    res.status(200).json( services );
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to retrieve services' });
+  }
+};
+
 exports.updateService = async (req, res) => {
   try {
     const { id } = req.params;  

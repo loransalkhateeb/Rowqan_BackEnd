@@ -46,10 +46,49 @@ exports.getAllRightTimes = async (req, res) => {
       return res.status(400).json({ error: 'Invalid language' });
     }
 
-    const rightTimes = await RightTimeModel.findAll({ where: { lang } });
+    const rightTimes = await RightTimeModel.findAll({ where: { lang },
+    include:[
+      
+    ]
+    });
 
     if (!rightTimes.length) {
       return res.status(404).json({ error: 'No RightTimes found for this language' });
+    }
+
+    res.status(200).json({ rightTimes });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to retrieve RightTimes' });
+  }
+};
+
+
+
+
+
+exports.getAllRightTimesByChaletId = async (req, res) => {
+  try {
+    const { lang, chaletId } = req.params;
+
+    if (!['en', 'ar'].includes(lang)) {
+      return res.status(400).json({ error: 'Invalid language' });
+    }
+
+  
+    if (!chaletId) {
+      return res.status(400).json({ error: 'Chalet_id is required' });
+    }
+
+    const rightTimes = await RightTimeModel.findAll({
+      where: { 
+        lang, 
+        Chalet_id: chaletId  
+      },
+    });
+
+    if (!rightTimes.length) {
+      return res.status(404).json({ error: 'No RightTimes found for this language and Chalet_id' });
     }
 
     res.status(200).json({ rightTimes });
