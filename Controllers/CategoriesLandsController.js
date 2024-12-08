@@ -34,7 +34,7 @@ exports.getAllCategoryLands = async (req, res) => {
   try {
     const { lang } = req.params;
 
-    // Fetch category lands with associated properties
+
     const categoryLands = await CategoriesLandsModel.findAll({
       where: { lang },
       include: [
@@ -46,14 +46,13 @@ exports.getAllCategoryLands = async (req, res) => {
       ],
     });
 
-    // Check if any category lands were found
     if (!categoryLands || categoryLands.length === 0) {
       return res.status(404).json({
         error: lang === "en" ? "No Category Lands found" : "لا توجد فئات",
       });
     }
 
-    // Success response
+
     res.status(200).json({
       message:
         lang === "en"

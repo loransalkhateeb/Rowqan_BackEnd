@@ -1,27 +1,36 @@
 const CategoriesImageLands = require('../Models/Categories_image_Lands');
 const CategoriesLandsModel = require('../Models/CategoriesLandsModel');
 
-// Create a new Category Image Land
-exports.createCategoryImageLand = async (req, res) => {
+
+exports.createAvailableLandsImages = async (req, res) => {
   try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: 'At least one image is required' });
+    }
+
     const { category_id } = req.body;
 
-  
+    const land = await CategoriesLandsModel.findByPk(category_id);
+    if (!land) {
+      return res.status(404).json({ error: 'Land not found' });
+    }
 
-      const image = req.file ? req.file.filename : null;
+   
+    const images = req.files.map(file => ({
+      image: file.filename,
+    category_id
+    }));
 
-      const newCategoryImageLand = await CategoriesImageLands.create({
-        image,
-        category_id,
-      });
+   
+    const newImages = await CategoriesImageLands.bulkCreate(images);
 
-      res.status(201).json({
-        message: 'Category Image Land created successfully',
-        categoryImageLand: newCategoryImageLand,
-      });
+    res.status(201).json({
+      message: 'Images added to Available Lands successfully',
+      images: newImages
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to create Category Image Land' });
+    res.status(500).json({ error: 'Failed to add images to Available Lands' });
   }
 };
 
@@ -36,7 +45,7 @@ exports.getAllCategoryImageLands = async (req, res) => {
         where: filter,
         include: {
           model: CategoriesLandsModel,
-          attributes: ['id', 'title'],
+          attributes: ['id', 'title','price','location'],
         },
       });
   
@@ -64,7 +73,7 @@ exports.getCategoryImageLandById = async (req, res) => {
       where: { id },
       include: {
         model: CategoriesLandsModel,
-        attributes: ['id', 'title'], // Include related category fields
+        attributes: ['id', 'title'],
       },
     });
 
@@ -82,7 +91,7 @@ exports.getCategoryImageLandById = async (req, res) => {
   }
 };
 
-// Update a Category Image Land
+
 exports.updateCategoryImageLand = async (req, res) => {
   try {
     const { id } = req.params;
@@ -96,7 +105,7 @@ exports.updateCategoryImageLand = async (req, res) => {
         return res.status(404).json({ error: 'Category Image Land not found' });
       }
 
-      // Update fields
+
       categoryImageLand.image = image || categoryImageLand.image;
       categoryImageLand.category_id = category_id || categoryImageLand.category_id;
 
@@ -112,7 +121,7 @@ exports.updateCategoryImageLand = async (req, res) => {
   }
 };
 
-// Delete a Category Image Land
+
 exports.deleteCategoryImageLand = async (req, res) => {
   try {
     const { id } = req.params;

@@ -6,34 +6,38 @@ const path = require('path');
 
 
 
-exports.createAvailableEventImage = async (req, res) => {
+exports.createAvailableEventImages = async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'Image is required' });
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: 'At least one image is required' });
     }
 
-    const { event_id } = req.body; 
+    const { event_id } = req.body;
 
     const event = await Available_Events.findByPk(event_id);
     if (!event) {
       return res.status(404).json({ error: 'Event not found' });
     }
 
+   
+    const images = req.files.map(file => ({
+      image: file.filename,
+      event_id
+    }));
 
-    const newImage = await Available_Events_Images.create({
-      image: req.file.filename,  
-      event_id  
-    });
+   
+    const newImages = await Available_Events_Images.bulkCreate(images);
 
     res.status(201).json({
-      message: 'Image added to Available Event successfully',
-      image: newImage
+      message: 'Images added to Available Event successfully',
+      images: newImages
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to add image to Available Event' });
+    res.status(500).json({ error: 'Failed to add images to Available Event' });
   }
 };
+
 
 
 
