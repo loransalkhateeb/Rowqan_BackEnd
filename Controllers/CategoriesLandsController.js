@@ -40,7 +40,7 @@ exports.getAllCategoryLands = async (req, res) => {
       include: [
         {
           model: PropertiesLandsModel,
-          as: "properties",
+          as: "PropertiesLands",
           attributes: ["id", "property", "image"], // Only fetch specific attributes
         },
       ],

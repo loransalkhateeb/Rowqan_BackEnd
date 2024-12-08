@@ -167,7 +167,7 @@ exports.getPlanByAvailableEventId = async (req, res) => {
       where: { Avialable_Event_Id: available_events_id, lang },
       include: [{
         model: Available_Events, 
-        as: 'Available_Events',
+        as: 'Available_Event', // Corrected alias
       }],
     });
 

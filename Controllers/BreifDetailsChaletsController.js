@@ -45,27 +45,32 @@ exports.createBreifDetailsChalet = async (req, res) => {
 
 exports.getBreifDetailsByChaletId = async (req, res) => {
   try {
-    const { chalet_id,lang } = req.params;
+    const { chalet_id, lang } = req.params;
 
+    // Validate language parameter
     if (!['en', 'ar'].includes(lang)) {
       return res.status(400).json({ error: 'Invalid language' });
     }
 
-    const chalet = await Chalet.findOne(chalet_id,lang ,{
+    // Correct findOne usage with where and include
+    const chalet = await Chalet.findOne({
+      where: { id: chalet_id },  // Looking for a chalet with the provided ID
       include: {
-        model: BreifDetailsChalets,
-        where: { lang }, 
-        required: false,  
+        model: BreifDetailsChalets,  // Include the related BreifDetailsChalets model
+        where: { lang },  // Filter the BreifDetailsChalets by language
+        required: false,  // Keep the chalet even if there are no matching details
       },
     });
 
+    // If no chalet is found, return a 404 error
     if (!chalet) {
       return res.status(404).json({ error: 'Chalet not found' });
     }
 
+    // If chalet found, return the details
     res.status(200).json({
       message: 'BreifDetailsChalets retrieved successfully',
-      breifDetails: chalet.BreifDetailsChalets,
+      breifDetails: chalet.BreifDetailsChalets,  // Assuming the BreifDetailsChalets are included in the chalet object
     });
   } catch (error) {
     console.error(error);

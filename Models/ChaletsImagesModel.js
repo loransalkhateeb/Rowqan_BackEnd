@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../Config/dbConnect');
 
-const chaletsImages = sequelize.define('chaletsImages', {
+const chaletsImages = sequelize.define('ChaletsImages', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
