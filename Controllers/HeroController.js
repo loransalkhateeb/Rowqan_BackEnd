@@ -92,25 +92,20 @@ exports.getHeroById = async (req, res) => {
 
 exports.updateHero = async (req, res) => {
     try {
-      const { id, lang } = req.params;  
+      const { id } = req.params;  
       const { title, description, title_btn, lang: newLang } = req.body;  
   
  
-      const hero = await Hero.findOne({ where: { id, lang } });
+      const hero = await Hero.findOne({ where: { id} });
   
       if (!hero) {
         return res.status(404).json({ error: 'Hero not found' });
       }
-  
-   
-      if (newLang && newLang !== lang) {
-        hero.lang = newLang;  
-      }
-  
 
       hero.title = title || hero.title;
       hero.description = description || hero.description;
       hero.title_btn = title_btn || hero.title_btn;
+      hero.lang = newLang;  
   
   
       if (req.file) {

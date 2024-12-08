@@ -8,7 +8,7 @@ router.post('/createrighttime', multer.single('image'), rightTimeController.crea
 
 
 router.get('/getallrighttimes/:lang', rightTimeController.getAllRightTimes);
-router.get('/getallrighttimes/:lang/chalet_id', rightTimeController.getAllRightTimesByChaletId);
+router.get('/getallrighttimes/:lang/:chalet_id', rightTimeController.getAllRightTimesByChaletId);
 
 
 router.get('/getrighttimebyid/:id/:lang', rightTimeController.getRightTimeById);
