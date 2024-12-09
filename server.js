@@ -41,7 +41,6 @@ const WalletRoutes = require('./Routes/WalletRoutes')
 const PropsChaletsRoutes = require('./Routes/ChaletsPropsRoutes')
 
 
-
 app.use(cors());
 app.use(express.json());
 app.use('/users',UsersRoutes)
@@ -77,7 +76,6 @@ app.use('/reservations',ReservationsRoutes)
 app.use('/userstypes',UsersTypesRoutes)
 app.use('/ReservationsChalets',ReservationsChaletsRoutes)
 app.use('/Wallet',WalletRoutes)
-
 app.use('/propschalets',PropsChaletsRoutes)
 
 
