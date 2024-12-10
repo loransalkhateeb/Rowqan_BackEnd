@@ -3,12 +3,12 @@ const path = require('path');
 
 exports.createService = async (req, res) => {
   try {
-    const { title, status_service, lang } = req.body;
+    const { title, status_service,url, lang } = req.body;
     const image = req.file ? req.file.filename : null; 
 
  
-    if (!title || !lang || !status_service) {
-      return res.status(400).json({ error: 'Title, status_service, and language are required' });
+    if (!title || !lang || !status_service || !url) {
+      return res.status(400).json({ error: 'Title, status_service, url and language are required' });
     }
 
    
@@ -20,6 +20,7 @@ exports.createService = async (req, res) => {
     const newService = await Services.create({
       title,
       status_service,
+      url,
       lang,
       image,
     });
@@ -55,10 +56,6 @@ exports.getAllServices = async (req, res) => {
 exports.getServiceByStatus = async (req, res) => {
   try {
     const { status_service, lang } = req.params;
-
-
-    console.log(`Searching for services with status_service: ${status_service} and lang: ${lang}`);
-
     if (!status_service || !lang) {
       return res.status(400).json({ error: 'status_service and lang are required' });
     }
@@ -71,7 +68,6 @@ exports.getServiceByStatus = async (req, res) => {
     });
 
  
-    console.log('Found services:', services);
 
     if (services.length === 0) {
       return res.status(404).json({ error: `No services found for language: ${lang} and status: ${status_service}` });
@@ -113,7 +109,7 @@ exports.getServiceByStatusOnlyLang = async (req, res) => {
 exports.updateService = async (req, res) => {
   try {
     const { id } = req.params;  
-    const { title, status_service,lang } = req.body;
+    const { title, status_service,url,lang } = req.body;
     const image = req.file ? req.file.filename : null; 
 
     const service = await Services.findOne({ where: { id } });
@@ -125,6 +121,7 @@ exports.updateService = async (req, res) => {
 
     service.title = title || service.title;
     service.status_service = status_service || service.status_service;
+    service.url = url || service.url;
     service.lang = lang || service.lang;
     service.image = image || service.image; 
 

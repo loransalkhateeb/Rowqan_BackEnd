@@ -9,12 +9,16 @@ exports.createUser = async (req, res) => {
   const { name, email, phone_number, country, password, lang, user_type_id } = req.body;
 
   try {
-
+ 
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
         error: lang === 'en' ? 'Invalid language. Please use "ar" or "en".' : 'اللغة غير صالحة. استخدم "ar" أو "en".',
       });
     }
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+ 
+    const finalUserType = user_type_id || 2 ;
 
 
     const newUser = await User.create({
@@ -22,9 +26,9 @@ exports.createUser = async (req, res) => {
       email,
       phone_number,
       country,
-      password,
+      password: hashedPassword, 
       lang,
-      user_type_id,
+      user_type_id: finalUserType, 
     });
 
     res.status(201).json({
@@ -181,14 +185,14 @@ exports.login = async (req, res) => {
   const { email, password, lang } = req.body;
 
   try {
-  
+    // Validate the language input
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
         error: 'Invalid language. Please use "ar" or "en".',
       });
     }
 
- 
+    // Check if the user exists
     const user = await User.findOne({ where: { email } });
     if (!user) {
       return res.status(404).json({
@@ -196,7 +200,7 @@ exports.login = async (req, res) => {
       });
     }
 
-
+    // Verify the password
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       return res.status(401).json({
@@ -204,13 +208,30 @@ exports.login = async (req, res) => {
       });
     }
 
-  
+    // Generate JWT token
     const token = jwt.sign({ id: user.id, user_type_id: user.user_type_id }, 'secret_key', { expiresIn: '1h' });
 
-    res.status(200).json({
-      message: lang === 'en' ? 'Login successful' : 'تم تسجيل الدخول بنجاح',
-      token,
+    // Set the cookie first before sending the response
+    
+    // For Production
+    // res.cookie("token", token, {
+    //   httpOnly: true,
+    //   secure: true,
+    //   maxAge: 24 * 60 * 60 * 1000,
+    //   sameSite: "Strict",
+    // });
+// For Development
+    res.cookie('token', token, {
+      httpOnly: true, // Cookie can't be accessed from JavaScript
+      maxAge: 3600000, // 1 hour expiration
+      secure: false, // Set to true in production, false in development
     });
+    
+    return res.status(200).json({
+      message: lang === 'en' ? 'Login successful' : 'تم تسجيل الدخول بنجاح',
+      token,  
+    });
+    
   } catch (error) {
     console.error('Error logging in:', error);
     res.status(500).json({
@@ -222,8 +243,19 @@ exports.login = async (req, res) => {
 
 exports.logout = (req, res) => {
   try {
-    res.clearCookie('token', { httpOnly: true }); 
-    res.status(200).json({
+    // Ensure the token cookie is cleared both server-side and client-side
+
+    res.clearCookie('token', { 
+      httpOnly: true,  
+      secure: false,   // Make sure it's false in development or adjust for production
+    }); 
+    // res.clearCookie('token', { 
+    //   httpOnly: true,  
+    //   secure: true,   // Make sure it's false in development or adjust for production
+    //   sameSite: 'Strict'
+    // }); 
+
+    return res.status(200).json({
       message: 'Logged out successfully',
     });
   } catch (error) {
@@ -275,3 +307,26 @@ exports.createAdmin = async (req, res) => {
     });
   }
 };
+
+// Middleware to verify JWT token
+exports.verifyToken = (req, res, next) => {
+  // Extract token from cookies
+  const token = req.cookies['token']; // Assuming 'token' is the cookie name
+  
+  if (!token) {
+    return res.status(403).json({ error: 'Token missing' });
+  }
+
+  jwt.verify(token, 'secret_key', (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ error: 'Invalid token' });
+    }
+
+    req.user = decoded; // Attach decoded user info to request object
+    next();
+  });
+};
+
+
+
+
