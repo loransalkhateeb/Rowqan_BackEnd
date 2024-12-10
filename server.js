@@ -38,21 +38,10 @@ const ReservationsRoutes = require('./Routes/ReservationsRoutes')
 const UsersTypesRoutes = require('./Routes/UsersTypesRoutes')
 const ReservationsChaletsRoutes = require('./Routes/ReservationsChaletsRoutes')
 const WalletRoutes = require('./Routes/WalletRoutes')
-
 const PropsChaletsRoutes = require('./Routes/ChaletsPropsRoutes')
 
 
-// app.use(cors());
 
-
-
-// CORS configuration to allow credentials
-// const corsOptions = {
-//   origin: 'http://localhost:5173', // This should be your frontend URL (React dev server)
-//   credentials: true, // Allow cookies to be sent with requests
-// };
-
-// app.use(cors(corsOptions)); // Apply CORS to all routes
 const allowedOrigins = [
   'http://localhost:5173',
   'https://rowqan.com',

@@ -21,6 +21,7 @@ exports.createUser = async (req, res) => {
     const finalUserType = user_type_id || 2 ;
 
 
+
     const newUser = await User.create({
       name,
       email,
