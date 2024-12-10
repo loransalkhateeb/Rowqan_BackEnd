@@ -9,12 +9,16 @@ exports.createUser = async (req, res) => {
   const { name, email, phone_number, country, password, lang, user_type_id } = req.body;
 
   try {
-
+ 
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
         error: lang === 'en' ? 'Invalid language. Please use "ar" or "en".' : 'اللغة غير صالحة. استخدم "ar" أو "en".',
       });
     }
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+ 
+    const finalUserType = user_type_id || 'User';
 
 
     const newUser = await User.create({
@@ -22,9 +26,10 @@ exports.createUser = async (req, res) => {
       email,
       phone_number,
       country,
-      password,
+      password: hashedPassword, 
       lang,
-      user_type_id,
+      user_type_id: finalUserType, 
+      
     });
 
     res.status(201).json({
