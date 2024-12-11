@@ -3,31 +3,25 @@ const { validateInput, ErrorResponse } = require('../Utils/validateInput');
 
 
 exports.createHeader = async (req, res) => {
-  try {
-    const { header_name, lang } = req.body;
-
+    try {
+      const { header_name, lang } = req.body;
+   
+      if (!['ar', 'en'].includes(lang)) {
+        return res.status(400).json({ error: 'Invalid language' });
+      }
   
-    const validationErrors = validateInput({ header_name, lang }, ['header_name', 'lang']);
-    if (validationErrors) {
-      return res.status(400).json(ErrorResponse(validationErrors));
+      const newheader = await Header.create({
+        header_name,
+        lang,
+      });
+  
+      res.status(201).json({ message: 'Header created successfully', header: newheader });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Failed to create Header' });
     }
-
-    if (!['ar', 'en'].includes(lang)) {
-      return res.status(400).json(ErrorResponse('Invalid language. Supported values are "ar" or "en".'));
-    }
-
-    const newHeader = await Header.create({
-      header_name,
-      lang,
-    });
-
-    res.status(201).json({ message: 'Header created successfully', header: newHeader });
-  } catch (error) {
-    console.error('Error creating header:', error);
-    res.status(500).json(ErrorResponse('Failed to create header'));
-  }
-};
-
+  };
+  
 
 exports.getAllHeaders = async (req, res) => {
   try {
@@ -77,24 +71,21 @@ exports.getHeaderById = async (req, res) => {
 };
 
 exports.updateHeader = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { header_name, lang } = req.body;
-
+    try {
+      const { id } = req.params;
+      const { header_name, lang } = req.body;
   
-    const validationErrors = validateInput({ header_name, lang }, []);
-    if (validationErrors) {
-      return res.status(400).json(ErrorResponse(validationErrors));
-    }
-
-    const header = await Header.findByPk(id);
-
-    if (!header) {
-      return res.status(404).json(ErrorResponse('Header not found'));
-    }
-
-    header.header_name = header_name || header.header_name;
-    header.lang = lang || header.lang;
+      const header = await Header.findOne({
+        where: { id }
+      });
+  
+      if (!header) {
+        return res.status(404).json({ error: 'Header not found' });
+      }
+  
+   
+      header.header_name = header_name || header.header_name;  
+      header.lang = lang || header.lang; 
 
     await header.save();
 

@@ -18,6 +18,6 @@ router.post('/login', rateLimiter, userController.login);
 
 router.post('/logout', authMiddleware, rateLimiter, userController.logout);
 
-router.post('/createAdmin', authMiddleware, rateLimiter, userController.createAdmin);
+router.post('/createAdmin', userController.createAdmin);
 
 module.exports = router;

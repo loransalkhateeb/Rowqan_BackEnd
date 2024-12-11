@@ -5,6 +5,7 @@ const helmet = require('helmet');
 
 
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const app = express();
 const UsersRoutes = require('./Routes/UsersRoutes')
@@ -44,8 +45,6 @@ const PropsChaletsRoutes = require('./Routes/ChaletsPropsRoutes')
 
 
 
-app.use(handleError)
-app.use(helmet());
 app.use(cors());
 app.use(express.json());
 app.use('/users',UsersRoutes)

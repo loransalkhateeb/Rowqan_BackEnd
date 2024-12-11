@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../Config/dbConnect'); 
+const { url } = require('../Config/cloudinaryConfig');
 
 const Services = sequelize.define('Services', {
   id: {
@@ -19,6 +20,10 @@ const Services = sequelize.define('Services', {
     type: DataTypes.STRING,
     allowNull: false,  
     defaultValue: 'most picked',  
+  },
+  url: {
+    type: DataTypes.STRING,  
+    allowNull: false,  
   },
   lang: {
     type: DataTypes.STRING,

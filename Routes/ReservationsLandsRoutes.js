@@ -15,6 +15,7 @@ router.get('/getreservationslands/:lang', ResevationLandsController.getAllReserv
 
 
 router.get('/getreservationslands/:id/:lang', ResevationLandsController.getReservationById);
+router.get('/getreservationslandsbyavailable_land_id/:available_land_id/:lang', ResevationLandsController.getReservationByAvailable_land_id);
 
 
 router.put('/updatereservationslands/:id', rateLimiter, ResevationLandsController.updateReservation);
