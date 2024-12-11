@@ -21,6 +21,7 @@ router.delete('/reservations/:id', ReservationsChaletsController.deleteReservati
 
 
 router.get('/reservationsByChaletId/:chalet_id/:lang', ReservationsChaletsController.getReservationsByChaletId);
+router.get('/reservationsByUserId/:user_id/:lang', ReservationsChaletsController.getReservationsByUserId);
 
 
 

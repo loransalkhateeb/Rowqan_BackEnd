@@ -11,7 +11,7 @@ const Sub_Events = require('../Models/SubEventsModel');
 
 exports.createReservationEvent = async (req, res) => {
   try {
-    const { date, start_time, end_time, lang, available_event_id } = req.body;
+    const { date, start_time, end_time, lang, available_event_id,user_id } = req.body;
 
    
     const event = await Available_Events.findByPk(available_event_id);
@@ -25,6 +25,7 @@ exports.createReservationEvent = async (req, res) => {
     const existingReservation = await Reservation_Events.findOne({
       where: {
         date: date,
+        user_id: user_id,
         available_event_id: available_event_id,
         [Op.or]: [
           {
@@ -53,6 +54,7 @@ exports.createReservationEvent = async (req, res) => {
       end_time,
       lang,
       available_event_id,
+      user_id
     });
 
     res.status(201).json({
@@ -71,7 +73,7 @@ exports.createReservationEvent = async (req, res) => {
 exports.updateReservationEvent = async (req, res) => {
   try {
     const { id } = req.params;  
-    const { date, start_time, end_time, lang, available_event_id } = req.body;
+    const { date, start_time, end_time, lang, available_event_id,user_id } = req.body;
 
    
     const reservation = await Reservation_Events.findByPk(id);
@@ -95,6 +97,7 @@ exports.updateReservationEvent = async (req, res) => {
     reservation.end_time = end_time;
     reservation.lang = lang;
     reservation.available_event_id = available_event_id;
+    reservation.user_id = user_id;
 
     await reservation.save();  
 
@@ -203,7 +206,35 @@ exports.getAllReservationEventsByAvailableId = async (req, res) => {
   }
 };
 
+exports.getAllReservationEventsByUserId = async (req, res) => {
+  try {
+    const { user_id ,lang } = req.params;  
 
+    const reservations = await Reservation_Events.findAll({
+      where: { user_id ,lang },  
+      include: {
+        model: Available_Events,
+        attributes: ['id', 'title','image','no_people','price','rating','location','cashback','time','description'],  
+      },
+    });
+
+    if (reservations.length === 0) {
+      return res.status(404).json({
+        message: lang === 'en' ? 'No reservations found' : 'لم يتم العثور على حجوزات',
+      });
+    }
+
+    res.status(200).json({
+      message: lang === 'en' ? 'Reservations retrieved successfully' : 'تم جلب الحجوزات بنجاح',
+      reservations,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: 'Failed to retrieve reservations',
+    });
+  }
+};
 exports.getReservationEventById = async (req, res) => {
   try {
     const { id } = req.params;  

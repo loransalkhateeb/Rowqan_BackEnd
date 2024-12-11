@@ -1,6 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../Config/dbConnect');
 const Available_Events = require('../Models/AvailableEvents'); 
+const User = require('./UsersModel');
 
 
 const Reservation_Events = sequelize.define('Reservation_Events', {
@@ -43,4 +44,6 @@ const Reservation_Events = sequelize.define('Reservation_Events', {
 Available_Events.hasOne(Reservation_Events, { foreignKey: 'available_event_id' });
 Reservation_Events.belongsTo(Available_Events, { foreignKey: 'available_event_id' });
 
+User.hasMany(Reservation_Events, { foreignKey: 'user_id'});
+Reservation_Events.belongsTo(User, { foreignKey: 'user_id'});
 module.exports = Reservation_Events;

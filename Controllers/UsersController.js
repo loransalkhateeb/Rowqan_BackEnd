@@ -6,7 +6,6 @@ const UserTypes = require('../Models/UsersTypes');
 require('dotenv').config();
 
 
-const bcrypt = require('bcrypt');
 
 exports.createUser = async (req, res) => {
   const { name, email, phone_number, country, password, lang, user_type_id } = req.body;
@@ -24,7 +23,6 @@ exports.createUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10); 
 
     
-    const finalUserType = user_type_id || 'User'; 
 
     const finalUserType = user_type_id || 2 ;
 
@@ -193,7 +191,7 @@ exports.deleteUser = async (req, res) => {
 };
 
 
-const secretKey = process.env.SECRET_KEY;
+const secretKey = process.env.JWT_SECRET;
 console.log("SECRET_KEY:", secretKey);  
 
 exports.login = async (req, res) => {
@@ -248,7 +246,6 @@ exports.login = async (req, res) => {
     );
 
     // Generate JWT token
-    const token = jwt.sign({ id: user.id, user_type_id: user.user_type_id }, 'secret_key', { expiresIn: '1h' });
 
 
     // Set the cookie first before sending the response
@@ -360,7 +357,7 @@ exports.verifyToken = (req, res, next) => {
     return res.status(403).json({ error: 'Token missing' });
   }
 
-  jwt.verify(token, 'secret_key', (err, decoded) => {
+  jwt.verify(token, secretKey, (err, decoded) => {
     if (err) {
       return res.status(403).json({ error: 'Invalid token' });
     }

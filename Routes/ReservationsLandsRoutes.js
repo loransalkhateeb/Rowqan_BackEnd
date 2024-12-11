@@ -13,6 +13,7 @@ router.get('/getreservationslands/:lang', ResevationLandsController.getAllReserv
 
 router.get('/getreservationslands/:id/:lang', ResevationLandsController.getReservationById);
 router.get('/getreservationslandsbyavailable_land_id/:available_land_id/:lang', ResevationLandsController.getReservationByAvailable_land_id);
+router.get('/getreservationslandsbyuser_id/:user_id/:lang', ResevationLandsController.getReservationByUser_id);
 
 
 router.put('/updatereservationslands/:id', ResevationLandsController.updateReservation);
