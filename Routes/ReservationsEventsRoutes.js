@@ -15,6 +15,7 @@ router.get('/getAllreservationevents/:lang', authMiddleware, rateLimiter, reserv
 
 router.get('/getAllreservationeventsByAvailableId/:available_event_id/:lang', authMiddleware, rateLimiter, reservationEventsController.getAllReservationEventsByAvailableId);
 
+router.get('/getAllreservationeventsByUserId/:user_id/:lang', reservationEventsController.getAllReservationEventsByUserId);
 
 router.put('/reservation-events/:id', authMiddleware, rateLimiter, reservationEventsController.updateReservationEvent);
 

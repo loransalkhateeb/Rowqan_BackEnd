@@ -18,6 +18,11 @@ router.get('/getAllReservationChaletById/:id/:lang', authMiddleware, Reservation
 router.put('/reservations/:id', authMiddleware, rateLimiter, ReservationsChaletsController.updateReservation);
 
 
+
+router.get('/reservationsByChaletId/:chalet_id/:lang', ReservationsChaletsController.getReservationsByChaletId);
+router.get('/reservationsByUserId/:user_id/:lang', ReservationsChaletsController.getReservationsByUserId);
+
+
 router.delete('/reservations/:id', authMiddleware, ReservationsChaletsController.deleteReservation);
 
 
