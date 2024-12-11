@@ -1,22 +1,22 @@
 const Status = require('../Models/StatusModel'); 
+const { validateInput } = require('../Utils/validateInput');
+const { ErrorResponse } = require('../Utils/validateInput');
 
 
-exports.createStatus = async (req, res) => {
+exports.createStatus = async (req, res, next) => {
+  
   try {
     const { status, lang } = req.body;
-
-    if (!status || !lang) {
-      return res.status(400).json({ error: 'Status and language are required' });
-    }
-
-    if (!['en', 'ar'].includes(lang)) {
-      return res.status(400).json({ error: 'Invalid language' });
+    const { error } = validateInput(req.body);
+    if (error) {
+      return next(new ErrorResponse(error.details[0].message, 400)); 
     }
 
     const existingStatus = await Status.findOne({ where: { status, lang } });
     if (existingStatus) {
-      return res.status(400).json({ error: 'Status with the same name and language already exists' });
+      return next(new ErrorResponse('Status with the same name and language already exists', 400));  
     }
+
 
     const newStatus = await Status.create({ status, lang });
 
@@ -25,8 +25,7 @@ exports.createStatus = async (req, res) => {
       status: newStatus,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to create Status' });
+    next(new ErrorResponse('Failed to create Status', 500)); 
   }
 };
 
@@ -80,12 +79,9 @@ exports.updateStatus = async (req, res) => {
     const { id } = req.params;
     const { status, lang } = req.body;
 
-    if (!status || !lang) {
-      return res.status(400).json({ error: 'Status and language are required' });
-    }
-
-    if (!['en', 'ar'].includes(lang)) {
-      return res.status(400).json({ error: 'Invalid language' });
+    const { error } = validateStatusInput({ status, lang });
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
     }
 
     const statusRecord = await Status.findOne({ where: { id, lang } });

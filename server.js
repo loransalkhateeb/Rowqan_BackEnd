@@ -1,5 +1,8 @@
 const express = require('express');
 const sequelize = require('./Config/dbConnect');
+const { handleError } = require('./MiddleWares/errorHandler');
+const helmet = require('helmet');
+
 
 const cors = require('cors');
 require('dotenv').config();
@@ -41,6 +44,8 @@ const PropsChaletsRoutes = require('./Routes/ChaletsPropsRoutes')
 
 
 
+app.use(handleError)
+app.use(helmet());
 app.use(cors());
 app.use(express.json());
 app.use('/users',UsersRoutes)
