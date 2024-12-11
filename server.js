@@ -37,7 +37,6 @@ const ReservationsRoutes = require('./Routes/ReservationsRoutes')
 const UsersTypesRoutes = require('./Routes/UsersTypesRoutes')
 const ReservationsChaletsRoutes = require('./Routes/ReservationsChaletsRoutes')
 const WalletRoutes = require('./Routes/WalletRoutes')
-
 const PropsChaletsRoutes = require('./Routes/ChaletsPropsRoutes')
 
 

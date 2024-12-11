@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../Models/UsersModel');
 const ReservationModel = require('../Models/ReservationsModel');
 const UserTypes = require('../Models/UsersTypes');
+require('dotenv').config();
 
 
 exports.createUser = async (req, res) => {
@@ -10,6 +11,7 @@ exports.createUser = async (req, res) => {
 
   try {
 
+    // التحقق من اللغة
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
         error: lang === 'en' ? 'Invalid language. Please use "ar" or "en".' : 'اللغة غير صالحة. استخدم "ar" أو "en".',
@@ -17,15 +19,20 @@ exports.createUser = async (req, res) => {
     }
 
 
+    const salt = bcrypt.genSaltSync(10); 
+    const hashedPassword = bcrypt.hashSync(password, salt);  
+
+    
     const newUser = await User.create({
       name,
       email,
       phone_number,
       country,
-      password,
+      password: hashedPassword,  
       lang,
       user_type_id,
     });
+
 
     res.status(201).json({
       message: lang === 'en' ? 'User created successfully' : 'تم إنشاء المستخدم بنجاح',
@@ -37,7 +44,7 @@ exports.createUser = async (req, res) => {
       error: lang === 'en' ? 'Failed to create user' : 'فشل في إنشاء المستخدم',
     });
   }
-};
+};;
 
 
 exports.getAllUsers = async (req, res) => {
@@ -162,7 +169,6 @@ exports.deleteUser = async (req, res) => {
       });
     }
 
-
     await user.destroy();
 
     res.status(200).json({
@@ -177,25 +183,25 @@ exports.deleteUser = async (req, res) => {
 };
 
 
+const secretKey = process.env.SECRET_KEY;
+console.log("SECRET_KEY:", secretKey);  
+
 exports.login = async (req, res) => {
   const { email, password, lang } = req.body;
 
   try {
-  
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
-        error: 'Invalid language. Please use "ar" or "en".',
+        error: lang === 'en' ? 'Invalid language. Please use "ar" or "en".' : 'اللغة غير صالحة. استخدم "ar" أو "en".',
       });
     }
 
- 
     const user = await User.findOne({ where: { email } });
     if (!user) {
       return res.status(404).json({
         error: lang === 'en' ? 'User not found' : 'المستخدم غير موجود',
       });
     }
-
 
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
@@ -204,8 +210,19 @@ exports.login = async (req, res) => {
       });
     }
 
-  
-    const token = jwt.sign({ id: user.id, user_type_id: user.user_type_id }, 'secret_key', { expiresIn: '1h' });
+    // تأكد من وجود SECRET_KEY
+    if (!secretKey) {
+      console.error("SECRET_KEY is not defined in .env file.");
+      return res.status(500).json({
+        error: lang === 'en' ? 'Internal server error' : 'خطأ داخلي في الخادم',
+      });
+    }
+
+    const token = jwt.sign(
+      { id: user.id, user_type_id: user.user_type_id },
+      secretKey,
+      { expiresIn: '1h' }
+    );
 
     res.status(200).json({
       message: lang === 'en' ? 'Login successful' : 'تم تسجيل الدخول بنجاح',
@@ -218,6 +235,9 @@ exports.login = async (req, res) => {
     });
   }
 };
+
+
+
 
 
 exports.logout = (req, res) => {
