@@ -1,18 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const headerController = require('../Controllers/HeaderController');
-
-router.post('/createHeader', headerController.createHeader);
-
-
-router.get('/getAllHeaders/:lang', headerController.getAllHeaders);
-
-router.get('/getHeaderById/:id/:lang', headerController.getHeaderById);
+const authMiddleware = require('../MiddleWares/authMiddleware');  
+const rateLimiter = require('../MiddleWares/rateLimiter'); 
 
 
-router.put('/updateHeader/:id', headerController.updateHeader);
+router.post('/createHeader', authMiddleware, rateLimiter, headerController.createHeader);
 
 
-router.delete('/deleteHeader/:id/:lang', headerController.deleteHeader);
+router.get('/getAllHeaders/:lang', authMiddleware, headerController.getAllHeaders);
+
+
+router.get('/getHeaderById/:id/:lang', authMiddleware, headerController.getHeaderById);
+
+
+router.put('/updateHeader/:id', authMiddleware, rateLimiter, headerController.updateHeader);
+
+
+router.delete('/deleteHeader/:id/:lang', authMiddleware, headerController.deleteHeader);
 
 module.exports = router;

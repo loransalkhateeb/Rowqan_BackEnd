@@ -3,26 +3,56 @@ const jwt = require('jsonwebtoken');
 const User = require('../Models/UsersModel');
 const ReservationModel = require('../Models/ReservationsModel');
 const UserTypes = require('../Models/UsersTypes');
+const { validateUserInput, validateAdminInput } = require('../Utils/validateInput');
 require('dotenv').config();
 
 
 
+
+
 exports.createUser = async (req, res) => {
-  const { name, email, phone_number, country, password, lang, user_type_id } = req.body;
+  const { name, email, phone_number, country, password, lang, user_type_id, RepeatPassword } = req.body;
 
   try {
+     const validationErrors = validateAdminInput(name, email, phone_number, country, password, RepeatPassword, user_type_id);
+     if (validationErrors.length > 0) {
+        return res.status(400).json({ errors: validationErrors });
+     }
 
-    if (!['ar', 'en'].includes(lang)) {
-      return res.status(400).json({
-        error: lang === 'en' ? 'Invalid language. Please use "ar" or "en".' : 'اللغة غير صالحة. استخدم "ar" أو "en".',
-      });
-    }
+     if (!['ar', 'en'].includes(lang)) {
+        return res.status(400).json({
+           error: lang === 'en' ? 'Invalid language. Please use "ar" or "en".' : 'اللغة غير صالحة. استخدم "ar" أو "en".',
+        });
+     }
+
+
+     const salt = bcrypt.genSaltSync(10);
+     const hashedPassword = bcrypt.hashSync(password, salt);
 
  
 
     const hashedPassword = await bcrypt.hash(password, 10); 
 
+
+     const newUser = await User.create({
+        name,
+        email,
+        phone_number,
+        country,
+        password: hashedPassword,
+        lang,
+        user_type_id,
+     });
+
+
+     res.status(201).json({
+        message: lang === 'en' ? 'User created successfully' : 'تم إنشاء المستخدم بنجاح',
+        user: newUser,
+     });
+
+
     
+
 
     const finalUserType = user_type_id || 2 ;
 
@@ -46,13 +76,17 @@ exports.createUser = async (req, res) => {
       message: lang === 'en' ? 'User created successfully' : 'تم إنشاء المستخدم بنجاح',
       user: newUser,
     });
+
   } catch (error) {
-    console.error('Error creating user:', error);
-    res.status(500).json({
-      error: lang === 'en' ? 'Failed to create user' : 'فشل في إنشاء المستخدم',
-    });
+     console.error('Error creating user:', error);
+     res.status(500).json({
+        error: lang === 'en' ? 'Failed to create user' : 'فشل في إنشاء المستخدم',
+     });
   }
 };
+
+
+
 
 
 exports.getAllUsers = async (req, res) => {
@@ -84,7 +118,6 @@ exports.getAllUsers = async (req, res) => {
     });
   }
 };
-
 
 exports.getUserById = async (req, res) => {
   const { id, lang } = req.params;
@@ -127,13 +160,16 @@ exports.getUserById = async (req, res) => {
   }
 };
 
-
 exports.updateUser = async (req, res) => {
   const { id } = req.params;
   const { name, email, phone_number, country, password, lang, user_type_id } = req.body;
 
   try {
- 
+    const validationErrors = validateUserInput(name, email, password);
+    if (validationErrors.length > 0) {
+      return res.status(400).json({ errors: validationErrors });
+    }
+
     const user = await User.findByPk(id);
     if (!user) {
       return res.status(404).json({
@@ -141,7 +177,6 @@ exports.updateUser = async (req, res) => {
       });
     }
 
- 
     await user.update({
       name,
       email,
@@ -163,7 +198,6 @@ exports.updateUser = async (req, res) => {
     });
   }
 };
-
 
 exports.deleteUser = async (req, res) => {
   const { id, lang } = req.params;
@@ -191,12 +225,13 @@ exports.deleteUser = async (req, res) => {
 };
 
 
+
 const secretKey = process.env.JWT_SECRET;
 console.log("SECRET_KEY:", secretKey);  
 
+
 exports.login = async (req, res) => {
   const { email, password, lang } = req.body;
-
   try {
 
 
@@ -231,9 +266,14 @@ exports.login = async (req, res) => {
     }
 
 
+    const secretKey = process.env.JWT_SECRET;
+
+
+
   
+
     if (!secretKey) {
-      console.error("SECRET_KEY is not defined in .env file.");
+      console.error("JWT_SECRET is not defined in .env file.");
       return res.status(500).json({
         error: lang === 'en' ? 'Internal server error' : 'خطأ داخلي في الخادم',
       });
@@ -277,12 +317,12 @@ exports.login = async (req, res) => {
   }
 };
 
-
-
-
-
 exports.logout = (req, res) => {
   try {
+
+    res.clearCookie('token', { httpOnly: true });
+    res.status(200).json({
+
     // Ensure the token cookie is cleared both server-side and client-side
 
     res.clearCookie('token', { 
@@ -296,6 +336,7 @@ exports.logout = (req, res) => {
     // }); 
 
     return res.status(200).json({
+
       message: 'Logged out successfully',
     });
   } catch (error) {
@@ -306,46 +347,31 @@ exports.logout = (req, res) => {
   }
 };
 
-
 exports.createAdmin = async (req, res) => {
-  const { name, email, phone_number, country, password, RepeatPassword, role_user, lang } = req.body;
+  const { name, email, password, RepeatPassword, role_user } = req.body;
 
   try {
-    if (password !== RepeatPassword) {
-      return res.status(400).json({
-        error: lang === 'en' ? 'Password and Repeat Password do not match' : 'كلمة المرور وتكرار كلمة المرور غير متطابقتين',
-      });
+
+    const validationErrors = validateAdminInput(name, email, password, RepeatPassword, role_user);
+    if (validationErrors.length > 0) {
+      return res.status(400).json({ errors: validationErrors });
     }
 
-    if (role_user !== 'admin') {
-      return res.status(400).json({
-        error: lang === 'en' ? 'Role must be admin to create an admin user' : 'يجب أن يكون الدور "admin" لإنشاء مستخدم أدمن',
-      });
-    }
 
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    const newAdmin = await User.create({
-      name,
-      email,
-      phone_number,
-      country,
-      password: hashedPassword,
-      role_user,
-      lang,
-    });
-
+    const hashedPassword = bcrypt.hashSync(password, 10);
+    const newAdmin = await User.create({ name, email, password: hashedPassword, role_user: 'admin' });
     res.status(201).json({
-      message: lang === 'en' ? 'Admin created successfully' : 'تم إنشاء الأدمن بنجاح',
-      user: newAdmin,
+      message: 'Admin created successfully',
+      admin: newAdmin,
     });
+
   } catch (error) {
     console.error('Error creating admin:', error);
-    res.status(500).json({
-      error: lang === 'en' ? 'Failed to create admin' : 'فشل في إنشاء الأدمن',
-    });
+    res.status(500).json({ error: 'Failed to create admin' });
   }
+
+};
+
 };
 
 // Middleware to verify JWT token
@@ -366,6 +392,7 @@ exports.verifyToken = (req, res, next) => {
     next();
   });
 };
+
 
 
 
