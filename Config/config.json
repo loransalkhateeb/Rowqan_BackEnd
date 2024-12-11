@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "u670406748_rowqan",
+    "password": "Rowqan111",
+    "database": "u670406748_rowqan",
+    "host": "193.203.184.65",
+    "dialect": "mysql"
+  },
+  "test": {
+    "username": "root",
+    "password": null,
+    "database": "u670406748_rowqan",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  },
+  "production": {
+    "username": "root",
+    "password": null,
+    "database": "u670406748_rowqan",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  }
+}

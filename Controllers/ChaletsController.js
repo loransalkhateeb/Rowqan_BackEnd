@@ -214,13 +214,11 @@ exports.getChaletByStatus = async (req, res) => {
     const chalets = await Chalet.findAll({
       where: whereClause,
       include: [
-        { model: Status, attributes: ['status'] },
-        { model: chaletsImages, attributes: ['image'] },
-        { model: BreifDetailsChalets, attributes: ['detail'] },
-        { model: RightTimeModel, attributes: ['time'] },
-        { model: ReservationDate, attributes: ['date'] },
-        { model: ChaletsDetails, attributes: ['detail_type'] },
-        { model: ReservationsModel, attributes: ['reservation_id'] }
+        {
+          model: Status,
+          as: "Status",
+          attributes: ["status"], 
+        },
       ],
     });
 
@@ -271,5 +269,67 @@ exports.getChaletsByDetailType = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to retrieve chalets by detail type' });
+  }
+};
+exports.createCategoryLand = async (req, res) => {
+  try {
+    const { title, price, location, lang } = req.body;
+    const image = req.file ? req.file.filename : null;
+
+    const newCategoryLand = await CategoriesLandsModel.create({
+      title,
+      price,
+      location,
+      lang,
+      image,
+    });
+
+    res.status(201).json({
+      message:
+        lang === "en"
+          ? "Category Land created successfully"
+          : "تم إنشاء الفئة بنجاح",
+      categoryLand: newCategoryLand,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to create Category Land" });
+  }
+};
+
+exports.getAllChaletsFront = async (req, res) => {
+  try {
+    const { lang } = req.params;
+
+    // Fetch category lands with associated properties
+    const chalets = await Chalet.findAll({
+      where: { lang },
+      include: [
+        {
+          model: Status,
+          as: "Status",
+          attributes: ["status"], 
+        },
+      ],
+    });
+
+    // Check if any category lands were found
+    if (!chalets || chalets.length === 0) {
+      return res.status(404).json({
+        error: lang === "en" ? "No Chalets found" : "لا توجد فئات",
+      });
+    }
+
+    // Success response
+    res.status(200).json({
+      message:
+        lang === "en"
+          ? "Chalets retrieved successfully"
+          : "تم استرجاع الفئات بنجاح",
+      chalets,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to retrieve Category Lands" });
   }
 };

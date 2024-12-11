@@ -8,6 +8,7 @@ router.post('/createchalet', multer.single('image'), chaletController.createChal
 
 
 router.get('/getallchalets/:lang', chaletController.getAllChalets);
+router.get('/getchalets/:lang', chaletController.getAllChaletsFront);
 router.get('/getallchaletsbystatus/:status_id/:lang', chaletController.getChaletByStatus);
 
 

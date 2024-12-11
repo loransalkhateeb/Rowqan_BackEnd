@@ -6,33 +6,35 @@ const UserTypes = require('../Models/UsersTypes');
 require('dotenv').config();
 
 
+const bcrypt = require('bcrypt');
+
 exports.createUser = async (req, res) => {
   const { name, email, phone_number, country, password, lang, user_type_id } = req.body;
 
   try {
 
-    // التحقق من اللغة
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
         error: lang === 'en' ? 'Invalid language. Please use "ar" or "en".' : 'اللغة غير صالحة. استخدم "ar" أو "en".',
       });
     }
 
-
-    const salt = bcrypt.genSaltSync(10); 
-    const hashedPassword = bcrypt.hashSync(password, salt);  
+ 
+    const hashedPassword = await bcrypt.hash(password, 10); 
 
     
+    const finalUserType = user_type_id || 'User'; 
+
+
     const newUser = await User.create({
       name,
       email,
       phone_number,
       country,
-      password: hashedPassword,  
+      password: hashedPassword, 
       lang,
-      user_type_id,
+      user_type_id: finalUserType,
     });
-
 
     res.status(201).json({
       message: lang === 'en' ? 'User created successfully' : 'تم إنشاء المستخدم بنجاح',
@@ -44,7 +46,7 @@ exports.createUser = async (req, res) => {
       error: lang === 'en' ? 'Failed to create user' : 'فشل في إنشاء المستخدم',
     });
   }
-};;
+};
 
 
 exports.getAllUsers = async (req, res) => {
@@ -210,7 +212,7 @@ exports.login = async (req, res) => {
       });
     }
 
-    // تأكد من وجود SECRET_KEY
+  
     if (!secretKey) {
       console.error("SECRET_KEY is not defined in .env file.");
       return res.status(500).json({

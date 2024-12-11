@@ -19,7 +19,7 @@ const BreifDetailsChaletsRoutes = require('./Routes/BreifDetailsChaletsRoutes')
 const ReservatioDatesRoutes = require('./Routes/ReservationsDateRoutes')
 const ContactUsRoutes = require('./Routes/ContactUsRoutes')
 const RightTimeRoutes = require('./Routes/RightTimeRoutes')
-const StatusRoutes = require('./Routes/StatusChaletsRoutes')
+const StatusRoutes = require('./Routes/StatusRoutes')
 const ChaletsDetailsRoutes = require('./Routes/ChaletsDetailsRoutes')
 const HeroEventsRoutes = require('./Routes/EventsHeroRoutes')
 const EventsTypesRoutes = require('./Routes/TypesEventsRoutes')
@@ -76,7 +76,6 @@ app.use('/reservations',ReservationsRoutes)
 app.use('/userstypes',UsersTypesRoutes)
 app.use('/ReservationsChalets',ReservationsChaletsRoutes)
 app.use('/Wallet',WalletRoutes)
-
 app.use('/propschalets',PropsChaletsRoutes)
 
 
@@ -88,7 +87,9 @@ sequelize.sync({ force: false }).then(() => {
     console.log('Database connected and synced!');
   });
   
-  
+  app.get("/", (req, res) => {
+    res.send("Welcome to Rowqan! ");
+  });
   app.listen(process.env.PORT || 5000, () => {
     console.log(`Server is running on port ${process.env.PORT || 5000}`);
   });

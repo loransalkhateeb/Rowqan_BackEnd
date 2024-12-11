@@ -12,6 +12,10 @@ const FooterIcons = sequelize.define('FooterIcons', {
     type: DataTypes.STRING, 
     allowNull: false,
   },
+  link_to: {
+    type: DataTypes.STRING, 
+    allowNull: false,
+  },
 }, {
   timestamps: false,
 });

@@ -76,7 +76,7 @@ exports.getAllSubEvents = async (req, res) => {
         return res.status(404).json({ error: 'No Sub_Events found for this language' });
       }
   
-      res.status(200).json({ sub_events });
+      res.status(200).json(sub_events );
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Failed to retrieve sub_events' });
@@ -114,10 +114,9 @@ exports.getAllSubEvents = async (req, res) => {
         return res.status(404).json({ error: 'No sub events found for this event and language.' });
       }
   
-      res.status(200).json({
-        message: 'Sub Events retrieved successfully',
-        sub_events: subEvents,
-      });
+      res.status(200).json(
+      subEvents,
+      );
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Failed to retrieve sub events' });

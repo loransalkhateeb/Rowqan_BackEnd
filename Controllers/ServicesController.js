@@ -54,10 +54,13 @@ exports.getAllServices = async (req, res) => {
 
 exports.getServiceByStatus = async (req, res) => {
   try {
-    const { status_service,lang } = req.params; 
+    const { status_service, lang } = req.params;
 
-    if (!status_service) {
-      return res.status(400).json({ error: 'status_service is required' });
+
+    console.log(`Searching for services with status_service: ${status_service} and lang: ${lang}`);
+
+    if (!status_service || !lang) {
+      return res.status(400).json({ error: 'status_service and lang are required' });
     }
 
     const services = await Services.findAll({
@@ -66,16 +69,23 @@ exports.getServiceByStatus = async (req, res) => {
         status_service 
       }
     });
-    if (!services.length) {
-      return res.status(404).json({ error: 'No services found for this language and status' });
+
+ 
+    console.log('Found services:', services);
+
+    if (services.length === 0) {
+      return res.status(404).json({ error: `No services found for language: ${lang} and status: ${status_service}` });
     }
 
-    res.status(200).json( services );
+    res.status(200).json(services);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to retrieve services' });
   }
 };
+
+
+
 
 
 

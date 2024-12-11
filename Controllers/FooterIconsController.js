@@ -1,9 +1,10 @@
 
 const FooterIcons = require('../Models/FooterIcons');
+const Footer = require('../Models/FooterModel');
 
 exports.createFooterIcon = async (req, res) => {
     try {
-      const { footer_id } = req.body;
+      const { footer_id, link_to } = req.body;
       let icon = null;
   
     
@@ -11,13 +12,14 @@ exports.createFooterIcon = async (req, res) => {
         icon = req.file.filename;
       }
   
-      if (!footer_id || !icon) {
-        return res.status(400).json({ error: 'Footer ID and icon image are required' });
+      if (!footer_id || !icon || !link_to) {
+        return res.status(400).json({ error: 'Footer ID, link_to and icon image are required' });
       }
   
       const newIcon = await FooterIcons.create({
         footer_id,  
         icon: icon,
+        link_to
       });
   
       res.status(201).json({
@@ -70,7 +72,7 @@ exports.getFooterIconById = async (req, res) => {
 exports.updateFooterIcon = async (req, res) => {
     try {
       const { id } = req.params;
-      const { id_footer } = req.body;
+      const { id_footer,link_to } = req.body;
       const icon = req.file ? req.file.filename : null;
   
       const footerIcon = await FooterIcons.findByPk(id);
@@ -80,6 +82,7 @@ exports.updateFooterIcon = async (req, res) => {
       }
   
       footerIcon.id_footer = id_footer || footerIcon.id_footer;
+      footerIcon.link_to = link_to || footerIcon.link_to;
       footerIcon.icon = icon || footerIcon.icon;
   
       await footerIcon.save();

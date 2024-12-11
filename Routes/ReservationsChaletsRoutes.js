@@ -26,6 +26,6 @@ router.get('/reservationsByChaletId/:chalet_id/:lang', ReservationsChaletsContro
 
 
 
-router.get('/reservations/:chalet_id/:lang', ReservationsChaletsController.getReservationsByChaletId);
+// router.get('/reservations/:chalet_id/:lang', ReservationsChaletsController.getReservationsByChaletId);
 
 module.exports = router;
