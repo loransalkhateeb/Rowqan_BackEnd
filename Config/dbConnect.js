@@ -1,28 +1,25 @@
 const { Sequelize } = require('sequelize');
-require('dotenv').config();
+require('dotenv').config();  
 
 
 const sequelize = new Sequelize(
-  'u670406748_rowqan',  
-  'u670406748_rowqan',  
-  'Rowqan111',  
+  process.env.DB_NAME,      
+  process.env.DB_USER,     
+  process.env.DB_PASSWORD,  
   {
-    host: '193.203.184.65',  
-    dialect: 'mysql',  
-    logging: false,  
+    host: process.env.DB_HOST,   
+    dialect: 'mysql',           
+    logging: false,             
   }
 );
 
 
-
-
-
 const testConnection = async () => {
   try {
-    await sequelize.authenticate();
+    await sequelize.authenticate();  
     console.log('Connection has been established successfully.');
   } catch (error) {
-    console.error('Unable to connect to the database:', error);
+    console.error('Unable to connect to the database:', error.message); 
   }
 };
 

@@ -3,21 +3,29 @@ const jwt = require('jsonwebtoken');
 const User = require('../Models/UsersModel');
 const ReservationModel = require('../Models/ReservationsModel');
 const UserTypes = require('../Models/UsersTypes');
+require('dotenv').config();
 
+
+const bcrypt = require('bcrypt');
 
 exports.createUser = async (req, res) => {
   const { name, email, phone_number, country, password, lang, user_type_id } = req.body;
 
   try {
- 
+
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
         error: lang === 'en' ? 'Invalid language. Please use "ar" or "en".' : 'اللغة غير صالحة. استخدم "ar" أو "en".',
       });
     }
-    const hashedPassword = await bcrypt.hash(password, 10);
 
  
+
+    const hashedPassword = await bcrypt.hash(password, 10); 
+
+    
+    const finalUserType = user_type_id || 'User'; 
+
     const finalUserType = user_type_id || 2 ;
 
 
@@ -29,7 +37,11 @@ exports.createUser = async (req, res) => {
       country,
       password: hashedPassword, 
       lang,
+
+      user_type_id: finalUserType,
+
       user_type_id: finalUserType, 
+
     });
 
     res.status(201).json({
@@ -167,7 +179,6 @@ exports.deleteUser = async (req, res) => {
       });
     }
 
-
     await user.destroy();
 
     res.status(200).json({
@@ -182,18 +193,27 @@ exports.deleteUser = async (req, res) => {
 };
 
 
+const secretKey = process.env.SECRET_KEY;
+console.log("SECRET_KEY:", secretKey);  
+
 exports.login = async (req, res) => {
   const { email, password, lang } = req.body;
 
   try {
+
+
     // Validate the language input
+
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
-        error: 'Invalid language. Please use "ar" or "en".',
+        error: lang === 'en' ? 'Invalid language. Please use "ar" or "en".' : 'اللغة غير صالحة. استخدم "ar" أو "en".',
       });
     }
 
+
+
     // Check if the user exists
+
     const user = await User.findOne({ where: { email } });
     if (!user) {
       return res.status(404).json({
@@ -201,7 +221,10 @@ exports.login = async (req, res) => {
       });
     }
 
+
+
     // Verify the password
+
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       return res.status(401).json({
@@ -209,8 +232,24 @@ exports.login = async (req, res) => {
       });
     }
 
+
+  
+    if (!secretKey) {
+      console.error("SECRET_KEY is not defined in .env file.");
+      return res.status(500).json({
+        error: lang === 'en' ? 'Internal server error' : 'خطأ داخلي في الخادم',
+      });
+    }
+
+    const token = jwt.sign(
+      { id: user.id, user_type_id: user.user_type_id },
+      secretKey,
+      { expiresIn: '1h' }
+    );
+
     // Generate JWT token
     const token = jwt.sign({ id: user.id, user_type_id: user.user_type_id }, 'secret_key', { expiresIn: '1h' });
+
 
     // Set the cookie first before sending the response
     
@@ -240,6 +279,9 @@ exports.login = async (req, res) => {
     });
   }
 };
+
+
+
 
 
 exports.logout = (req, res) => {
