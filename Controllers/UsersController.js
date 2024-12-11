@@ -6,12 +6,13 @@ const UserTypes = require('../Models/UsersTypes');
 require('dotenv').config();
 
 
-const bcrypt = require('bcrypt');
+
 
 exports.createUser = async (req, res) => {
   const { name, email, phone_number, country, password, lang, user_type_id } = req.body;
 
   try {
+
 
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
@@ -19,11 +20,9 @@ exports.createUser = async (req, res) => {
       });
     }
 
- 
-    const hashedPassword = await bcrypt.hash(password, 10); 
-
-    
-    const finalUserType = user_type_id || 'User'; 
+  
+    const salt = bcrypt.genSaltSync(10); 
+    const hashedPassword = bcrypt.hashSync(password, salt); 
 
 
     const newUser = await User.create({
@@ -31,11 +30,12 @@ exports.createUser = async (req, res) => {
       email,
       phone_number,
       country,
-      password: hashedPassword, 
+      password: hashedPassword,  
       lang,
-      user_type_id: finalUserType,
+      user_type_id,
     });
 
+   
     res.status(201).json({
       message: lang === 'en' ? 'User created successfully' : 'تم إنشاء المستخدم بنجاح',
       user: newUser,
@@ -186,11 +186,10 @@ exports.deleteUser = async (req, res) => {
 
 
 const secretKey = process.env.SECRET_KEY;
-console.log("SECRET_KEY:", secretKey);  
+
 
 exports.login = async (req, res) => {
   const { email, password, lang } = req.body;
-
   try {
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
@@ -212,9 +211,10 @@ exports.login = async (req, res) => {
       });
     }
 
-  
+    const secretKey = process.env.JWT_SECRET;
+
     if (!secretKey) {
-      console.error("SECRET_KEY is not defined in .env file.");
+      console.error("JWT_SECRET is not defined in .env file.");
       return res.status(500).json({
         error: lang === 'en' ? 'Internal server error' : 'خطأ داخلي في الخادم',
       });
