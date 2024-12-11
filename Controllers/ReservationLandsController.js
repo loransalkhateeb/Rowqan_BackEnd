@@ -79,6 +79,41 @@ exports.getAllReservations = async (req, res) => {
   }
 };
 
+exports.getReservationByAvailable_land_id = async (req, res) => {
+  try {
+    const { available_land_id, lang } = req.params;
+
+    const reservation = await ReservationLandsModel.findAll({
+      where: { available_land_id, lang },
+      include: {
+        model: CategoriesLandsModel,
+        attributes: ['id', 'title'], 
+      },
+    });
+
+    if (!reservation) {
+      return res.status(404).json({
+        error: lang === 'en' 
+          ? 'Reservation not found' 
+          : 'الحجز غير موجود',
+      });
+    }
+
+    res.status(200).json({
+      message: lang === 'en' 
+        ? 'Reservation retrieved successfully' 
+        : 'تم استرجاع الحجز بنجاح',
+      reservation,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ 
+      error: lang === 'en' 
+        ? 'Failed to retrieve reservation' 
+        : 'فشل في استرجاع الحجز' 
+    });
+  }
+};
 
 exports.getReservationById = async (req, res) => {
   try {

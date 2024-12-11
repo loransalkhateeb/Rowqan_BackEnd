@@ -4,7 +4,7 @@ const Header = require('../Models/HeaderModel');
 
 exports.createHeader = async (req, res) => {
     try {
-      const { header_name, lang } = req.body;
+      const { header_name, url, lang } = req.body;
    
       if (!['ar', 'en'].includes(lang)) {
         return res.status(400).json({ error: 'Invalid language' });
@@ -12,6 +12,7 @@ exports.createHeader = async (req, res) => {
   
       const newheader = await Header.create({
         header_name,
+        url,
         lang,
       });
   
@@ -59,7 +60,7 @@ exports.getHeaderById = async (req, res) => {
 exports.updateHeader = async (req, res) => {
     try {
       const { id } = req.params;
-      const { header_name, lang } = req.body;
+      const { header_name, url, lang } = req.body;
   
       const header = await Header.findOne({
         where: { id }
@@ -71,6 +72,7 @@ exports.updateHeader = async (req, res) => {
   
    
       header.header_name = header_name || header.header_name;  
+      header.url = url || header.url;  
       header.lang = lang || header.lang; 
 
       await header.save();

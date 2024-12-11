@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const plansController = require('../Controllers/plansController');
+const plansController = require('../Controllers/PlansController');
 
 router.post('/createplan', plansController.createPlan); 
 router.get('/plans/:lang', plansController.getPlans); 
