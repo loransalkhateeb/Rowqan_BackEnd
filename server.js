@@ -3,11 +3,12 @@ const sequelize = require('./Config/dbConnect');
 const { handleError } = require('./MiddleWares/errorHandler');
 const helmet = require('helmet');
 
-
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const app = express();
+
+
 const UsersRoutes = require('./Routes/UsersRoutes')
 const LogoRoutes = require('./Routes/LogoRoutes')
 const HeaderRoutes = require('./Routes/HeaderRoutes')
@@ -83,6 +84,7 @@ app.use('/Wallet',WalletRoutes)
 app.use('/propschalets',PropsChaletsRoutes)
 
 
+app.use(helmet());
 
 
 

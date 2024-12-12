@@ -25,7 +25,10 @@
     "multer-storage-cloudinary": "^4.0.0",
     "mysql2": "^3.11.4",
     "nodemon": "^3.1.7",
-    "sequelize": "^6.37.5",
+    "sequelize": "^6.37.5"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
     "supertest": "^7.0.0"
   }
 }

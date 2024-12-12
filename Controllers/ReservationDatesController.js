@@ -1,24 +1,27 @@
-const  ReservationDates = require('../Models/ReservationDatesModel');
-const  Chalet  = require('../Models/ChaletsModel');
-const  RightTimeModel  = require('../Models/RightTimeModel'); 
+const { validateInput, ErrorResponse } = require("../Utils/validateInput");
+const ReservationDates = require('../Models/ReservationDatesModel');
+const Chalet = require('../Models/ChaletsModel');
+const RightTimeModel = require('../Models/RightTimeModel');
 const { Sequelize } = require('sequelize');
-
 
 exports.createReservationDate = async (req, res) => {
   try {
-    const {chalet_id, right_time_id } = req.body;
+    const { chalet_id, right_time_id } = req.body;
     
-    if ( !chalet_id || !right_time_id) {
-      return res.status(400).json({ error: 'chalet_id, and right_time_id are required' });
+   
+    const inputValidationError = validateInput({ chalet_id, right_time_id });
+    if (inputValidationError) {
+      return ErrorResponse(res, 400, inputValidationError);
     }
+
     const chalet = await Chalet.findByPk(chalet_id);
     if (!chalet) {
-      return res.status(404).json({ error: 'Chalet not found' });
+      return ErrorResponse(res, 404, 'Chalet not found');
     }
 
     const rightTime = await RightTimeModel.findByPk(right_time_id);
     if (!rightTime) {
-      return res.status(404).json({ error: 'RightTime not found' });
+      return ErrorResponse(res, 404, 'RightTime not found');
     }
 
     const newReservationDate = await ReservationDates.create({
@@ -27,26 +30,23 @@ exports.createReservationDate = async (req, res) => {
     });
 
     res.status(201).json({
-      message:  'Reservation Date created successfully' ,
+      message: 'Reservation Date created successfully',
       reservationDate: newReservationDate,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to create Reservation Date' });
+    return ErrorResponse(res, 500, 'Failed to create Reservation Date');
   }
 };
-
-
 
 exports.getReservationDatesByChaletId = async (req, res) => {
   try {
     const { chalet_id, lang } = req.params;
 
     if (!['en', 'ar'].includes(lang)) {
-      return res.status(400).json({ error: 'Invalid language' });
+      return ErrorResponse(res, 400, 'Invalid language');
     }
 
- 
     const chalet = await Chalet.findByPk(chalet_id, {
       include: [
         {
@@ -55,10 +55,10 @@ exports.getReservationDatesByChaletId = async (req, res) => {
           required: false,
           include: [
             {
-              model: RightTimeModel, 
-              where: { id: Sequelize.col('ReservationDates.right_time_id') }, 
+              model: RightTimeModel,
+              where: { id: Sequelize.col('ReservationDates.right_time_id') },
               required: false,
-              attributes: ['name', 'time'], 
+              attributes: ['name', 'time'],
             },
           ],
         },
@@ -66,35 +66,32 @@ exports.getReservationDatesByChaletId = async (req, res) => {
     });
 
     if (!chalet) {
-      return res.status(404).json({ error: 'Chalet not found' });
+      return ErrorResponse(res, 404, 'Chalet not found');
     }
 
- 
     res.status(200).json({
       message: 'Reservation Dates retrieved successfully',
       reservationDates: chalet.ReservationDates.map(reservation => ({
-        ...reservation.dataValues, 
-        rightTime: reservation.RightTime ? reservation.RightTime.dataValues : null, 
+        ...reservation.dataValues,
+        rightTime: reservation.RightTime ? reservation.RightTime.dataValues : null,
       })),
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to retrieve Reservation Dates' });
+    return ErrorResponse(res, 500, 'Failed to retrieve Reservation Dates');
   }
 };
-
 
 exports.getAllReservationsDates = async (req, res) => {
   const { lang } = req.params;
   try {
     if (!['ar', 'en'].includes(lang)) {
-      return res.status(400).json({
-        error: lang === 'en' ? 'Invalid language' : 'اللغة غير صالحة',
-      });
+      return ErrorResponse(res, 400, lang === 'en' ? 'Invalid language' : 'اللغة غير صالحة');
     }
+
     const reservationDates = await ReservationDates.findAll({
       where: { lang },
-      include:[
+      include: [
         {
           model: Chalet,
           attributes: ['id', 'title'],
@@ -103,34 +100,28 @@ exports.getAllReservationsDates = async (req, res) => {
           model: RightTimeModel,
           attributes: ['time', 'name'],
         },
-      ]
+      ],
     });
-   
+
     if (!reservationDates.length) {
-      return res.status(404).json({
-        error: lang === 'en' ? 'No reservation dates found' : 'لم يتم العثور على تواريخ الحجز',
-      });
+      return ErrorResponse(res, 404, lang === 'en' ? 'No reservation dates found' : 'لم يتم العثور على تواريخ الحجز');
     }
+
     res.status(200).json({
       message: lang === 'en' ? 'Reservation Dates retrieved successfully' : 'تم جلب تواريخ الحجز بنجاح',
       reservationDates,
     });
   } catch (error) {
     console.error('Error fetching reservation dates:', error);
-    res.status(500).json({
-      error: lang === 'en' ? 'Failed to retrieve Reservation Dates' : 'فشل في جلب تواريخ الحجز',
-    });
+    return ErrorResponse(res, 500, lang === 'en' ? 'Failed to retrieve Reservation Dates' : 'فشل في جلب تواريخ الحجز');
   }
 };
 
-
-
-
 exports.getReservationDateById = async (req, res) => {
   try {
-    const { id,lang } = req.params;
+    const { id, lang } = req.params;
     if (!['en', 'ar'].includes(lang)) {
-      return res.status(400).json({ error: 'Invalid language' });
+      return ErrorResponse(res, 400, 'Invalid language');
     }
 
     const reservationDate = await ReservationDates.findOne({
@@ -148,7 +139,7 @@ exports.getReservationDateById = async (req, res) => {
     });
 
     if (!reservationDate) {
-      return res.status(404).json({ error: 'Reservation Date not found for the specified language' });
+      return ErrorResponse(res, 404, 'Reservation Date not found for the specified language');
     }
 
     res.status(200).json({
@@ -157,37 +148,34 @@ exports.getReservationDateById = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to retrieve Reservation Date' });
+    return ErrorResponse(res, 500, 'Failed to retrieve Reservation Date');
   }
 };
-
 
 exports.updateReservationDate = async (req, res) => {
   try {
     const { id } = req.params;
     const { date, lang, chalet_id, right_time_id } = req.body;
 
-    if (!date || !lang || !chalet_id || !right_time_id) {
-      return res.status(400).json({ error: 'Date, language, chalet_id, and right_time_id are required' });
+  
+    const inputValidationError = validateInput({ date, lang, chalet_id, right_time_id });
+    if (inputValidationError) {
+      return ErrorResponse(res, 400, inputValidationError);
     }
 
-    if (!['en', 'ar'].includes(lang)) {
-      return res.status(400).json({ error: 'Invalid language' });
-    }
-
-    const reservationDate = await ReservationDates.findOne({ where: { id} });
+    const reservationDate = await ReservationDates.findOne({ where: { id } });
     if (!reservationDate) {
-      return res.status(404).json({ error: 'Reservation Date not found for the specified language' });
+      return ErrorResponse(res, 404, 'Reservation Date not found for the specified language');
     }
 
     const chalet = await Chalet.findByPk(chalet_id);
     if (!chalet) {
-      return res.status(404).json({ error: 'Chalet not found' });
+      return ErrorResponse(res, 404, 'Chalet not found');
     }
 
     const rightTime = await RightTimeModel.findByPk(right_time_id);
     if (!rightTime) {
-      return res.status(404).json({ error: 'RightTime not found' });
+      return ErrorResponse(res, 404, 'RightTime not found');
     }
 
     reservationDate.date = date;
@@ -203,21 +191,21 @@ exports.updateReservationDate = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to update Reservation Date' });
+    return ErrorResponse(res, 500, 'Failed to update Reservation Date');
   }
 };
 
 exports.deleteReservationDate = async (req, res) => {
   try {
-    const { id,lang } = req.params;
+    const { id, lang } = req.params;
 
     if (!['en', 'ar'].includes(lang)) {
-      return res.status(400).json({ error: 'Invalid language' });
+      return ErrorResponse(res, 400, 'Invalid language');
     }
 
     const reservationDate = await ReservationDates.findOne({ where: { id, lang } });
     if (!reservationDate) {
-      return res.status(404).json({ error: 'Reservation Date not found for the specified language' });
+      return ErrorResponse(res, 404, 'Reservation Date not found for the specified language');
     }
 
     await reservationDate.destroy();
@@ -227,6 +215,6 @@ exports.deleteReservationDate = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to delete Reservation Date' });
+    return ErrorResponse(res, 500, 'Failed to delete Reservation Date');
   }
 };

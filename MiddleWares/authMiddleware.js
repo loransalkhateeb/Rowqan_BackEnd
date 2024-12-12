@@ -12,3 +12,14 @@ module.exports = (req, res, next) => {
     res.status(403).json({ error: 'Invalid token' });
   }
 };
+
+
+const authorizeAdmin = (req, res, next) => {
+  if (req.user.user_type_id !== 1) { 
+    return res.status(403).json({
+      error: req.body.lang === 'en' ? 'You are not authorized to delete users' : 'أنت غير مخول لحذف المستخدمين',
+    });
+  }
+
+  next();
+};

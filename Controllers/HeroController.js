@@ -1,25 +1,34 @@
-const Hero = require('../Models/HeroModel');  
+const Hero = require('../Models/HeroModel');
+const { validateInput } = require('../Utils/validateInput');
+const { ErrorResponse } = require('../MiddleWares/errorHandler');
 
-
-
-exports.createHero = async (req, res) => {
+exports.createHero = async (req, res, next) => {
     try {
       const { title, description, title_btn, lang } = req.body;
 
-      if (!title || !lang) {
-        return res.status(400).json({ error: 'Title and language are required' });
+     
+      const { error } = validateInput({ status: title, lang });
+      if (error) {
+        return next(new ErrorResponse(error.details[0].message, 400));
       }
-      
+
       if (!req.file) {
-        return res.status(400).json({ error: 'Image is required' });
+        return next(new ErrorResponse('Image is required', 400));
       }
-      
-      const image = req.file.filename;
   
+      const image = req.file.filename;
+
+
+      if (req.user.user_type_id !== 1) {
+        return next(new ErrorResponse(
+          lang === 'en' ? 'You are not authorized to update users' : 'أنت غير مخول لتحديث المستخدمين',
+          403
+        ));
+      }
 
       const existingHero = await Hero.findOne({ where: { title, lang } });
       if (existingHero) {
-        return res.status(400).json({ error: 'Hero with the same title and language already exists' });
+        return next(new ErrorResponse('Hero with the same title and language already exists', 400));
       }
 
       const newHero = await Hero.create({
@@ -36,18 +45,18 @@ exports.createHero = async (req, res) => {
       });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: 'Failed to create hero' });
+      return next(new ErrorResponse('Failed to create hero', 500));
     }
-  };
-  
+};
 
-exports.getAllHeroesByLang = async (req, res) => {
+exports.getAllHeroesByLang = async (req, res, next) => {
   try {
     const { lang } = req.params;
 
-
-    if (!['ar', 'en'].includes(lang)) {
-      return res.status(400).json({ error: 'Invalid language' });
+   
+    const { error } = validateInput({ lang });
+    if (error) {
+      return next(new ErrorResponse(error.details[0].message, 400));
     }
 
     const heroes = await Hero.findAll({
@@ -55,24 +64,24 @@ exports.getAllHeroesByLang = async (req, res) => {
     });
 
     if (heroes.length === 0) {
-      return res.status(404).json({ error: 'No heroes found for this language' });
+      return next(new ErrorResponse('No heroes found for this language', 404));
     }
 
-    res.status(200).json( heroes );
+    res.status(200).json(heroes);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to retrieve heroes' });
+    return next(new ErrorResponse('Failed to retrieve heroes', 500));
   }
 };
 
-
-exports.getHeroById = async (req, res) => {
+exports.getHeroById = async (req, res, next) => {
   try {
     const { id, lang } = req.params;
 
-
-    if (!['ar', 'en'].includes(lang)) {
-      return res.status(400).json({ error: 'Invalid language' });
+    
+    const { error } = validateInput({ status: id, lang });
+    if (error) {
+      return next(new ErrorResponse(error.details[0].message, 400));
     }
 
     const hero = await Hero.findOne({
@@ -80,60 +89,59 @@ exports.getHeroById = async (req, res) => {
     });
 
     if (!hero) {
-      return res.status(404).json({ error: 'Hero not found' });
+      return next(new ErrorResponse('Hero not found', 404));
     }
 
     res.status(200).json({ hero });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to retrieve hero' });
+    return next(new ErrorResponse('Failed to retrieve hero', 500));
   }
 };
 
-exports.updateHero = async (req, res) => {
-    try {
-      const { id } = req.params;  
-      const { title, description, title_btn, lang: newLang } = req.body;  
-  
- 
-      const hero = await Hero.findOne({ where: { id} });
-  
-      if (!hero) {
-        return res.status(404).json({ error: 'Hero not found' });
-      }
+exports.updateHero = async (req, res, next) => {
+  try {
+    const { id } = req.params;  
+    const { title, description, title_btn, lang: newLang } = req.body;
 
-      hero.title = title || hero.title;
-      hero.description = description || hero.description;
-      hero.title_btn = title_btn || hero.title_btn;
-      hero.lang = newLang;  
-  
-  
-      if (req.file) {
-        hero.image = req.file.filename;  
-      }
-  
-      console.log('After Update:', hero);
-    
-      await hero.save();
-  
- 
-      res.status(200).json({ message: 'Hero updated successfully', hero });
-    } catch (error) {
-      console.error('Error updating hero:', error);
-      res.status(500).json({ error: 'Failed to update hero' });
+        const { error } = validateInput({ status: title, lang: newLang });
+    if (error) {
+      return next(new ErrorResponse(error.details[0].message, 400));
     }
-  };
-  
-  
 
+    const hero = await Hero.findOne({ where: { id} });
 
-exports.deleteHero = async (req, res) => {
+    if (!hero) {
+      return next(new ErrorResponse('Hero not found', 404));
+    }
+
+    hero.title = title || hero.title;
+    hero.description = description || hero.description;
+    hero.title_btn = title_btn || hero.title_btn;
+    hero.lang = newLang;  
+
+    if (req.file) {
+      hero.image = req.file.filename;  
+    }
+
+    console.log('After Update:', hero);
+    await hero.save();
+
+    res.status(200).json({ message: 'Hero updated successfully', hero });
+  } catch (error) {
+    console.error('Error updating hero:', error);
+    return next(new ErrorResponse('Failed to update hero', 500));
+  }
+};
+
+exports.deleteHero = async (req, res, next) => {
   try {
     const { id, lang } = req.params;
 
-
-    if (!['ar', 'en'].includes(lang)) {
-      return res.status(400).json({ error: 'Invalid language' });
+    
+    const { error } = validateInput({ status: id, lang });
+    if (error) {
+      return next(new ErrorResponse(error.details[0].message, 400));
     }
 
     const hero = await Hero.findOne({
@@ -141,15 +149,13 @@ exports.deleteHero = async (req, res) => {
     });
 
     if (!hero) {
-      return res.status(404).json({ error: 'Hero not found' });
+      return next(new ErrorResponse('Hero not found', 404));
     }
 
-
     await hero.destroy();
-
     res.status(200).json({ message: 'Hero deleted successfully' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to delete hero' });
+    return next(new ErrorResponse('Failed to delete hero', 500));
   }
 };
