@@ -1,15 +1,18 @@
+const { validateInput, ErrorResponse } = require('../Utils/validateInput');
 const Types_Events = require('../Models/TypesEventsModel');
 
 exports.createEventType = async (req, res) => {
   try {
     const { event_type, lang } = req.body;
 
-    if (!event_type || !lang) {
-      return res.status(400).json({ error: 'Event type and language are required' });
+    // Validate input
+    const validationErrors = validateInput({ event_type, lang });
+    if (validationErrors) {
+      return res.status(400).json(validationErrors);
     }
 
     if (!['ar', 'en'].includes(lang)) {
-      return res.status(400).json({ error: 'Invalid language. Supported languages are "ar" and "en".' });
+      return res.status(400).json(new ErrorResponse('Invalid language. Supported languages are "ar" and "en".'));
     }
 
     const newEventType = await Types_Events.create({
@@ -23,7 +26,7 @@ exports.createEventType = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to create event type' });
+    res.status(500).json(new ErrorResponse('Failed to create event type'));
   }
 };
 
@@ -32,7 +35,7 @@ exports.getAllEventTypes = async (req, res) => {
     const { lang } = req.query;
 
     if (lang && !['ar', 'en'].includes(lang)) {
-      return res.status(400).json({ error: 'Invalid language' });
+      return res.status(400).json(new ErrorResponse('Invalid language'));
     }
 
     const whereClause = lang ? { lang } : {};
@@ -41,13 +44,13 @@ exports.getAllEventTypes = async (req, res) => {
     });
 
     if (!eventTypes.length) {
-      return res.status(404).json({ error: 'No event types found' });
+      return res.status(404).json(new ErrorResponse('No event types found'));
     }
 
-    res.status(200).json( eventTypes );
+    res.status(200).json(eventTypes);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch event types' });
+    res.status(500).json(new ErrorResponse('Failed to fetch event types'));
   }
 };
 
@@ -59,7 +62,7 @@ exports.getEventTypeById = async (req, res) => {
     const whereClause = { id };
     if (lang) {
       if (!['ar', 'en'].includes(lang)) {
-        return res.status(400).json({ error: 'Invalid language' });
+        return res.status(400).json(new ErrorResponse('Invalid language'));
       }
       whereClause.lang = lang;
     }
@@ -69,13 +72,13 @@ exports.getEventTypeById = async (req, res) => {
     });
 
     if (!eventType) {
-      return res.status(404).json({ error: `Event type with id ${id} and language ${lang || 'not provided'} not found` });
+      return res.status(404).json(new ErrorResponse(`Event type with id ${id} and language ${lang || 'not provided'} not found`));
     }
 
     res.status(200).json({ eventType });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch event type' });
+    res.status(500).json(new ErrorResponse('Failed to fetch event type'));
   }
 };
 
@@ -87,11 +90,11 @@ exports.updateEventType = async (req, res) => {
     const eventType = await Types_Events.findByPk(id);
 
     if (!eventType) {
-      return res.status(404).json({ error: `Event type with id ${id} not found` });
+      return res.status(404).json(new ErrorResponse(`Event type with id ${id} not found`));
     }
 
     if (lang && !['ar', 'en'].includes(lang)) {
-      return res.status(400).json({ error: 'Invalid language' });
+      return res.status(400).json(new ErrorResponse('Invalid language'));
     }
 
     eventType.event_type = event_type || eventType.event_type;
@@ -102,7 +105,7 @@ exports.updateEventType = async (req, res) => {
     res.status(200).json({ message: 'Event type updated successfully', eventType });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to update event type' });
+    res.status(500).json(new ErrorResponse('Failed to update event type'));
   }
 };
 
@@ -114,7 +117,7 @@ exports.deleteEventType = async (req, res) => {
     const whereClause = { id };
     if (lang) {
       if (!['ar', 'en'].includes(lang)) {
-        return res.status(400).json({ error: 'Invalid language' });
+        return res.status(400).json(new ErrorResponse('Invalid language'));
       }
       whereClause.lang = lang;
     }
@@ -124,7 +127,7 @@ exports.deleteEventType = async (req, res) => {
     });
 
     if (!eventType) {
-      return res.status(404).json({ error: `Event type with id ${id} and language ${lang || 'not provided'} not found` });
+      return res.status(404).json(new ErrorResponse(`Event type with id ${id} and language ${lang || 'not provided'} not found`));
     }
 
     await eventType.destroy();
@@ -132,6 +135,6 @@ exports.deleteEventType = async (req, res) => {
     res.status(200).json({ message: 'Event type deleted successfully' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to delete event type' });
+    res.status(500).json(new ErrorResponse('Failed to delete event type'));
   }
 };

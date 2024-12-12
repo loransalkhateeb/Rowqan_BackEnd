@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const plansController = require('../Controllers/plansController');
-
+const authMiddleware = require('../MiddleWares/authMiddleware');  
+const rateLimiter = require('../MiddleWares/rateLimiter');
 router.post('/createplan', authMiddleware, rateLimiter, plansController.createPlan); 
 
 router.get('/plans/:lang', authMiddleware, plansController.getPlans);

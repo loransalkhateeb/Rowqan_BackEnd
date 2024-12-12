@@ -7,15 +7,19 @@ const validateEmail = (email) => {
   };
   
   const validatePassword = (password) => {
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-    return passwordRegex.test(password);
+    const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/; 
+    return regex.test(password);
   };
+  
   
   const validateUsername = (username) => {
     return username && username.length >= 3 && username.length <= 30;
   };
   
-  const validateUserInput = (username, email, password) => {
+  const ErrorResponse = (message) => {
+    return { error: message };
+  };
+  const validateUserInput = (username, email, password, RepeatPassword) => {
     const errors = [];
   
     if (!validateUsername(username)) {
@@ -30,8 +34,13 @@ const validateEmail = (email) => {
       errors.push('Password must be at least 8 characters long and contain both letters and numbers.');
     }
   
+    if (password !== RepeatPassword) {
+      errors.push('Passwords do not match.');
+    }
+  
     return errors;
   };
+  
   
   const validateAdminInput = (name, email, phone_number, country, password, RepeatPassword, user_type_id) => {
     const errors = [];
@@ -106,6 +115,7 @@ const validateEmail = (email) => {
     validateEmail,
     validateUserInput,
     validateAdminInput,
-    validateInput
+    validateInput,
+    ErrorResponse
   };
   
