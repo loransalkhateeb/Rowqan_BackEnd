@@ -5,7 +5,7 @@ const { validateInput, ErrorResponse } = require('../Utils/validateInput');
 
 exports.createReservationEvent = async (req, res) => {
   try {
-    const { date, start_time, end_time, lang, available_event_id } = req.body;
+    const { date, start_time, end_time, lang, available_event_id,user_id } = req.body;
 
    
     const validationErrors = validateInput({ date, start_time, end_time, lang, available_event_id });
@@ -21,6 +21,7 @@ exports.createReservationEvent = async (req, res) => {
     const existingReservation = await Reservation_Events.findOne({
       where: {
         date: date,
+        user_id: user_id,
         available_event_id: available_event_id,
         [Op.or]: [
           {
@@ -41,6 +42,7 @@ exports.createReservationEvent = async (req, res) => {
       end_time,
       lang,
       available_event_id,
+      user_id
     });
 
     res.status(201).json({
@@ -55,9 +57,10 @@ exports.createReservationEvent = async (req, res) => {
 
 exports.updateReservationEvent = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params;  
     const { date, start_time, end_time, lang, available_event_id } = req.body;
 
+   
     const reservation = await Reservation_Events.findByPk(id);
     if (!reservation) {
       return ErrorResponse(res, 404, lang === 'en' ? 'Reservation not found' : 'لم يتم العثور على الحجز');
@@ -73,6 +76,7 @@ exports.updateReservationEvent = async (req, res) => {
     reservation.end_time = end_time;
     reservation.lang = lang;
     reservation.available_event_id = available_event_id;
+    reservation.user_id = user_id;
 
     await reservation.save();
 
@@ -157,6 +161,7 @@ exports.getAllReservationEventsByAvailableId = async (req, res) => {
     ErrorResponse(res, 500, 'Failed to retrieve reservations');
   }
 };
+
 
 exports.getReservationEventById = async (req, res) => {
   try {

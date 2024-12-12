@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../Config/dbConnect");
-
+const User=require('../Models/UsersModel')
 const Wallet = sequelize.define(
   "Wallet",
   {
@@ -13,7 +13,7 @@ const Wallet = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "Users", 
+        model: "User", 
         key: "id",
       },
     },
@@ -48,10 +48,15 @@ const Wallet = sequelize.define(
 );
 
 
+
+User.hasMany(Wallet, { foreignKey: 'user_id' });
+Wallet.belongsTo(User, { foreignKey: 'user_id' });
+
+
 Wallet.associate = (models) => {
   Wallet.belongsTo(models.UsersModel, {
     foreignKey: "user_id",
-    as: "user",
+    as: "User",  // Alias for the User model
   });
 };
 

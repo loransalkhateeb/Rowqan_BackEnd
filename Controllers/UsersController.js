@@ -6,6 +6,10 @@ const UserTypes = require('../Models/UsersTypes');
 const { validateUserInput, validateAdminInput } = require('../Utils/validateInput');
 require('dotenv').config();
 
+
+
+
+
 exports.createUser = async (req, res) => {
   const { name, email, phone_number, country, password, lang, user_type_id, RepeatPassword } = req.body;
 
@@ -21,9 +25,34 @@ exports.createUser = async (req, res) => {
       });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+<<<<<<< HEAD
+     const salt = bcrypt.genSaltSync(10);
+     const hashedPassword = bcrypt.hashSync(password, salt);
+=======
+ 
 
-    const finalUserType = user_type_id || 2;
+    const hashedPassword = await bcrypt.hash(password, 10); 
+>>>>>>> c43ec745ed66443187e9d42dcc9cf9f89126c158
+
+     const newUser = await User.create({
+        name,
+        email,
+        phone_number,
+        country,
+        password: hashedPassword,
+        lang,
+        user_type_id,
+     });
+
+<<<<<<< HEAD
+     res.status(201).json({
+        message: lang === 'en' ? 'User created successfully' : 'تم إنشاء المستخدم بنجاح',
+        user: newUser,
+     });
+=======
+    const finalUserType = user_type_id || 2 ;
+
+
 
     const newUser = await User.create({
       name,
@@ -39,6 +68,7 @@ exports.createUser = async (req, res) => {
       message: lang === 'en' ? 'User created successfully' : 'تم إنشاء المستخدم بنجاح',
       user: newUser,
     });
+>>>>>>> c43ec745ed66443187e9d42dcc9cf9f89126c158
   } catch (error) {
     console.error('Error creating user:', error);
     res.status(500).json({
@@ -210,7 +240,6 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
-
 exports.login = async (req, res) => {
   const { email, password, lang } = req.body;
   try {
@@ -234,7 +263,13 @@ exports.login = async (req, res) => {
       });
     }
 
+<<<<<<< HEAD
     const secretKey = process.env.JWT_SECRET;
+
+=======
+
+  
+>>>>>>> c43ec745ed66443187e9d42dcc9cf9f89126c158
     if (!secretKey) {
       console.error("JWT_SECRET is not defined in .env file.");
       return res.status(500).json({
@@ -244,6 +279,20 @@ exports.login = async (req, res) => {
 
     const token = jwt.sign({ id: user.id, user_type_id: user.user_type_id }, secretKey, { expiresIn: '1h' });
 
+    // Generate JWT token
+    const token = jwt.sign({ id: user.id, user_type_id: user.user_type_id }, 'secret_key', { expiresIn: '1h' });
+
+
+    // Set the cookie first before sending the response
+    
+    // For Production
+    // res.cookie("token", token, {
+    //   httpOnly: true,
+    //   secure: true,
+    //   maxAge: 24 * 60 * 60 * 1000,
+    //   sameSite: "Strict",
+    // });
+// For Development
     res.cookie('token', token, {
       httpOnly: true,
       maxAge: 3600000,
@@ -264,8 +313,24 @@ exports.login = async (req, res) => {
 
 exports.logout = (req, res) => {
   try {
-    res.clearCookie('token', { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+<<<<<<< HEAD
+    res.clearCookie('token', { httpOnly: true });
     res.status(200).json({
+=======
+    // Ensure the token cookie is cleared both server-side and client-side
+
+    res.clearCookie('token', { 
+      httpOnly: true,  
+      secure: false,   // Make sure it's false in development or adjust for production
+    }); 
+    // res.clearCookie('token', { 
+    //   httpOnly: true,  
+    //   secure: true,   // Make sure it's false in development or adjust for production
+    //   sameSite: 'Strict'
+    // }); 
+
+    return res.status(200).json({
+>>>>>>> c43ec745ed66443187e9d42dcc9cf9f89126c158
       message: 'Logged out successfully',
     });
   } catch (error) {
@@ -302,6 +367,9 @@ exports.createAdmin = async (req, res) => {
     console.error('Error creating admin:', error);
     res.status(500).json({ error: 'Failed to create admin' });
   }
+<<<<<<< HEAD
+};
+=======
 };
 
 exports.verifyToken = (req, res, next) => {
@@ -311,7 +379,7 @@ exports.verifyToken = (req, res, next) => {
     return res.status(403).json({ error: 'Token missing' });
   }
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+  jwt.verify(token, 'secret_key', (err, decoded) => {
     if (err) {
       return res.status(403).json({ error: 'Invalid token' });
     }
@@ -326,3 +394,8 @@ exports.verifyToken = (req, res, next) => {
     next();
   });
 };
+
+
+
+
+>>>>>>> c43ec745ed66443187e9d42dcc9cf9f89126c158

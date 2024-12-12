@@ -53,10 +53,9 @@ exports.getWalletByUserId = async (req, res) => {
   try {
     const { user_id, lang } = req.params;
 
- 
     const wallet = await Wallet.findOne({
       where: { user_id },
-      include: [{ model: User, as: "user" }],
+      include: [{ model: User, as: "User" }],
     });
 
     if (!wallet) {
@@ -67,11 +66,12 @@ exports.getWalletByUserId = async (req, res) => {
       });
     }
 
+    // Wrap the wallet object in an array
     res.status(200).json({
       message: lang === "en" 
         ? "Wallet retrieved successfully." 
         : "تم استرجاع المحفظة بنجاح.",
-      wallet,
+      wallet: [wallet],  // Return wallet as an array
     });
   } catch (error) {
     console.error("Error retrieving wallet:", error);
@@ -82,6 +82,7 @@ exports.getWalletByUserId = async (req, res) => {
     });
   }
 };
+
 
 exports.updateWallet = async (req, res) => {
   try {
