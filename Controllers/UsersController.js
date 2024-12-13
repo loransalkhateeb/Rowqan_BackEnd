@@ -3,12 +3,21 @@ const jwt = require('jsonwebtoken');
 const User = require('../Models/UsersModel');
 const ReservationModel = require('../Models/ReservationsModel');
 const UserTypes = require('../Models/UsersTypes');
+const { validateUserInput, validateAdminInput } = require('../Utils/validateInput');
+require('dotenv').config();
+
+
+
 
 
 exports.createUser = async (req, res) => {
-  const { name, email, phone_number, country, password, lang, user_type_id } = req.body;
+  const { name, email, phone_number, country, password, lang, user_type_id, RepeatPassword } = req.body;
 
   try {
+    const validationErrors = validateUserInput(name, email, password, RepeatPassword);
+    if (validationErrors.length > 0) {
+      return res.status(400).json({ errors: validationErrors });
+    }
 
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
@@ -16,21 +25,50 @@ exports.createUser = async (req, res) => {
       });
     }
 
+<<<<<<< HEAD
+     const salt = bcrypt.genSaltSync(10);
+     const hashedPassword = bcrypt.hashSync(password, salt);
+=======
+ 
+
+    const hashedPassword = await bcrypt.hash(password, 10); 
+>>>>>>> c43ec745ed66443187e9d42dcc9cf9f89126c158
+
+     const newUser = await User.create({
+        name,
+        email,
+        phone_number,
+        country,
+        password: hashedPassword,
+        lang,
+        user_type_id,
+     });
+
+<<<<<<< HEAD
+     res.status(201).json({
+        message: lang === 'en' ? 'User created successfully' : 'تم إنشاء المستخدم بنجاح',
+        user: newUser,
+     });
+=======
+    const finalUserType = user_type_id || 2 ;
+
+
 
     const newUser = await User.create({
       name,
       email,
       phone_number,
       country,
-      password,
+      password: hashedPassword,
       lang,
-      user_type_id,
+      user_type_id: finalUserType,
     });
 
     res.status(201).json({
       message: lang === 'en' ? 'User created successfully' : 'تم إنشاء المستخدم بنجاح',
       user: newUser,
     });
+>>>>>>> c43ec745ed66443187e9d42dcc9cf9f89126c158
   } catch (error) {
     console.error('Error creating user:', error);
     res.status(500).json({
@@ -45,9 +83,10 @@ exports.getAllUsers = async (req, res) => {
   try {
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
-        error: 'Invalid language. Please use "ar" or "en".',
+        error: lang === 'en' ? 'Invalid language. Please use "ar" or "en".' : 'اللغة غير صالحة. استخدم "ar" أو "en".',
       });
     }
+
     const users = await User.findAll({
       where: { lang },
       include: [
@@ -70,16 +109,16 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
-
 exports.getUserById = async (req, res) => {
   const { id, lang } = req.params;
 
   try {
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
-        error: 'Invalid language. Please use "ar" or "en".',
+        error: lang === 'en' ? 'Invalid language. Please use "ar" or "en".' : 'اللغة غير صالحة. استخدم "ar" أو "en".',
       });
     }
+
     const user = await User.findOne({
       where: { id, lang },
       include: [
@@ -112,13 +151,30 @@ exports.getUserById = async (req, res) => {
   }
 };
 
-
 exports.updateUser = async (req, res) => {
   const { id } = req.params;
-  const { name, email, phone_number, country, password, lang, user_type_id } = req.body;
+  const { name, email, phone_number, country, password, lang, user_type_id, RepeatPassword } = req.body;
 
   try {
- 
+    if (!req.user) {
+      return res.status(401).json({
+        error: lang === 'en' ? 'Unauthorized' : 'غير مصرح',
+      });
+    }
+
+
+    if (req.user.user_type_id !== 1) {
+      return res.status(403).json({
+        error: lang === 'en' ? 'You are not authorized to update users' : 'أنت غير مخول لتحديث المستخدمين',
+      });
+    }
+
+
+    const validationErrors = validateUserInput(name, email, password, RepeatPassword);
+    if (validationErrors.length > 0) {
+      return res.status(400).json({ errors: validationErrors });
+    }
+
     const user = await User.findByPk(id);
     if (!user) {
       return res.status(404).json({
@@ -126,13 +182,15 @@ exports.updateUser = async (req, res) => {
       });
     }
 
- 
+
+    const hashedPassword = password ? await bcrypt.hash(password, 10) : user.password;
+
     await user.update({
       name,
       email,
       phone_number,
       country,
-      password,
+      password: hashedPassword,
       lang,
       user_type_id,
     });
@@ -152,17 +210,23 @@ exports.updateUser = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
   const { id, lang } = req.params;
+
   try {
-    const user = await User.findOne({
-      where: { id, lang },
-    });
+   
+    const user = await User.findOne({ where: { id, lang } });
     if (!user) {
       return res.status(404).json({
         error: lang === 'en' ? 'User not found' : 'المستخدم غير موجود',
       });
     }
 
-
+    if (req.user.user_type_id !== 1) {
+      return res.status(403).json({
+        error: lang === 'en' ? 'You are not authorized to delete users' : 'أنت غير مخول لحذف المستخدمين',
+      });
+    }
+    
+  
     await user.destroy();
 
     res.status(200).json({
@@ -176,26 +240,21 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
-
 exports.login = async (req, res) => {
   const { email, password, lang } = req.body;
-
   try {
-  
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
-        error: 'Invalid language. Please use "ar" or "en".',
+        error: lang === 'en' ? 'Invalid language. Please use "ar" or "en".' : 'اللغة غير صالحة. استخدم "ar" أو "en".',
       });
     }
 
- 
     const user = await User.findOne({ where: { email } });
     if (!user) {
       return res.status(404).json({
         error: lang === 'en' ? 'User not found' : 'المستخدم غير موجود',
       });
     }
-
 
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
@@ -204,10 +263,43 @@ exports.login = async (req, res) => {
       });
     }
 
+<<<<<<< HEAD
+    const secretKey = process.env.JWT_SECRET;
+
+=======
+
   
+>>>>>>> c43ec745ed66443187e9d42dcc9cf9f89126c158
+    if (!secretKey) {
+      console.error("JWT_SECRET is not defined in .env file.");
+      return res.status(500).json({
+        error: lang === 'en' ? 'Internal server error' : 'خطأ داخلي في الخادم',
+      });
+    }
+
+    const token = jwt.sign({ id: user.id, user_type_id: user.user_type_id }, secretKey, { expiresIn: '1h' });
+
+    // Generate JWT token
     const token = jwt.sign({ id: user.id, user_type_id: user.user_type_id }, 'secret_key', { expiresIn: '1h' });
 
-    res.status(200).json({
+
+    // Set the cookie first before sending the response
+    
+    // For Production
+    // res.cookie("token", token, {
+    //   httpOnly: true,
+    //   secure: true,
+    //   maxAge: 24 * 60 * 60 * 1000,
+    //   sameSite: "Strict",
+    // });
+// For Development
+    res.cookie('token', token, {
+      httpOnly: true,
+      maxAge: 3600000,
+      secure: process.env.NODE_ENV === 'production',
+    });
+
+    return res.status(200).json({
       message: lang === 'en' ? 'Login successful' : 'تم تسجيل الدخول بنجاح',
       token,
     });
@@ -219,11 +311,26 @@ exports.login = async (req, res) => {
   }
 };
 
-
 exports.logout = (req, res) => {
   try {
-    res.clearCookie('token', { httpOnly: true }); 
+<<<<<<< HEAD
+    res.clearCookie('token', { httpOnly: true });
     res.status(200).json({
+=======
+    // Ensure the token cookie is cleared both server-side and client-side
+
+    res.clearCookie('token', { 
+      httpOnly: true,  
+      secure: false,   // Make sure it's false in development or adjust for production
+    }); 
+    // res.clearCookie('token', { 
+    //   httpOnly: true,  
+    //   secure: true,   // Make sure it's false in development or adjust for production
+    //   sameSite: 'Strict'
+    // }); 
+
+    return res.status(200).json({
+>>>>>>> c43ec745ed66443187e9d42dcc9cf9f89126c158
       message: 'Logged out successfully',
     });
   } catch (error) {
@@ -234,44 +341,61 @@ exports.logout = (req, res) => {
   }
 };
 
-
 exports.createAdmin = async (req, res) => {
-  const { name, email, phone_number, country, password, RepeatPassword, role_user, lang } = req.body;
+  const { name, email, password, RepeatPassword } = req.body;
 
   try {
-    if (password !== RepeatPassword) {
-      return res.status(400).json({
-        error: lang === 'en' ? 'Password and Repeat Password do not match' : 'كلمة المرور وتكرار كلمة المرور غير متطابقتين',
-      });
+    const validationErrors = validateAdminInput(name, email, password, RepeatPassword);
+    if (validationErrors.length > 0) {
+      return res.status(400).json({ errors: validationErrors });
     }
 
-    if (role_user !== 'admin') {
-      return res.status(400).json({
-        error: lang === 'en' ? 'Role must be admin to create an admin user' : 'يجب أن يكون الدور "admin" لإنشاء مستخدم أدمن',
-      });
-    }
-
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const newAdmin = await User.create({
       name,
       email,
-      phone_number,
-      country,
       password: hashedPassword,
-      role_user,
-      lang,
+      role_user: 'admin',
     });
 
     res.status(201).json({
-      message: lang === 'en' ? 'Admin created successfully' : 'تم إنشاء الأدمن بنجاح',
-      user: newAdmin,
+      message: 'Admin created successfully',
+      admin: newAdmin,
     });
   } catch (error) {
     console.error('Error creating admin:', error);
-    res.status(500).json({
-      error: lang === 'en' ? 'Failed to create admin' : 'فشل في إنشاء الأدمن',
-    });
+    res.status(500).json({ error: 'Failed to create admin' });
   }
+<<<<<<< HEAD
 };
+=======
+};
+
+exports.verifyToken = (req, res, next) => {
+  const token = req.cookies['token'];
+
+  if (!token) {
+    return res.status(403).json({ error: 'Token missing' });
+  }
+
+  jwt.verify(token, 'secret_key', (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ error: 'Invalid token' });
+    }
+
+    req.user = decoded;
+
+   
+    if (req.user.user_type_id !== 1) { 
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    next();
+  });
+};
+
+
+
+
+>>>>>>> c43ec745ed66443187e9d42dcc9cf9f89126c158

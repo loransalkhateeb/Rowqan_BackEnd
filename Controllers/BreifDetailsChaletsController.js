@@ -1,28 +1,28 @@
 const BreifDetailsChalets = require('../Models/BreifDetailsChalets');
 const Chalet = require('../Models/ChaletsModel');
-
+const { validateInput, ErrorResponse } = require('../Utils/validateInput');
 
 exports.createBreifDetailsChalet = async (req, res) => {
   try {
     const { type, value, lang, chalet_id } = req.body;
 
-    if (!type || !value || !lang || !chalet_id) {
-      return res.status(400).json({ error: 'Type, value, language, and chalet_id are required' });
+    const validationErrors = validateInput({ type, value, lang, chalet_id });
+    if (validationErrors.length > 0) {
+      return res.status(400).json(new ErrorResponse(validationErrors));
     }
 
     if (!['en', 'ar'].includes(lang)) {
-      return res.status(400).json({ error: 'Invalid language' });
+      return res.status(400).json(new ErrorResponse('Invalid language'));
     }
 
     const chalet = await Chalet.findByPk(chalet_id);
     if (!chalet) {
-      return res.status(404).json({ error: 'Chalet not found' });
+      return res.status(404).json(new ErrorResponse('Chalet not found'));
     }
 
-    
     const existingBreifDetailsChalet = await BreifDetailsChalets.findOne({ where: { chalet_id, lang, type } });
     if (existingBreifDetailsChalet) {
-      return res.status(400).json({ error: 'BreifDetailsChalet with the same type, lang, and chalet_id already exists' });
+      return res.status(400).json(new ErrorResponse('BreifDetailsChalet with the same type, lang, and chalet_id already exists'));
     }
 
     const newBreifDetailsChalet = await BreifDetailsChalets.create({
@@ -38,93 +38,89 @@ exports.createBreifDetailsChalet = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to create BreifDetailsChalet' });
+    res.status(500).json(new ErrorResponse('Failed to create BreifDetailsChalet'));
   }
 };
-
 
 exports.getBreifDetailsByChaletId = async (req, res) => {
   try {
     const { chalet_id, lang } = req.params;
 
-    // Validate language parameter
     if (!['en', 'ar'].includes(lang)) {
-      return res.status(400).json({ error: 'Invalid language' });
+      return res.status(400).json(new ErrorResponse('Invalid language'));
     }
 
-    // Correct findOne usage with where and include
     const chalet = await Chalet.findOne({
-      where: { id: chalet_id },  // Looking for a chalet with the provided ID
+      where: { id: chalet_id },
       include: {
-        model: BreifDetailsChalets,  // Include the related BreifDetailsChalets model
-        where: { lang },  // Filter the BreifDetailsChalets by language
-        required: false,  // Keep the chalet even if there are no matching details
+        model: BreifDetailsChalets,
+        where: { lang },
+        required: false,
       },
     });
 
-    // If no chalet is found, return a 404 error
     if (!chalet) {
-      return res.status(404).json({ error: 'Chalet not found' });
+      return res.status(404).json(new ErrorResponse('Chalet not found'));
     }
 
-    // If chalet found, return the details
     res.status(200).json({
       message: 'BreifDetailsChalets retrieved successfully',
-      breifDetails: chalet.BreifDetailsChalets,  // Assuming the BreifDetailsChalets are included in the chalet object
+      breifDetails: chalet.BreifDetailsChalets,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to retrieve BreifDetailsChalets' });
+    res.status(500).json(new ErrorResponse('Failed to retrieve BreifDetailsChalets'));
   }
 };
 
-
 exports.getBreifDetailsById = async (req, res) => {
-    try {
-      const { id, lang } = req.params;  
-  
-      if (!['en', 'ar'].includes(lang)) {
-        return res.status(400).json({ error: 'Invalid language' });
-      }
-  
-  
-      const breifDetailsChalet = await BreifDetailsChalets.findOne({
-        where: { id, lang },  
-      });
-  
-      if (!breifDetailsChalet) {
-        return res.status(404).json({ error: 'BreifDetailsChalet not found' });
-      }
-  
-      res.status(200).json({
-        message: 'BreifDetailsChalet retrieved successfully',
-        breifDetailsChalet,
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Failed to retrieve BreifDetailsChalet' });
-    }
-  };
-  
+  try {
+    const { id, lang } = req.params;
 
+    if (!['en', 'ar'].includes(lang)) {
+      return res.status(400).json(new ErrorResponse('Invalid language'));
+    }
+
+    const breifDetailsChalet = await BreifDetailsChalets.findOne({
+      where: { id, lang },
+    });
+
+    if (!breifDetailsChalet) {
+      return res.status(404).json(new ErrorResponse('BreifDetailsChalet not found'));
+    }
+
+    res.status(200).json({
+      message: 'BreifDetailsChalet retrieved successfully',
+      breifDetailsChalet,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json(new ErrorResponse('Failed to retrieve BreifDetailsChalet'));
+  }
+};
 
 exports.updateBreifDetailsChalet = async (req, res) => {
   try {
     const { id } = req.params;
     const { type, value, lang, chalet_id } = req.body;
 
+    const validationErrors = validateInput({ type, value, lang, chalet_id });
+    if (validationErrors.length > 0) {
+      return res.status(400).json(new ErrorResponse(validationErrors));
+    }
+
     if (!['en', 'ar'].includes(lang)) {
-      return res.status(400).json({ error: 'Invalid language' });
+      return res.status(400).json(new ErrorResponse('Invalid language'));
     }
 
     const breifDetailsChalet = await BreifDetailsChalets.findByPk(id);
     if (!breifDetailsChalet) {
-      return res.status(404).json({ error: 'BreifDetailsChalet not found' });
+      return res.status(404).json(new ErrorResponse('BreifDetailsChalet not found'));
     }
 
     const chalet = await Chalet.findByPk(chalet_id);
     if (!chalet) {
-      return res.status(404).json({ error: 'Chalet not found' });
+      return res.status(404).json(new ErrorResponse('Chalet not found'));
     }
 
     breifDetailsChalet.type = type || breifDetailsChalet.type;
@@ -140,37 +136,33 @@ exports.updateBreifDetailsChalet = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to update BreifDetailsChalet' });
+    res.status(500).json(new ErrorResponse('Failed to update BreifDetailsChalet'));
   }
 };
 
-
 exports.deleteBreifDetailsChalet = async (req, res) => {
-    try {
-      const { id, lang } = req.params; 
-  
-      
-      if (!['en', 'ar'].includes(lang)) {
-        return res.status(400).json({ error: 'Invalid language' });
-      }
-  
-      
-      const breifDetailsChalet = await BreifDetailsChalets.findOne({
-        where: { id, lang }, 
-      });
-  
-      if (!breifDetailsChalet) {
-        return res.status(404).json({ error: 'BreifDetailsChalet not found' });
-      }
-  
-      await breifDetailsChalet.destroy();
-  
-      res.status(200).json({
-        message: 'BreifDetailsChalet deleted successfully',
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Failed to delete BreifDetailsChalet' });
+  try {
+    const { id, lang } = req.params;
+
+    if (!['en', 'ar'].includes(lang)) {
+      return res.status(400).json(new ErrorResponse('Invalid language'));
     }
-  };
-  
+
+    const breifDetailsChalet = await BreifDetailsChalets.findOne({
+      where: { id, lang },
+    });
+
+    if (!breifDetailsChalet) {
+      return res.status(404).json(new ErrorResponse('BreifDetailsChalet not found'));
+    }
+
+    await breifDetailsChalet.destroy();
+
+    res.status(200).json({
+      message: 'BreifDetailsChalet deleted successfully',
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json(new ErrorResponse('Failed to delete BreifDetailsChalet'));
+  }
+};

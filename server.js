@@ -1,9 +1,14 @@
 const express = require('express');
 const sequelize = require('./Config/dbConnect');
+const { handleError } = require('./MiddleWares/errorHandler');
+const helmet = require('helmet');
 
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const app = express();
+
+
 const UsersRoutes = require('./Routes/UsersRoutes')
 const LogoRoutes = require('./Routes/LogoRoutes')
 const HeaderRoutes = require('./Routes/HeaderRoutes')
@@ -37,8 +42,8 @@ const ReservationsRoutes = require('./Routes/ReservationsRoutes')
 const UsersTypesRoutes = require('./Routes/UsersTypesRoutes')
 const ReservationsChaletsRoutes = require('./Routes/ReservationsChaletsRoutes')
 const WalletRoutes = require('./Routes/WalletRoutes')
-
 const PropsChaletsRoutes = require('./Routes/ChaletsPropsRoutes')
+
 
 
 app.use(cors());
@@ -79,6 +84,7 @@ app.use('/Wallet',WalletRoutes)
 app.use('/propschalets',PropsChaletsRoutes)
 
 
+app.use(helmet());
 
 
 

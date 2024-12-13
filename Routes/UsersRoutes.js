@@ -1,28 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../Controllers/UsersController');
+const authMiddleware = require('../MiddleWares/authMiddleware');
+const rateLimiter = require('../MiddleWares/rateLimiter');
 
+router.post('/createUser', rateLimiter, userController.createUser);
 
-router.post('/createUser', userController.createUser);
+router.get('/getAllUsers/:lang', authMiddleware, rateLimiter, userController.getAllUsers);
 
+router.get('/getUserById/:id/:lang', authMiddleware, rateLimiter, userController.getUserById);
 
-router.get('/getAllUsers/:lang', userController.getAllUsers);
+router.put('/UpdateUser/:id', authMiddleware, rateLimiter, userController.updateUser);
 
+router.delete('/DeleteUser/:id/:lang', authMiddleware, rateLimiter, userController.deleteUser);
 
-router.get('/getUserById/:id/:lang', userController.getUserById);
+router.post('/login', rateLimiter, userController.login);
 
-
-router.put('/UpdateUser/:id', userController.updateUser);
-
-
-router.delete('/DeleteUser/:id/:lang', userController.deleteUser);
-
-
-router.post('/login', userController.login);
-
-
-router.post('/logout', userController.logout);
-
+router.post('/logout', authMiddleware, rateLimiter, userController.logout);
 
 router.post('/createAdmin', userController.createAdmin);
 

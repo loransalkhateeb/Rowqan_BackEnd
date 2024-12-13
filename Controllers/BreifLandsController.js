@@ -1,10 +1,24 @@
 const BreifLandsModel = require('../Models/BriefLandsModel');
 const CategoriesLandsModel = require('../Models/CategoriesLandsModel');
-
+const { validateInput, ErrorResponse } = require('../Utils/validateInput');
 
 exports.createBreifLand = async (req, res) => {
   try {
     const { type, value, lang, category_id } = req.body;
+
+    const validationErrors = validateInput({ type, value, lang, category_id });
+    if (validationErrors.length > 0) {
+      return res.status(400).json(new ErrorResponse(validationErrors));
+    }
+
+    if (!['en', 'ar'].includes(lang)) {
+      return res.status(400).json(new ErrorResponse('Invalid language'));
+    }
+
+    const category = await CategoriesLandsModel.findByPk(category_id);
+    if (!category) {
+      return res.status(404).json(new ErrorResponse('Category not found'));
+    }
 
     const newBreifLand = await BreifLandsModel.create({
       type,
@@ -14,15 +28,14 @@ exports.createBreifLand = async (req, res) => {
     });
 
     res.status(201).json({
-      message: "Breif Land created successfully",
+      message: 'Breif Land created successfully',
       breifLand: newBreifLand,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to create Breif Land" });
+    res.status(500).json(new ErrorResponse('Failed to create Breif Land'));
   }
 };
-
 
 exports.getAllBreifLandsByCategory = async (req, res) => {
   try {
@@ -37,19 +50,18 @@ exports.getAllBreifLandsByCategory = async (req, res) => {
     });
 
     if (breifLands.length === 0) {
-      return res.status(404).json({ error: "No Breif Lands found for this category" });
+      return res.status(404).json(new ErrorResponse('No Breif Lands found for this category'));
     }
 
     res.status(200).json({
-      message: "Breif Lands retrieved successfully",
+      message: 'Breif Lands retrieved successfully',
       breifLands,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to retrieve Breif Lands" });
+    res.status(500).json(new ErrorResponse('Failed to retrieve Breif Lands'));
   }
 };
-
 
 exports.getBreifLandById = async (req, res) => {
   try {
@@ -64,29 +76,41 @@ exports.getBreifLandById = async (req, res) => {
     });
 
     if (!breifLand) {
-      return res.status(404).json({ error: "Breif Land not found" });
+      return res.status(404).json(new ErrorResponse('Breif Land not found'));
     }
 
     res.status(200).json({
-      message: "Breif Land retrieved successfully",
+      message: 'Breif Land retrieved successfully',
       breifLand,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to retrieve Breif Land" });
+    res.status(500).json(new ErrorResponse('Failed to retrieve Breif Land'));
   }
 };
-
 
 exports.updateBreifLand = async (req, res) => {
   try {
     const { id } = req.params;
     const { type, value, lang, category_id } = req.body;
 
-    const breifLand = await BreifLandsModel.findByPk(id);
+    const validationErrors = validateInput({ type, value, lang, category_id });
+    if (validationErrors.length > 0) {
+      return res.status(400).json(new ErrorResponse(validationErrors));
+    }
 
+    if (!['en', 'ar'].includes(lang)) {
+      return res.status(400).json(new ErrorResponse('Invalid language'));
+    }
+
+    const category = await CategoriesLandsModel.findByPk(category_id);
+    if (!category) {
+      return res.status(404).json(new ErrorResponse('Category not found'));
+    }
+
+    const breifLand = await BreifLandsModel.findByPk(id);
     if (!breifLand) {
-      return res.status(404).json({ error: "Breif Land not found" });
+      return res.status(404).json(new ErrorResponse('Breif Land not found'));
     }
 
     breifLand.type = type || breifLand.type;
@@ -97,45 +121,38 @@ exports.updateBreifLand = async (req, res) => {
     await breifLand.save();
 
     res.status(200).json({
-      message: "Breif Land updated successfully",
+      message: 'Breif Land updated successfully',
       breifLand,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to update Breif Land" });
+    res.status(500).json(new ErrorResponse('Failed to update Breif Land'));
   }
 };
 
-
 exports.deleteBreifLand = async (req, res) => {
-    try {
-      const { id, lang } = req.params; 
-      const breifLand = await BreifLandsModel.findOne({ 
-        where: { id, lang } 
-      });
-  
-      if (!breifLand) {
-        return res.status(404).json({ 
-          error: lang === "en" 
-            ? "Breif Land not found" 
-            : "البيانات الموجزة غير موجودة" 
-        });
-      }
-  
-      await breifLand.destroy();
-  
-      res.status(200).json({
-        message: lang === "en" 
-          ? "Breif Land deleted successfully" 
-          : "تم حذف البيانات الموجزة بنجاح",
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ 
-        error: lang === "en" 
-          ? "Failed to delete Breif Land" 
-          : "فشل في حذف البيانات الموجزة" 
-      });
+  try {
+    const { id, lang } = req.params;
+
+    const breifLand = await BreifLandsModel.findOne({
+      where: { id, lang }
+    });
+
+    if (!breifLand) {
+      return res.status(404).json(new ErrorResponse(
+        lang === 'en' ? 'Breif Land not found' : 'البيانات الموجزة غير موجودة'
+      ));
     }
-  };
-  
+
+    await breifLand.destroy();
+
+    res.status(200).json({
+      message: lang === 'en' ? 'Breif Land deleted successfully' : 'تم حذف البيانات الموجزة بنجاح',
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json(new ErrorResponse(
+      lang === 'en' ? 'Failed to delete Breif Land' : 'فشل في حذف البيانات الموجزة'
+    ));
+  }
+};
