@@ -26,10 +26,6 @@ const Available_Events = sequelize.define('Available_Events', {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false,
   },
-  rating: {
-    type: DataTypes.DECIMAL(3, 2),
-    allowNull: false,
-  },
   location: {
     type: DataTypes.STRING,
     allowNull: false,

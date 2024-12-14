@@ -1,10 +1,14 @@
 const express = require('express');
 const sequelize = require('./Config/dbConnect');
+const { handleError } = require('./MiddleWares/errorHandler');
+const helmet = require('helmet');
 
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const app = express();
+
+
 const UsersRoutes = require('./Routes/UsersRoutes')
 const LogoRoutes = require('./Routes/LogoRoutes')
 const HeaderRoutes = require('./Routes/HeaderRoutes')
@@ -39,32 +43,11 @@ const UsersTypesRoutes = require('./Routes/UsersTypesRoutes')
 const ReservationsChaletsRoutes = require('./Routes/ReservationsChaletsRoutes')
 const WalletRoutes = require('./Routes/WalletRoutes')
 const PropsChaletsRoutes = require('./Routes/ChaletsPropsRoutes')
+const FeedBackRoutes = require('./Routes/FeedBacksRoutes');
+const MessagesRoutes = require('./Routes/MessagesRoutes')
 
 
-
-const allowedOrigins = [
-  'http://localhost:5173',
-  'https://rowqan.com',
-  'https://rowqanbackend.rowqan.com'
-];
-
-// CORS options with a dynamic origin check
-const corsOptions = {
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or Postman)
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true, // Allow credentials
-};
-
-// Use the CORS middleware
-app.use(cors(corsOptions));
-
-app.use(cookieParser());
+app.use(cors());
 app.use(express.json());
 app.use('/users',UsersRoutes)
 app.use('/logos',LogoRoutes)
@@ -89,7 +72,7 @@ app.use('/subevents',SubEventsRoutes)
 app.use('/availablevents',AvailableEventsRoutes)
 app.use('/availableimages',AvailableImages)
 app.use('/plans',PlansRoutes)
-app.use('/reservationsEvents',ReservatioEventsRoutes)
+// app.use('/reservationsEvents',ReservatioEventsRoutes)
 app.use('/categorieslands',CategoryLandsRoutes)
 app.use('/propertyLands',PrpertyLandsRoutes)
 app.use('/imageslands',ImagesLandsRoutes)
@@ -100,8 +83,13 @@ app.use('/userstypes',UsersTypesRoutes)
 app.use('/ReservationsChalets',ReservationsChaletsRoutes)
 app.use('/Wallet',WalletRoutes)
 app.use('/propschalets',PropsChaletsRoutes)
+app.use('/FeedBacks',FeedBackRoutes)
+app.use('/messages',MessagesRoutes)
 
 
+
+
+app.use(helmet());
 
 
 

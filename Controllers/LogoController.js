@@ -2,22 +2,27 @@ const Logo  = require('../Models/LogoModel');
 
 
 exports.createLogo = async (req, res) => {
-    try {
-      let imageUrl = null;
-  
-      if (req.file) {
-        imageUrl = req.file.filename;  
-      }
-  
-      const newLogo = await Logo.create({
-        image: imageUrl,
+  try {
+
+    const imageUrl = req.file ? req.file.filename : null;
+
+    const newLogo = await Logo.create({
+      image: imageUrl,
+    });
+
+    if (req.user.user_type_id !== 1) {
+      return res.status(403).json({
+        error: 'You are not authorized to update users',
       });
-  
-      res.status(201).json({ message: 'Logo created successfully', hero: newLogo });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to create Logo'});
     }
-  };
+
+    res.status(201).json({ message: 'Logo created successfully', hero: newLogo });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to create Logo' });
+  }
+};
+
 
 
 exports.getAllLogos = async (req, res) => {
@@ -60,6 +65,12 @@ exports.updatelogo = async (req, res) => {
       
       if (!logo) {
         return res.status(404).json({ error: 'Logo not found' });
+      }
+
+      if (req.user.user_type_id !== 1) {
+        return res.status(403).json({
+          error:'You are not authorized to update users',
+        });
       }
   
  

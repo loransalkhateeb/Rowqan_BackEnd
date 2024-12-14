@@ -3,16 +3,17 @@ const jwt = require('jsonwebtoken');
 const User = require('../Models/UsersModel');
 const ReservationModel = require('../Models/ReservationsModel');
 const UserTypes = require('../Models/UsersTypes');
+const { validateUserInput, validateAdminInput } = require('../Utils/validateInput');
 require('dotenv').config();
 
-
-
 exports.createUser = async (req, res) => {
-  const { name, email, phone_number, country, password, lang, user_type_id } = req.body;
+  const { name, email, phone_number, country, password, lang, user_type_id, RepeatPassword } = req.body;
 
   try {
-    // Check if email already exists in the database
-    const existingUser = await User.findOne({ where: { email } });
+    const validationErrors = validateUserInput(name, email, password, RepeatPassword);
+    if (validationErrors.length > 0) {
+      return res.status(400).json({ errors: validationErrors });
+    }
 
     if (existingUser) {
       return res.status(400).json({
@@ -64,12 +65,14 @@ exports.createUser = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
   const { lang } = req.params;
+
   try {
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
-        error: 'Invalid language. Please use "ar" or "en".',
+        error: lang === 'en' ? 'Invalid language. Please use "ar" or "en".' : 'اللغة غير صالحة. استخدم "ar" أو "en".',
       });
     }
+
     const users = await User.findAll({
       where: { lang },
       include: [
@@ -92,16 +95,16 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
-
 exports.getUserById = async (req, res) => {
   const { id, lang } = req.params;
 
   try {
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
-        error: 'Invalid language. Please use "ar" or "en".',
+        error: lang === 'en' ? 'Invalid language. Please use "ar" or "en".' : 'اللغة غير صالحة. استخدم "ar" أو "en".',
       });
     }
+
     const user = await User.findOne({
       where: { id, lang },
       include: [
@@ -134,13 +137,28 @@ exports.getUserById = async (req, res) => {
   }
 };
 
-
 exports.updateUser = async (req, res) => {
   const { id } = req.params;
-  const { name, email, phone_number, country, password, lang, user_type_id } = req.body;
+  const { name, email, phone_number, country, password, lang, user_type_id, RepeatPassword } = req.body;
 
   try {
- 
+    if (!req.user) {
+      return res.status(401).json({
+        error: lang === 'en' ? 'Unauthorized' : 'غير مصرح',
+      });
+    }
+
+    if (req.user.user_type_id !== 1) {
+      return res.status(403).json({
+        error: lang === 'en' ? 'You are not authorized to update users' : 'أنت غير مخول لتحديث المستخدمين',
+      });
+    }
+
+    const validationErrors = validateUserInput(name, email, password, RepeatPassword);
+    if (validationErrors.length > 0) {
+      return res.status(400).json({ errors: validationErrors });
+    }
+
     const user = await User.findByPk(id);
     if (!user) {
       return res.status(404).json({
@@ -148,13 +166,14 @@ exports.updateUser = async (req, res) => {
       });
     }
 
- 
+    const hashedPassword = password ? await bcrypt.hash(password, 10) : user.password;
+
     await user.update({
       name,
       email,
       phone_number,
       country,
-      password,
+      password: hashedPassword,
       lang,
       user_type_id,
     });
@@ -171,16 +190,20 @@ exports.updateUser = async (req, res) => {
   }
 };
 
-
 exports.deleteUser = async (req, res) => {
   const { id, lang } = req.params;
+
   try {
-    const user = await User.findOne({
-      where: { id, lang },
-    });
+    const user = await User.findOne({ where: { id, lang } });
     if (!user) {
       return res.status(404).json({
         error: lang === 'en' ? 'User not found' : 'المستخدم غير موجود',
+      });
+    }
+
+    if (req.user.user_type_id !== 1) {
+      return res.status(403).json({
+        error: lang === 'en' ? 'You are not authorized to delete users' : 'أنت غير مخول لحذف المستخدمين',
       });
     }
 
@@ -204,19 +227,11 @@ exports.login = async (req, res) => {
   const { email, password, lang } = req.body;
 
   try {
-
-
-    // Validate the language input
-
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
         error: lang === 'en' ? 'Invalid language. Please use "ar" or "en".' : 'اللغة غير صالحة. استخدم "ar" أو "en".',
       });
     }
-
-
-
-    // Check if the user exists
 
     const user = await User.findOne({ where: { email } });
     if (!user) {
@@ -225,10 +240,6 @@ exports.login = async (req, res) => {
       });
     }
 
-
-
-    // Verify the password
-
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       return res.status(401).json({
@@ -236,123 +247,92 @@ exports.login = async (req, res) => {
       });
     }
 
-
-  
+    const secretKey = process.env.JWT_SECRET;
     if (!secretKey) {
-      console.error("SECRET_KEY is not defined in .env file.");
+      console.error('JWT_SECRET is not defined in .env file.');
       return res.status(500).json({
-        error: lang === 'en' ? 'Internal server error' : 'خطأ داخلي في الخادم',
+        error: lang === 'en' ? 'Server error. Please try again later.' : 'خطأ في الخادم. يرجى المحاولة لاحقًا.',
       });
     }
 
-    const token = jwt.sign(
-      { id: user.id, user_type_id: user.user_type_id },
-      secretKey,
-      { expiresIn: '1h' }
-    );
+    const token = jwt.sign({ id: user.id, user_type_id: user.user_type_id }, secretKey, { expiresIn: '1h' });
 
-    // Generate JWT token
-
-
-    // Set the cookie first before sending the response
-    
-    // For Production
-    // res.cookie("token", token, {
-    //   httpOnly: true,
-    //   secure: true,
-    //   maxAge: 24 * 60 * 60 * 1000,
-    //   sameSite: "Strict",
-    // });
-// For Development
-    res.cookie('token', token, {
-      httpOnly: true, // Cookie can't be accessed from JavaScript
-      maxAge: 3600000, // 1 hour expiration
-      secure: false, // Set to true in production, false in development
-    });
-    
-    return res.status(200).json({
+    res.status(200).json({
       message: lang === 'en' ? 'Login successful' : 'تم تسجيل الدخول بنجاح',
-      token,  
+      token,
     });
-    
   } catch (error) {
-    console.error('Error logging in:', error);
+    console.error('Error during login:', error);
     res.status(500).json({
       error: lang === 'en' ? 'Failed to login' : 'فشل في تسجيل الدخول',
     });
   }
 };
+exports.logout = async (req, res) => {
+  const { lang } = req.body;
 
-
-
-
-
-exports.logout = (req, res) => {
   try {
-    // Ensure the token cookie is cleared both server-side and client-side
+    if (!['ar', 'en'].includes(lang)) {
+      return res.status(400).json({
+        error: lang === 'en' ? 'Invalid language. Please use "ar" or "en".' : 'اللغة غير صالحة. استخدم "ar" أو "en".',
+      });
+    }
 
-    res.clearCookie('token', { 
-      httpOnly: true,  
-      secure: false,   // Make sure it's false in development or adjust for production
-    }); 
-    // res.clearCookie('token', { 
-    //   httpOnly: true,  
-    //   secure: true,   // Make sure it's false in development or adjust for production
-    //   sameSite: 'Strict'
-    // }); 
-
-    return res.status(200).json({
-      message: 'Logged out successfully',
+    
+    res.status(200).json({
+      message: lang === 'en' ? 'Logout successful' : 'تم تسجيل الخروج بنجاح',
     });
   } catch (error) {
-    console.error('Error logging out:', error);
+    console.error('Error during logout:', error);
     res.status(500).json({
-      error: 'Failed to log out',
+      error: lang === 'en' ? 'Failed to logout' : 'فشل في تسجيل الخروج',
     });
   }
 };
 
 
+
+
+
+
 exports.createAdmin = async (req, res) => {
-  const { name, email, phone_number, country, password, RepeatPassword, role_user, lang } = req.body;
+  const { name, email, password, RepeatPassword, role_user } = req.body;
 
   try {
+
+    const validationErrors = validateAdminInput(name, email, password, RepeatPassword, role_user);
+    if (validationErrors.length > 0) {
+      return res.status(400).json({ errors: validationErrors });
+    }
+
+   
     if (password !== RepeatPassword) {
-      return res.status(400).json({
-        error: lang === 'en' ? 'Password and Repeat Password do not match' : 'كلمة المرور وتكرار كلمة المرور غير متطابقتين',
-      });
+      return res.status(400).json({ error: 'Passwords do not match' });
     }
 
-    if (role_user !== 'admin') {
-      return res.status(400).json({
-        error: lang === 'en' ? 'Role must be admin to create an admin user' : 'يجب أن يكون الدور "admin" لإنشاء مستخدم أدمن',
-      });
-    }
+ 
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const newAdmin = await User.create({
       name,
       email,
-      phone_number,
-      country,
       password: hashedPassword,
-      role_user,
-      lang,
+      role_user: role_user || 'admin', 
     });
 
+ 
     res.status(201).json({
-      message: lang === 'en' ? 'Admin created successfully' : 'تم إنشاء الأدمن بنجاح',
-      user: newAdmin,
+      message: 'Admin created successfully',
+      admin: newAdmin,
     });
+
   } catch (error) {
     console.error('Error creating admin:', error);
-    res.status(500).json({
-      error: lang === 'en' ? 'Failed to create admin' : 'فشل في إنشاء الأدمن',
-    });
+    res.status(500).json({ error: 'Failed to create admin' });
   }
 };
+
 
 // Middleware to verify JWT token
 exports.verifyToken = (req, res, next) => {
@@ -372,7 +352,3 @@ exports.verifyToken = (req, res, next) => {
     next();
   });
 };
-
-
-
-

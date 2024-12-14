@@ -2,17 +2,15 @@ const express = require('express');
 const router = express.Router();
 const multer = require('../Config/Multer');
 const AvailableEventsImagesController = require('../Controllers/AvailableEventsImagesController');
+const authMiddleware = require('../MiddleWares/authMiddleware');  
+const rateLimiter = require('../MiddleWares/rateLimiter'); 
 
 
-router.post('/createvailableimage', multer.array('image'), AvailableEventsImagesController.createAvailableEventImages);
+router.post('/createvailableimage', authMiddleware, rateLimiter, multer.array('image'), AvailableEventsImagesController.createAvailableEventImages);
+router.put('/updateimageavailable/:id', authMiddleware, rateLimiter, multer.array('image'), AvailableEventsImagesController.updateAvailableEventImage);
 
 
-router.get('/getavailableimage/:event_id', AvailableEventsImagesController.getAvailableEventImages);
-
-
-router.put('/updateimageavailable/:id', multer.array('image'), AvailableEventsImagesController.updateAvailableEventImage);
-
-
-router.delete('/deleteavilableimage/:id', AvailableEventsImagesController.deleteAvailableEventImage);
+router.get('/getavailableimage/:event_id', authMiddleware, AvailableEventsImagesController.getAvailableEventImages);
+router.delete('/deleteavilableimage/:id', authMiddleware, AvailableEventsImagesController.deleteAvailableEventImage);
 
 module.exports = router;

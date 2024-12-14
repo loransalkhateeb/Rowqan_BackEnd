@@ -1,18 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const ContactUsController = require('../Controllers/ContactUsController');
-const multer = require('../Config/Multer')
-
-router.post('/createcontactus',multer.single('image'), ContactUsController.createContactUs);
-
-
-router.put('/updatecontactus/:id', multer.single('image'),ContactUsController.updateContactUs);
+const multer = require('../Config/Multer');
+const authMiddleware = require('../MiddleWares/authMiddleware');  
+const rateLimiter = require('../MiddleWares/rateLimiter'); 
 
 
-router.get('/getcontactusid/:id/:lang', ContactUsController.getContactUsById);
-router.get('/getAllContactUs/:lang', ContactUsController.getALLContactUs);
+router.post('/createcontactus', authMiddleware, rateLimiter, multer.single('image'), ContactUsController.createContactUs);
+router.put('/updatecontactus/:id', authMiddleware, rateLimiter, multer.single('image'), ContactUsController.updateContactUs);
 
 
-router.delete('/deletecontactus/:id/:lang', ContactUsController.deleteContactUs);
+router.get('/getcontactusid/:id/:lang', authMiddleware, ContactUsController.getContactUsById);
+router.get('/getAllContactUs/:lang', authMiddleware, ContactUsController.getALLContactUs);
+
+
+router.delete('/deletecontactus/:id/:lang', authMiddleware, ContactUsController.deleteContactUs);
 
 module.exports = router;

@@ -2,19 +2,18 @@ const express = require('express');
 const router = express.Router();
 const heroController = require('../Controllers/HeroController');  
 const multer = require('../Config/Multer'); 
-
-router.post('/createHero', multer.single('image'), heroController.createHero);
-    
-
-router.get('/getAllHeroes/:lang', heroController.getAllHeroesByLang);
+const authMiddleware = require('../MiddleWares/authMiddleware');  
+const rateLimiter = require('../MiddleWares/rateLimiter'); 
 
 
-router.get('/getHeroById/:id/:lang', heroController.getHeroById);
+router.post('/createHero', authMiddleware, rateLimiter, multer.single('image'), heroController.createHero);
 
+router.get('/getAllHeroes/:lang', authMiddleware, heroController.getAllHeroesByLang);
 
-router.put('/updateHero/:id', multer.single('image'), heroController.updateHero);
+router.get('/getHeroById/:id/:lang', authMiddleware, heroController.getHeroById);
 
+router.put('/updateHero/:id', authMiddleware, rateLimiter, multer.single('image'), heroController.updateHero);
 
-router.delete('/deleteHero/:id/:lang', heroController.deleteHero);
+router.delete('/deleteHero/:id/:lang', authMiddleware, heroController.deleteHero);
 
 module.exports = router;

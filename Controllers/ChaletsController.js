@@ -8,27 +8,28 @@ const BreifDetailsChalets = require('../Models/BreifDetailsChalets');
 const RightTimeModel = require('../Models/RightTimeModel');
 const ReservationDate = require('../Models/ReservationDatesModel');
 const ReservationsModel = require('../Models/ReservationsModel');
+const { validateInput, ErrorResponse } = require('../Utils/validateInput');
+
+
 
 exports.createChalet = async (req, res) => {
   try {
+
+    const validationErrors = validateInput(req.body, ['title', 'lang', 'status_id', 'reserve_price']);
+    if (validationErrors) {
+      return res.status(400).json(ErrorResponse(validationErrors));
+    }
+
     const { title, lang, status_id, reserve_price } = req.body;
     const image = req.file ? req.file.filename : null;
 
-    if (!title || !lang || !status_id || !reserve_price) {
-      return res.status(400).json({
-        error: 'Title, language, status_id, and reserve_price are required',
-      });
-    }
-
     if (!['ar', 'en'].includes(lang)) {
-      return res.status(400).json({
-        error: 'Invalid language. Supported languages are "ar" and "en".',
-      });
+      return res.status(400).json(ErrorResponse('Invalid language. Supported languages are "ar" and "en".'));
     }
 
     const status = await Status.findByPk(status_id);
     if (!status) {
-      return res.status(404).json({ error: 'Status not found' });
+      return res.status(404).json(ErrorResponse('Status not found'));
     }
 
     const newChalet = await Chalet.create({
@@ -45,9 +46,10 @@ exports.createChalet = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to create chalet' });
+    res.status(500).json(ErrorResponse('Failed to create chalet'));
   }
 };
+
 
 exports.getAllChalets = async (req, res) => {
   try {
@@ -127,22 +129,26 @@ exports.updateChalet = async (req, res) => {
     const { title, lang, status_id, reserve_price } = req.body;
     const image = req.file ? req.file.filename : null;
 
+  
+    const validationErrors = validateInput(req.body, ['title', 'lang', 'status_id', 'reserve_price']);
+    if (validationErrors) {
+      return res.status(400).json(ErrorResponse(validationErrors));
+    }
+
     const chalet = await Chalet.findByPk(id);
 
     if (!chalet) {
-      return res.status(404).json({ error: `Chalet with id ${id} not found` });
+      return res.status(404).json(ErrorResponse(`Chalet with id ${id} not found`));
     }
 
     if (lang && !['ar', 'en'].includes(lang)) {
-      return res.status(400).json({
-        error: 'Invalid language. Supported languages are "ar" and "en".',
-      });
+      return res.status(400).json(ErrorResponse('Invalid language. Supported languages are "ar" and "en".'));
     }
 
     if (status_id) {
       const status = await Status.findByPk(status_id);
       if (!status) {
-        return res.status(404).json({ error: 'Status not found' });
+        return res.status(404).json(ErrorResponse('Status not found'));
       }
     }
 
@@ -157,7 +163,7 @@ exports.updateChalet = async (req, res) => {
     res.status(200).json({ message: 'Chalet updated successfully', chalet });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to update chalet' });
+    res.status(500).json(ErrorResponse('Failed to update chalet'));
   }
 };
 

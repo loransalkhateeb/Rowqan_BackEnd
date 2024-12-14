@@ -1,21 +1,18 @@
 const express = require("express");
 const walletController = require("../Controllers/WalletController");
+const authMiddleware = require("../MiddleWares/authMiddleware");
+const rateLimiter = require("../MiddleWares/rateLimiter");
 
 const router = express.Router();
 
+router.post("/wallet", authMiddleware, rateLimiter, walletController.createWallet);
 
-router.post("/wallet", walletController.createWallet);
+router.get("/wallet/user/:user_id/:lang", authMiddleware, rateLimiter, walletController.getWalletByUserId);
 
+router.put("/wallet/:wallet_id/:lang", authMiddleware, rateLimiter, walletController.updateWallet);
 
-router.get("/wallet/user/:user_id/:lang", walletController.getWalletByUserId);
+router.delete("/wallet/:wallet_id/:lang", authMiddleware, rateLimiter, walletController.deleteWallet);
 
-
-router.put("/wallet/:wallet_id/:lang", walletController.updateWallet);
-
-
-router.delete("/wallet/:wallet_id/:lang", walletController.deleteWallet);
-
-
-router.get("/wallets", walletController.listWallets);
+router.get("/wallets", authMiddleware, rateLimiter, walletController.listWallets);
 
 module.exports = router;
