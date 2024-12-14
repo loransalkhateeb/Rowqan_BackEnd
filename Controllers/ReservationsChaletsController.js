@@ -7,7 +7,6 @@ const Wallet = require('../Models/WalletModel')
 
 exports.createReservation = async (req, res) => {
   try {
-    console.log("Received request body:", req.body);
     const {
       initial_amount,
       date,
@@ -64,21 +63,6 @@ exports.createReservation = async (req, res) => {
         error: lang === 'en' ? 'Right time not found' : 'الوقت المناسب غير موجود',
       });
     }
-
-    
-    const existingReservation = await Reservations_Chalets.findOne({
-      where: {
-        chalet_id,
-        date: formattedDate,
-      },
-    });
-
-    if (existingReservation) {
-      return res.status(400).json({
-        error: lang === 'en' ? 'This chalet is already reserved for the selected date' : 'هذا الشاليه محجوز بالفعل في التاريخ المحدد',
-      });
-    }
-
    
     const reserve_price = chalet.reserve_price;
     let total_amount = reserve_price - initial_amount;  

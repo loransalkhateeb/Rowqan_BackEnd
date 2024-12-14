@@ -11,48 +11,55 @@ exports.createUser = async (req, res) => {
   const { name, email, phone_number, country, password, lang, user_type_id } = req.body;
 
   try {
+    // Check if email already exists in the database
+    const existingUser = await User.findOne({ where: { email } });
 
+    if (existingUser) {
+      return res.status(400).json({
+        code: 'ER_DUP_ENTRY',
+        message: lang === 'en' ? 'Email already exists' : 'البريد الالكتروني موجود',
+      });
+    }
+
+    // Validate language input
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
         error: lang === 'en' ? 'Invalid language. Please use "ar" or "en".' : 'اللغة غير صالحة. استخدم "ar" أو "en".',
       });
     }
 
- 
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const hashedPassword = await bcrypt.hash(password, 10); 
+    // Set default user type if not provided
+    const finalUserType = user_type_id || 2;
 
-    
-
-    const finalUserType = user_type_id || 2 ;
-
-
-
+    // Create a new user
     const newUser = await User.create({
       name,
       email,
       phone_number,
       country,
-      password: hashedPassword, 
+      password: hashedPassword,
       lang,
-
       user_type_id: finalUserType,
-
-      user_type_id: finalUserType, 
-
     });
 
+    // Return success response
     res.status(201).json({
       message: lang === 'en' ? 'User created successfully' : 'تم إنشاء المستخدم بنجاح',
       user: newUser,
     });
   } catch (error) {
     console.error('Error creating user:', error);
+
+    // Handle any server-side error (e.g., DB errors, validation errors)
     res.status(500).json({
       error: lang === 'en' ? 'Failed to create user' : 'فشل في إنشاء المستخدم',
     });
   }
 };
+
 
 
 exports.getAllUsers = async (req, res) => {
@@ -192,7 +199,6 @@ exports.deleteUser = async (req, res) => {
 
 
 const secretKey = process.env.JWT_SECRET;
-console.log("SECRET_KEY:", secretKey);  
 
 exports.login = async (req, res) => {
   const { email, password, lang } = req.body;
