@@ -6,10 +6,9 @@ const authMiddleware = require('../MiddleWares/authMiddleware');
 const rateLimiter = require('../MiddleWares/rateLimiter'); 
 
 
-router.use(authMiddleware);
 
 
-router.post('/createrighttime', rateLimiter, multer.single('image'), rightTimeController.createRightTime);
+router.post('/createrighttime',authMiddleware, rateLimiter, multer.single('image'), rightTimeController.createRightTime);
 
 
 router.get('/getallrighttimes/:lang', rightTimeController.get);
@@ -21,9 +20,9 @@ router.get('/getallrighttimes/:lang/:chalet_id', rightTimeController.getAllRight
 router.get('/getrighttimebyid/:id/:lang', rightTimeController.getRightTimeById);
 
 
-router.put('/updaterighttime/:id', rateLimiter, multer.single('image'), rightTimeController.updateRightTime);
+router.put('/updaterighttime/:id',authMiddleware, rateLimiter, multer.single('image'), rightTimeController.updateRightTime);
 
 
-router.delete('/deleterighttime/:id/:lang', rightTimeController.deleteRightTime);
+router.delete('/deleterighttime/:id/:lang',authMiddleware, rightTimeController.deleteRightTime);
 
 module.exports = router;
