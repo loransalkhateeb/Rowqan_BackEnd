@@ -45,7 +45,7 @@ const WalletRoutes = require('./Routes/WalletRoutes')
 const PropsChaletsRoutes = require('./Routes/ChaletsPropsRoutes')
 const FeedBackRoutes = require('./Routes/FeedBacksRoutes');
 const MessagesRoutes = require('./Routes/MessagesRoutes')
-
+const ReservationDate2 = require('./Routes/ReservationDatesRoutes2')
 
 app.use(cors());
 app.use(express.json());
@@ -61,7 +61,7 @@ app.use('/chalets',ChaletsRoutes)
 app.use('/statuschalets',statusChaletRoutes)
 app.use('/chaletsimages',ChaletImagesRoutes)
 app.use('/BreifDetailsChalets',BreifDetailsChaletsRoutes)
-app.use('/ReservationDates',ReservatioDatesRoutes)
+app.use('/ReservationDates',ReservationDate2)
 app.use('/ContactUs',ContactUsRoutes)
 app.use('/RightTimes',RightTimeRoutes)
 app.use('/status',StatusRoutes)
