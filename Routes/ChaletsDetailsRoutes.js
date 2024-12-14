@@ -9,9 +9,9 @@ router.post('/createdetails', authMiddleware, rateLimiter, chaletsDetailsControl
 router.put('/updatedetails/:id', authMiddleware, rateLimiter, chaletsDetailsController.updateChaletDetail);
 
 
-router.get('/getalldetails/:lang', authMiddleware, chaletsDetailsController.getAllDetails);
-router.get('/getdetailsbychaletid/:id/:lang', authMiddleware, chaletsDetailsController.getChaletDetailsByChaletId);
-router.get('/getChaletDetailsByChaletId/:chalet_id/:lang', authMiddleware, chaletsDetailsController.getChaletDetailsByChaletId);
+router.get('/getalldetails/:lang', chaletsDetailsController.getAllDetails);
+router.get('/getdetailsbychaletid/:id/:lang', chaletsDetailsController.getChaletDetailsByChaletId);
+router.get('/getChaletDetailsByChaletId/:chalet_id/:lang', chaletsDetailsController.getChaletDetailsByChaletId);
 router.delete('/deleteddetaile/:id/:lang', authMiddleware, chaletsDetailsController.deleteChaletDetail);
 
 module.exports = router;

@@ -5,13 +5,13 @@ const authMiddleware = require('../MiddleWares/authMiddleware');
 const rateLimiter = require('../MiddleWares/rateLimiter');
 router.post('/createplan', authMiddleware, rateLimiter, plansController.createPlan); 
 
-router.get('/plans/:lang', authMiddleware, plansController.getPlans);
+router.get('/plans/:lang', plansController.getPlans);
 
 
-router.get('/plans/:id/:lang', authMiddleware, plansController.getPlanById);
+router.get('/plans/:id/:lang', plansController.getPlanById);
 
 
-router.put('/plans/:id', authMiddleware, rateLimiter, plansController.updatePlan);
+router.put('/plans/:id', rateLimiter, plansController.updatePlan);
 
 router.delete('/plans/:id/:lang', authMiddleware, plansController.deletePlan);
 

@@ -10,8 +10,8 @@ router.post('/createcategoryland', authMiddleware, rateLimiter, multer.single('i
 router.put('/UpdateCategoryLand/:id', authMiddleware, rateLimiter, multer.single('image'), CategoriesLandsController.updateCategoryLand);
 
 
-router.get('/getAllcategoryLand/:lang', authMiddleware, CategoriesLandsController.getAllCategoryLands);
-router.get('/getCategoryLandById/:id/:lang', authMiddleware, CategoriesLandsController.getCategoryLandById);
+router.get('/getAllcategoryLand/:lang', CategoriesLandsController.getAllCategoryLands);
+router.get('/getCategoryLandById/:id/:lang', CategoriesLandsController.getCategoryLandById);
 router.delete('/DeleteCategoryLand/:id/:lang', authMiddleware, CategoriesLandsController.deleteCategoryLand);
 
 module.exports = router;

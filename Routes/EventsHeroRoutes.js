@@ -8,9 +8,9 @@ const rateLimiter = require('../MiddleWares/rateLimiter');
 
 router.post('/createheroevent', authMiddleware, rateLimiter, multer.single('image'), eventsHeroController.createEventHero);
 
-router.get('/allheroevents/:lang', authMiddleware, eventsHeroController.getAllEventHeroes);  
+router.get('/allheroevents/:lang', eventsHeroController.getAllEventHeroes);  
 
-router.get('/getheroeventbyid/:id/:lang', authMiddleware, eventsHeroController.getEventHeroById);
+router.get('/getheroeventbyid/:id/:lang', eventsHeroController.getEventHeroById);
 
 router.put('/updateheroevents/:id', authMiddleware, rateLimiter, multer.single('image'), eventsHeroController.updateEventHero);
 

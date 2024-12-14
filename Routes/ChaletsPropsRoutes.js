@@ -9,9 +9,9 @@ const rateLimiter = require('../MiddleWares/rateLimiter');
 router.post('/createPropsChalet', authMiddleware, rateLimiter, multer.single("image"), ChaletsPropsController.createChaletProp);
 
 
-router.get('/getAllPropsChalet/:lang', authMiddleware, ChaletsPropsController.getAllChaletProps);
-router.get('/getPropChaletById:id', authMiddleware, ChaletsPropsController.getChaletPropById);
-router.put('/UpdatePropChalet/:id', authMiddleware, rateLimiter, ChaletsPropsController.updateProperty);
+router.get('/getAllPropsChalet/:lang', ChaletsPropsController.getAllChaletProps);
+router.get('/getPropChaletById:id', ChaletsPropsController.getChaletPropById);
+router.put('/UpdatePropChalet/:id', rateLimiter, ChaletsPropsController.updateProperty);
 router.delete('/DeletePropChalet:id', authMiddleware, ChaletsPropsController.deleteChaletProp);
 
 module.exports = router;

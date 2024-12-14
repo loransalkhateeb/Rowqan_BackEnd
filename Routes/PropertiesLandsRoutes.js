@@ -10,13 +10,13 @@ const rateLimiter = require('../MiddleWares/rateLimiter');
 router.post("/createPropertyLand", authMiddleware, rateLimiter, multer.single("image"), PropertiesLandsController.createPropertyLand);
 
 
-router.get("/getAllPrpertiesLands/:lang", authMiddleware, PropertiesLandsController.getAllPropertyLands);
+router.get("/getAllPrpertiesLands/:lang", PropertiesLandsController.getAllPropertyLands);
 
 
-router.get("/getAllPropertyLandsByLandId/:category_land_id/:lang", authMiddleware, PropertiesLandsController.getPropertyLandByland_id);
+router.get("/getAllPropertyLandsByLandId/:category_land_id/:lang", PropertiesLandsController.getPropertyLandByland_id);
 
 
-router.get("/getPropertyLandById/:id/:lang", authMiddleware, PropertiesLandsController.getPropertyLandById);
+router.get("/getPropertyLandById/:id/:lang", PropertiesLandsController.getPropertyLandById);
 
 
 router.put("/UpdatePropertiesLand/:id", authMiddleware, rateLimiter, multer.single("image"), PropertiesLandsController.updatePropertyLand);

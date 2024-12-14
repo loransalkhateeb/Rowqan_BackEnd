@@ -5,7 +5,7 @@ const multer = require('../Config/Multer');
 const authMiddleware = require('../MiddleWares/authMiddleware'); 
 const rateLimiter = require('../MiddleWares/rateLimiter');
 
-router.use(authMiddleware);
+// router.use(authMiddleware);
 
 router.post('/createService', rateLimiter, multer.single('image'), servicesController.createService);
 

@@ -10,8 +10,8 @@ router.post('/createherochalets', authMiddleware, rateLimiter, upload.single('im
 router.put('/updatechaletshero/:id', authMiddleware, rateLimiter, upload.single('image'), chaletsHeroController.updateChaletsHero);
 
 
-router.get('/getherochaletsbyid/:id/:lang', authMiddleware, chaletsHeroController.getChaletsHeroById);
-router.get('/getAllHeroChalets/:lang', authMiddleware, chaletsHeroController.getAllChaletsHero);
+router.get('/getherochaletsbyid/:id/:lang', chaletsHeroController.getChaletsHeroById);
+router.get('/getAllHeroChalets/:lang', chaletsHeroController.getAllChaletsHero);
 router.delete('/deleteHeroChalets/:id', authMiddleware, chaletsHeroController.deleteChaletsHero);
 
 module.exports = router;
