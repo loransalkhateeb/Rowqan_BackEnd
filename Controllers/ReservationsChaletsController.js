@@ -364,6 +364,79 @@ exports.getReservationsByChaletId = async (req, res) => {
 
 
 
+
+exports.getReservationsByRightTimeId = async (req, res) => {
+  try {
+    const { right_time_id, lang } = req.params; 
+
+    if (!['ar', 'en'].includes(lang)) {
+      return res.status(400).json({
+        error: lang === 'en' ? 'Invalid language' : 'اللغة غير صالحة',
+      });
+    }
+
+    if (!right_time_id || isNaN(right_time_id)) {
+      return res.status(400).json({
+        error: lang === 'en' ? 'Invalid chalet ID' : 'رقم الشاليه غير صحيح',
+      });
+    }
+
+    const reservations = await Reservations_Chalets.findAll({
+      where: { right_time_id: right_time_id },
+      include: [
+        {
+          model: Chalet,
+          as: 'chalet', 
+          attributes: ['id', 'title', 'reserve_price'], 
+        },
+        {
+          model: User,
+          as: 'user', 
+          attributes: ['id', 'name', 'email'], 
+        },
+        {
+          model: RightTimeModel,
+          as: 'rightTime', 
+          attributes: ['id', 'time','name','price'], 
+        }
+      ]
+    });
+
+    if (!reservations || reservations.length === 0) {
+      return res.status(404).json({
+        message: lang === 'en' ? 'No reservations found for this chalet' : 'لا توجد حجوزات لهذا الشاليه',
+      });
+    }
+
+    return res.status(200).json({
+      message: lang === 'en' ? 'Reservations retrieved successfully' : 'تم استرجاع الحجوزات بنجاح',
+      reservations: reservations.map(reservation => ({
+        id: reservation.id,
+        initial_amount: reservation.initial_amount,
+        reserve_price: reservation.reserve_price,
+        total_amount: reservation.total_amount,
+        cashback: reservation.cashback,
+        date: reservation.date,
+        lang: reservation.lang,
+        status: reservation.status,
+        additional_visitors: reservation.additional_visitors,
+        number_of_days: reservation.number_of_days,
+        user_id: reservation.user_id,
+        chalet_id: reservation.chalet_id,
+        right_time_id: reservation.right_time_id,
+        chalet: reservation.chalet, 
+        user: reservation.user,
+        right_time: reservation.rightTime,
+      })),
+    });
+  } catch (error) {
+    console.error('Error fetching reservations:', error);
+    return res.status(500).json({
+      error: 'Failed to fetch reservations',
+    });
+  }
+};
+
 exports.updateReservation = async (req, res) => {
   try {
     const { id } = req.params;

@@ -1,7 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../Config/dbConnect');
-const ReservationDate = require('../Models/ReservationDatesModel')
-
+const ReservationDate = require('../Models/ReservationDatesModel');
 
 const RightTimeModel = sequelize.define('RightTimeModel', {
   id: {
@@ -18,11 +17,15 @@ const RightTimeModel = sequelize.define('RightTimeModel', {
     allowNull: false,
   },
   time: {
-    type: DataTypes.STRING, 
+    type: DataTypes.TIME, 
     allowNull: false,
   },
   lang: {
     type: DataTypes.STRING,
+    allowNull: false,
+  },
+  price: { 
+    type: DataTypes.FLOAT,
     allowNull: false,
   },
 }, {
@@ -31,6 +34,5 @@ const RightTimeModel = sequelize.define('RightTimeModel', {
 
 RightTimeModel.hasMany(ReservationDate, { foreignKey: 'right_time_id', onDelete: 'CASCADE' });
 ReservationDate.belongsTo(RightTimeModel, { foreignKey: 'right_time_id' });
-
 
 module.exports = RightTimeModel;

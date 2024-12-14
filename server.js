@@ -43,7 +43,8 @@ const UsersTypesRoutes = require('./Routes/UsersTypesRoutes')
 const ReservationsChaletsRoutes = require('./Routes/ReservationsChaletsRoutes')
 const WalletRoutes = require('./Routes/WalletRoutes')
 const PropsChaletsRoutes = require('./Routes/ChaletsPropsRoutes')
-
+const FeedBackRoutes = require('./Routes/FeedBacksRoutes');
+const MessagesRoutes = require('./Routes/MessagesRoutes')
 
 
 app.use(cors());
@@ -71,7 +72,7 @@ app.use('/subevents',SubEventsRoutes)
 app.use('/availablevents',AvailableEventsRoutes)
 app.use('/availableimages',AvailableImages)
 app.use('/plans',PlansRoutes)
-app.use('/reservationsEvents',ReservatioEventsRoutes)
+// app.use('/reservationsEvents',ReservatioEventsRoutes)
 app.use('/categorieslands',CategoryLandsRoutes)
 app.use('/propertyLands',PrpertyLandsRoutes)
 app.use('/imageslands',ImagesLandsRoutes)
@@ -82,6 +83,10 @@ app.use('/userstypes',UsersTypesRoutes)
 app.use('/ReservationsChalets',ReservationsChaletsRoutes)
 app.use('/Wallet',WalletRoutes)
 app.use('/propschalets',PropsChaletsRoutes)
+app.use('/FeedBacks',FeedBackRoutes)
+app.use('/messages',MessagesRoutes)
+
+
 
 
 app.use(helmet());

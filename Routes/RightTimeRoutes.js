@@ -12,7 +12,7 @@ router.use(authMiddleware);
 router.post('/createrighttime', rateLimiter, multer.single('image'), rightTimeController.createRightTime);
 
 
-router.get('/getallrighttimes/:lang', rightTimeController.getAllRightTimes);
+router.get('/getallrighttimes/:lang', rightTimeController.get);
 
 
 router.get('/getallrighttimes/:lang/:chalet_id', rightTimeController.getAllRightTimesByChaletId);
