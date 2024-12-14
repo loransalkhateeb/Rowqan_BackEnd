@@ -6,10 +6,6 @@ const UserTypes = require('../Models/UsersTypes');
 const { validateUserInput, validateAdminInput } = require('../Utils/validateInput');
 require('dotenv').config();
 
-
-
-
-
 exports.createUser = async (req, res) => {
   const { name, email, phone_number, country, password, lang, user_type_id, RepeatPassword } = req.body;
 
@@ -25,34 +21,8 @@ exports.createUser = async (req, res) => {
       });
     }
 
-<<<<<<< HEAD
-     const salt = bcrypt.genSaltSync(10);
-     const hashedPassword = bcrypt.hashSync(password, salt);
-=======
- 
-
-    const hashedPassword = await bcrypt.hash(password, 10); 
->>>>>>> c43ec745ed66443187e9d42dcc9cf9f89126c158
-
-     const newUser = await User.create({
-        name,
-        email,
-        phone_number,
-        country,
-        password: hashedPassword,
-        lang,
-        user_type_id,
-     });
-
-<<<<<<< HEAD
-     res.status(201).json({
-        message: lang === 'en' ? 'User created successfully' : 'تم إنشاء المستخدم بنجاح',
-        user: newUser,
-     });
-=======
-    const finalUserType = user_type_id || 2 ;
-
-
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const finalUserType = user_type_id || 2;
 
     const newUser = await User.create({
       name,
@@ -68,7 +38,6 @@ exports.createUser = async (req, res) => {
       message: lang === 'en' ? 'User created successfully' : 'تم إنشاء المستخدم بنجاح',
       user: newUser,
     });
->>>>>>> c43ec745ed66443187e9d42dcc9cf9f89126c158
   } catch (error) {
     console.error('Error creating user:', error);
     res.status(500).json({
@@ -77,9 +46,9 @@ exports.createUser = async (req, res) => {
   }
 };
 
-
 exports.getAllUsers = async (req, res) => {
   const { lang } = req.params;
+
   try {
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
@@ -162,13 +131,11 @@ exports.updateUser = async (req, res) => {
       });
     }
 
-
     if (req.user.user_type_id !== 1) {
       return res.status(403).json({
         error: lang === 'en' ? 'You are not authorized to update users' : 'أنت غير مخول لتحديث المستخدمين',
       });
     }
-
 
     const validationErrors = validateUserInput(name, email, password, RepeatPassword);
     if (validationErrors.length > 0) {
@@ -181,7 +148,6 @@ exports.updateUser = async (req, res) => {
         error: lang === 'en' ? 'User not found' : 'المستخدم غير موجود',
       });
     }
-
 
     const hashedPassword = password ? await bcrypt.hash(password, 10) : user.password;
 
@@ -207,12 +173,10 @@ exports.updateUser = async (req, res) => {
   }
 };
 
-
 exports.deleteUser = async (req, res) => {
   const { id, lang } = req.params;
 
   try {
-   
     const user = await User.findOne({ where: { id, lang } });
     if (!user) {
       return res.status(404).json({
@@ -225,8 +189,7 @@ exports.deleteUser = async (req, res) => {
         error: lang === 'en' ? 'You are not authorized to delete users' : 'أنت غير مخول لحذف المستخدمين',
       });
     }
-    
-  
+
     await user.destroy();
 
     res.status(200).json({
@@ -242,6 +205,7 @@ exports.deleteUser = async (req, res) => {
 
 exports.login = async (req, res) => {
   const { email, password, lang } = req.body;
+
   try {
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
@@ -263,139 +227,108 @@ exports.login = async (req, res) => {
       });
     }
 
-<<<<<<< HEAD
     const secretKey = process.env.JWT_SECRET;
-
-=======
-
-  
->>>>>>> c43ec745ed66443187e9d42dcc9cf9f89126c158
     if (!secretKey) {
-      console.error("JWT_SECRET is not defined in .env file.");
+      console.error('JWT_SECRET is not defined in .env file.');
       return res.status(500).json({
-        error: lang === 'en' ? 'Internal server error' : 'خطأ داخلي في الخادم',
+        error: lang === 'en' ? 'Server error. Please try again later.' : 'خطأ في الخادم. يرجى المحاولة لاحقًا.',
       });
     }
 
     const token = jwt.sign({ id: user.id, user_type_id: user.user_type_id }, secretKey, { expiresIn: '1h' });
 
-    // Generate JWT token
-    const token = jwt.sign({ id: user.id, user_type_id: user.user_type_id }, 'secret_key', { expiresIn: '1h' });
-
-
-    // Set the cookie first before sending the response
-    
-    // For Production
-    // res.cookie("token", token, {
-    //   httpOnly: true,
-    //   secure: true,
-    //   maxAge: 24 * 60 * 60 * 1000,
-    //   sameSite: "Strict",
-    // });
-// For Development
-    res.cookie('token', token, {
-      httpOnly: true,
-      maxAge: 3600000,
-      secure: process.env.NODE_ENV === 'production',
-    });
-
-    return res.status(200).json({
+    res.status(200).json({
       message: lang === 'en' ? 'Login successful' : 'تم تسجيل الدخول بنجاح',
       token,
     });
   } catch (error) {
-    console.error('Error logging in:', error);
+    console.error('Error during login:', error);
     res.status(500).json({
       error: lang === 'en' ? 'Failed to login' : 'فشل في تسجيل الدخول',
     });
   }
 };
+exports.logout = async (req, res) => {
+  const { lang } = req.body;
 
-exports.logout = (req, res) => {
   try {
-<<<<<<< HEAD
-    res.clearCookie('token', { httpOnly: true });
+    if (!['ar', 'en'].includes(lang)) {
+      return res.status(400).json({
+        error: lang === 'en' ? 'Invalid language. Please use "ar" or "en".' : 'اللغة غير صالحة. استخدم "ar" أو "en".',
+      });
+    }
+
+    
     res.status(200).json({
-=======
-    // Ensure the token cookie is cleared both server-side and client-side
-
-    res.clearCookie('token', { 
-      httpOnly: true,  
-      secure: false,   // Make sure it's false in development or adjust for production
-    }); 
-    // res.clearCookie('token', { 
-    //   httpOnly: true,  
-    //   secure: true,   // Make sure it's false in development or adjust for production
-    //   sameSite: 'Strict'
-    // }); 
-
-    return res.status(200).json({
->>>>>>> c43ec745ed66443187e9d42dcc9cf9f89126c158
-      message: 'Logged out successfully',
+      message: lang === 'en' ? 'Logout successful' : 'تم تسجيل الخروج بنجاح',
     });
   } catch (error) {
-    console.error('Error logging out:', error);
+    console.error('Error during logout:', error);
     res.status(500).json({
-      error: 'Failed to log out',
+      error: lang === 'en' ? 'Failed to logout' : 'فشل في تسجيل الخروج',
     });
   }
 };
 
+
+
+
+
+
 exports.createAdmin = async (req, res) => {
-  const { name, email, password, RepeatPassword } = req.body;
+  const { name, email, password, RepeatPassword, role_user } = req.body;
 
   try {
-    const validationErrors = validateAdminInput(name, email, password, RepeatPassword);
+
+    const validationErrors = validateAdminInput(name, email, password, RepeatPassword, role_user);
     if (validationErrors.length > 0) {
       return res.status(400).json({ errors: validationErrors });
     }
 
+   
+    if (password !== RepeatPassword) {
+      return res.status(400).json({ error: 'Passwords do not match' });
+    }
+
+ 
     const hashedPassword = await bcrypt.hash(password, 10);
+
 
     const newAdmin = await User.create({
       name,
       email,
       password: hashedPassword,
-      role_user: 'admin',
+      role_user: role_user || 'admin', 
     });
 
+ 
     res.status(201).json({
       message: 'Admin created successfully',
       admin: newAdmin,
     });
+
   } catch (error) {
     console.error('Error creating admin:', error);
     res.status(500).json({ error: 'Failed to create admin' });
   }
-<<<<<<< HEAD
-};
-=======
 };
 
+
+// Middleware to verify JWT token
 exports.verifyToken = (req, res, next) => {
-  const token = req.cookies['token'];
-
+  // Extract token from cookies
+  const token = req.cookies['token']; // Assuming 'token' is the cookie name
+  
   if (!token) {
     return res.status(403).json({ error: 'Token missing' });
   }
 
-  jwt.verify(token, 'secret_key', (err, decoded) => {
+  jwt.verify(token, secretKey, (err, decoded) => {
     if (err) {
       return res.status(403).json({ error: 'Invalid token' });
     }
 
-    req.user = decoded;
-
-   
-    if (req.user.user_type_id !== 1) { 
-      return res.status(403).json({ error: 'Unauthorized' });
-    }
-
+    req.user = decoded; // Attach decoded user info to request object
     next();
   });
 };
-
-
-
-
->>>>>>> c43ec745ed66443187e9d42dcc9cf9f89126c158
