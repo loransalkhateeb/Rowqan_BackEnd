@@ -68,6 +68,7 @@ const corsOptions = {
 
 // Use the CORS middleware
 app.use(cors(corsOptions));
+app.use(cookieParser());
 app.use(express.json());
 app.use('/users',UsersRoutes)
 app.use('/logos',LogoRoutes)

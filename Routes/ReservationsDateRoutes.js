@@ -6,7 +6,7 @@ const authMiddleware = require('../MiddleWares/authMiddleware');
 const rateLimiter = require('../MiddleWares/rateLimiter');
 
 
-router.post('/createreservationdate', authMiddleware, rateLimiter, reservationDatesController.createReservationDate);
+router.post('/createreservationdate', rateLimiter, reservationDatesController.createReservationDate);
 
 
 router.get('/getreservationdatesbychalet/:chalet_id/:lang', reservationDatesController.getReservationDatesByChaletId);
