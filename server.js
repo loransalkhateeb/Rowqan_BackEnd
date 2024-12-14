@@ -45,7 +45,6 @@ const WalletRoutes = require('./Routes/WalletRoutes')
 const PropsChaletsRoutes = require('./Routes/ChaletsPropsRoutes')
 const FeedBackRoutes = require('./Routes/FeedBacksRoutes');
 const MessagesRoutes = require('./Routes/MessagesRoutes')
-// const ReservationDate2 = require('./Routes/ReservationDatesRoutes2')
 
 const allowedOrigins = [
   'http://localhost:5173',
