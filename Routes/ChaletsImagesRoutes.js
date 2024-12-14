@@ -10,8 +10,8 @@ router.post('/createchaletImage', authMiddleware, rateLimiter, upload.array('ima
 router.put('/updateChaletImage/:id', authMiddleware, rateLimiter, upload.single('image'), chaletsImagesController.updateChaletImage);
 
 
-router.get('/chaletgetChaletImage/:chalet_id', authMiddleware, chaletsImagesController.getImagesByChaletId);
-router.get('/getChaletImageById/:id', authMiddleware, chaletsImagesController.getChaletImageById);
+router.get('/chaletgetChaletImage/:chalet_id', chaletsImagesController.getImagesByChaletId);
+router.get('/getChaletImageById/:id', chaletsImagesController.getChaletImageById);
 router.delete('/deleteChaletImage/:id', authMiddleware, chaletsImagesController.deleteChaletImage);
 
 module.exports = router;

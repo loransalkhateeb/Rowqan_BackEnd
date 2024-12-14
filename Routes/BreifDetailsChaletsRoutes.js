@@ -9,8 +9,8 @@ router.post('/createBreif', authMiddleware, rateLimiter, BreifDetailsChaletsCont
 router.put('/updateBreif/:id', authMiddleware, rateLimiter, BreifDetailsChaletsController.updateBreifDetailsChalet);
 
 
-router.get('/getBreifsByChaletId/:chalet_id/:lang', authMiddleware, BreifDetailsChaletsController.getBreifDetailsByChaletId);
-router.get('/getById/:id/:lang', authMiddleware, BreifDetailsChaletsController.getBreifDetailsById);
-router.delete('/deleteBreif/:id/:lang', authMiddleware, BreifDetailsChaletsController.deleteBreifDetailsChalet);
+router.get('/getBreifsByChaletId/:chalet_id/:lang', BreifDetailsChaletsController.getBreifDetailsByChaletId);
+router.get('/getById/:id/:lang', BreifDetailsChaletsController.getBreifDetailsById);
+router.delete('/deleteBreif/:id/:lang', BreifDetailsChaletsController.deleteBreifDetailsChalet);
 
 module.exports = router;

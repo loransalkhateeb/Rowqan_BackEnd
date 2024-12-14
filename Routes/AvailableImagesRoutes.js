@@ -10,7 +10,7 @@ router.post('/createvailableimage', authMiddleware, rateLimiter, multer.array('i
 router.put('/updateimageavailable/:id', authMiddleware, rateLimiter, multer.array('image'), AvailableEventsImagesController.updateAvailableEventImage);
 
 
-router.get('/getavailableimage/:event_id', authMiddleware, AvailableEventsImagesController.getAvailableEventImages);
-router.delete('/deleteavilableimage/:id', authMiddleware, AvailableEventsImagesController.deleteAvailableEventImage);
+router.get('/getavailableimage/:event_id', AvailableEventsImagesController.getAvailableEventImages);
+router.delete('/deleteavilableimage/:id', AvailableEventsImagesController.deleteAvailableEventImage);
 
 module.exports = router;

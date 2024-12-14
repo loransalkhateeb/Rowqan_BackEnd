@@ -9,8 +9,8 @@ router.post('/createbreiflands', authMiddleware, rateLimiter, breifLandsControll
 router.put('/updatebreifland/:id', authMiddleware, rateLimiter, breifLandsController.updateBreifLand);
 
 
-router.get('/getbreiflands/:category_id', authMiddleware, breifLandsController.getAllBreifLandsByCategory);
-router.get('/getbreiflandbyid/:id', authMiddleware, breifLandsController.getBreifLandById);
+router.get('/getbreiflands/:category_id', breifLandsController.getAllBreifLandsByCategory);
+router.get('/getbreiflandbyid/:id', breifLandsController.getBreifLandById);
 router.delete('/deletebreifland/:id/:lang', authMiddleware, breifLandsController.deleteBreifLand);
 
 module.exports = router;

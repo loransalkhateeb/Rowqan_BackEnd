@@ -8,9 +8,9 @@ const rateLimiter = require('../MiddleWares/rateLimiter');
 
 router.post('/createheroland', authMiddleware, rateLimiter, multer.single('image'), HeroLandsController.createHeroLand);
 
-router.get('/getAllHerosLands/:lang', authMiddleware, HeroLandsController.getAllHeroLands);
+router.get('/getAllHerosLands/:lang', HeroLandsController.getAllHeroLands);
 
-router.get('/getHeroLandById/:id/:lang', authMiddleware, HeroLandsController.getHeroLandById);
+router.get('/getHeroLandById/:id/:lang', HeroLandsController.getHeroLandById);
 
 router.put('/updateheroland/:id', authMiddleware, rateLimiter, multer.single('image'), HeroLandsController.updateHeroLand);
 
