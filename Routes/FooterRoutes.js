@@ -7,9 +7,9 @@ const rateLimiter = require('../MiddleWares/rateLimiter');
 
 router.post('/createFooter', authMiddleware, rateLimiter, footerController.createFooter);
 
-router.get('/getAllFooters/:lang', authMiddleware, footerController.getAllFooters);
+router.get('/getAllFooters/:lang', footerController.getAllFooters);
 
-router.get('/getFooterById/:id/:lang', authMiddleware, footerController.getFooterById);
+router.get('/getFooterById/:id/:lang', footerController.getFooterById);
 
 router.put('/updateFooter/:id', authMiddleware, rateLimiter, footerController.updateFooter);
 

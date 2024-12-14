@@ -10,8 +10,8 @@ router.post('/createimageland', authMiddleware, rateLimiter, multer.array('image
 router.put('/updateImageCategory/:id', authMiddleware, rateLimiter, multer.single('image'), CategoriesImageLandsController.updateCategoryImageLand);
 
 
-router.get('/getImagesByCategoryId/:category_id', authMiddleware, CategoriesImageLandsController.getAllCategoryImageLands);
-router.get('/getimagesById/:id', authMiddleware, CategoriesImageLandsController.getCategoryImageLandById);
-router.delete('/deleteImage/:id', authMiddleware, CategoriesImageLandsController.deleteCategoryImageLand);
+router.get('/getImagesByCategoryId/:category_id', CategoriesImageLandsController.getAllCategoryImageLands);
+router.get('/getimagesById/:id', CategoriesImageLandsController.getCategoryImageLandById);
+router.delete('/deleteImage/:id', CategoriesImageLandsController.deleteCategoryImageLand);
 
 module.exports = router;

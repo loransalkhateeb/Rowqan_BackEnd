@@ -8,10 +8,10 @@ const rateLimiter = require('../MiddleWares/rateLimiter');
 router.post('/createHeader', authMiddleware, rateLimiter, headerController.createHeader);
 
 
-router.get('/getAllHeaders/:lang', authMiddleware, headerController.getAllHeaders);
+router.get('/getAllHeaders/:lang', headerController.getAllHeaders);
 
 
-router.get('/getHeaderById/:id/:lang', authMiddleware, headerController.getHeaderById);
+router.get('/getHeaderById/:id/:lang', headerController.getHeaderById);
 
 
 router.put('/updateHeader/:id', authMiddleware, rateLimiter, headerController.updateHeader);

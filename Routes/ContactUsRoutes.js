@@ -10,8 +10,8 @@ router.post('/createcontactus', authMiddleware, rateLimiter, multer.single('imag
 router.put('/updatecontactus/:id', authMiddleware, rateLimiter, multer.single('image'), ContactUsController.updateContactUs);
 
 
-router.get('/getcontactusid/:id/:lang', authMiddleware, ContactUsController.getContactUsById);
-router.get('/getAllContactUs/:lang', authMiddleware, ContactUsController.getALLContactUs);
+router.get('/getcontactusid/:id/:lang', ContactUsController.getContactUsById);
+router.get('/getAllContactUs/:lang', ContactUsController.getALLContactUs);
 
 
 router.delete('/deletecontactus/:id/:lang', authMiddleware, ContactUsController.deleteContactUs);

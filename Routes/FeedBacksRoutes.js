@@ -11,13 +11,13 @@ router.post('/createfeedback', authMiddleware, rateLimiter, FeedBackController.c
 router.put('/updatefeedback/:id', authMiddleware, rateLimiter, FeedBackController.updateFeedBack);
 
 
-router.get('/getFeedBackByChaletId/:chalet_id/:lang', authMiddleware, FeedBackController.getFeedBackByChaletId);
-router.get('/getFeedBackByEventId/:available_event_id/:lang', authMiddleware, FeedBackController.getFeedBackByEventId);
-router.get('/getFeedBackByLandId/:land_id/:lang', authMiddleware, FeedBackController.getFeedBackByLandId);
+router.get('/getFeedBackByChaletId/:chalet_id/:lang', FeedBackController.getFeedBackByChaletId);
+router.get('/getFeedBackByEventId/:available_event_id/:lang', FeedBackController.getFeedBackByEventId);
+router.get('/getFeedBackByLandId/:land_id/:lang', FeedBackController.getFeedBackByLandId);
 
 
 
-router.get('/getfeedbackbyid/:id/:lang', authMiddleware, FeedBackController.getFeedBackById);
+router.get('/getfeedbackbyid/:id/:lang', FeedBackController.getFeedBackById);
 
 
 router.delete('/deletefeedback/:id/:lang', authMiddleware, FeedBackController.deleteFeedBack);

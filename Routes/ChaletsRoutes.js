@@ -9,11 +9,11 @@ const rateLimiter = require('../MiddleWares/rateLimiter');
 router.post('/createchalet', authMiddleware, rateLimiter, multer.single('image'), chaletController.createChalet);
 
 
-router.get('/getallchalets/:lang', authMiddleware, chaletController.getAllChalets);
-router.get('/getchalets/:lang', authMiddleware, chaletController.getAllChalets);
+router.get('/getallchalets/:lang', chaletController.getAllChalets);
+router.get('/getchalets/:lang', chaletController.getAllChalets);
 // router.get('/getallchaletsbystatus/:status_id/:lang', authMiddleware, chaletController.getChaletByStatus);
-router.get('/getchaletbyid/:id', authMiddleware, chaletController.getChaletById);
-router.get('/getchaletsbydetailtype/:type/:lang', authMiddleware, chaletController.getChaletsByDetailType);
+router.get('/getchaletbyid/:id', chaletController.getChaletById);
+router.get('/getchaletsbydetailtype/:type/:lang', chaletController.getChaletsByDetailType);
 
 
 router.put('/updatechalet/:id', authMiddleware, rateLimiter, multer.single('image'), chaletController.updateChalet);

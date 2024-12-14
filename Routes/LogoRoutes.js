@@ -8,9 +8,9 @@ const rateLimiter = require('../MiddleWares/rateLimiter');
 
 router.post('/createlogo', authMiddleware, rateLimiter, multer.single('image'), logoController.createLogo);
 
-router.get('/getalllogos', authMiddleware, logoController.getAllLogos);
+router.get('/getalllogos', logoController.getAllLogos);
 
-router.get('/getlogobyid/:id', authMiddleware, logoController.getLogoById);
+router.get('/getlogobyid/:id', logoController.getLogoById);
 
 router.put('/updatelogo/:id', authMiddleware, rateLimiter, multer.single('image'), logoController.updatelogo);
 

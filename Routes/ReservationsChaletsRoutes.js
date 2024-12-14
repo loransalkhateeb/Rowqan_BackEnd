@@ -9,10 +9,10 @@ const rateLimiter = require('../MiddleWares/rateLimiter');
 router.post('/createReservationChalet', authMiddleware, rateLimiter, ReservationsChaletsController.createReservation);
 
 
-router.get('/getAllReservationChalet/:lang', authMiddleware, ReservationsChaletsController.getAllReservations);
+router.get('/getAllReservationChalet/:lang', ReservationsChaletsController.getAllReservations);
 
 
-router.get('/getAllReservationChaletById/:id/:lang', authMiddleware, ReservationsChaletsController.getReservationById);
+router.get('/getAllReservationChaletById/:id/:lang', ReservationsChaletsController.getReservationById);
 
 
 router.put('/reservations/:id', authMiddleware, rateLimiter, ReservationsChaletsController.updateReservation);

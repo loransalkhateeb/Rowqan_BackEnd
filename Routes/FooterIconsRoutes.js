@@ -10,7 +10,7 @@ router.post('/createFooterIcon', authMiddleware, rateLimiter, multer.single('ico
 
 router.get('/getAllFooterIcons', authMiddleware, footerIconsController.getAllFooterIcons);
 
-router.get('/getFooterIconById/:id', authMiddleware, footerIconsController.getFooterIconById);
+router.get('/getFooterIconById/:id', footerIconsController.getFooterIconById);
 
 router.put('/updateFooterIcon/:id', authMiddleware, rateLimiter, multer.single('icon'), footerIconsController.updateFooterIcon);
 
