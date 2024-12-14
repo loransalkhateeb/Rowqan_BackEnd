@@ -13,11 +13,15 @@ router.get('/getAllServices/:lang', servicesController.getAllServices);
 
 router.get('/getAllServicesByServiceStatus/:status_service/:lang', servicesController.getServiceByStatus);
 
+
 router.get('/getAllServicesByServiceStatus/:lang', servicesController.getServiceByStatusOnlyLang);
+
 
 router.get('/getservicebyid/:id/:lang', servicesController.getServiceById);
 
+
 router.put('/updateService/:id', rateLimiter, multer.single('image'), servicesController.updateService);
+
 
 router.delete('/deleteService/:id/:lang', servicesController.deleteService);
 
