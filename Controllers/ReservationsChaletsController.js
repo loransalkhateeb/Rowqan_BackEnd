@@ -156,6 +156,8 @@ exports.createReservation = async (req, res) => {
   }
 };
 
+
+
 exports.getAllReservations = async (req, res) => {
   try {
     const { lang } = req.params; 
@@ -499,6 +501,11 @@ exports.getReservationsByRightTimeId = async (req, res) => {
     });
   }
 };
+
+
+
+
+
 
 exports.updateReservation = async (req, res) => {
   try {
