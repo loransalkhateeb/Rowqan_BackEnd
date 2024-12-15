@@ -1,0 +1,361 @@
+[1mdiff --git a/Controllers/MessagesController.js b/Controllers/MessagesController.js[m
+[1mindex 3c87879..2e66fb0 100644[m
+[1m--- a/Controllers/MessagesController.js[m
+[1m+++ b/Controllers/MessagesController.js[m
+[36m@@ -1,134 +1,158 @@[m
+[32m+[m[32mconst { validateInput, ErrorResponse } = require('../Utils/validateInput');[m
+ const Messages = require('../Models/MessageModel');[m
+ const Users = require('../Models/UsersModel');[m
+ [m
+ [m
+ exports.createMessage = async (req, res) => {[m
+[31m-  try {[m
+[31m-    const { senderId, receiverId, message, lang } = req.body;[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        const { Message, lang, User_Id } = req.body;[m
+ [m
+[31m- [m
+[31m-    if (!senderId || !receiverId || !message || !lang) {[m
+[31m-      return res.status(400).json({ message: 'All fields are required: senderId, receiverId, message, lang' });[m
+[32m+[m[41m        [m
+[32m+[m[32m        const validationErrors = validateInput({ Message, lang, User_Id });[m
+[32m+[m[32m        if (validationErrors.length > 0) {[m
+[32m+[m[32m            return res.status(400).json(new ErrorResponse('Validation failed', validationErrors));[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[41m        [m
+[32m+[m[32m        const user = await Users.findByPk(User_Id);[m
+[32m+[m[32m        if (!user) {[m
+[32m+[m[32m            return res.status(404).json(ErrorResponse('User not found.'));[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[41m    [m
+[32m+[m[32m        const newMessage = await Messages.create({[m
+[32m+[m[32m            Message,[m
+[32m+[m[32m            lang,[m
+[32m+[m[32m            User_Id[m
+[32m+[m[32m        });[m
+[32m+[m
+[32m+[m[32m        return res.status(201).json({[m
+[32m+[m[32m            message: 'Message created successfully',[m
+[32m+[m[32m            data: newMessage[m
+[32m+[m[32m        });[m
+[32m+[m[32m    } catch (error) {[m
+[32m+[m[32m        console.error(error);[m
+[32m+[m[32m        return res.status(500).json(ErrorResponse('Internal server error'));[m
+     }[m
+[32m+[m[32m};[m
+[32m+[m
+[32m+[m
+[32m+[m[32mexports.getMessagesByLanguage = async (req, res) => {[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        const { lang } = req.params;[m
+ [m
+[31m- [m
+[31m-    const newMessage = await Messages.create({[m
+[31m-      senderId,[m
+[31m-      receiverId,[m
+[31m-      message,[m
+[31m-      lang,[m
+[31m-    });[m
+[31m-[m
+[31m-    res.status(201).json({ message: 'Message created successfully', data: newMessage });[m
+[31m-  } catch (error) {[m
+[31m-    console.error(error);[m
+[31m-    res.status(500).json({ message: 'Internal server error', error: error.message });[m
+[31m-  }[m
+[32m+[m[32m        const messages = await Messages.findAll({[m
+[32m+[m[32m            where: { lang },[m
+[32m+[m[32m            include: [{ model: Users }][m
+[32m+[m[32m        });[m
+[32m+[m
+[32m+[m[32m        if (messages.length === 0) {[m
+[32m+[m[32m            return res.status(404).json(ErrorResponse('No messages found in the specified language.'));[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        return res.status(200).json({ messages });[m
+[32m+[m[32m    } catch (error) {[m
+[32m+[m[32m        console.error(error);[m
+[32m+[m[32m        return res.status(500).json(ErrorResponse('Internal server error'));[m
+[32m+[m[32m    }[m
+ };[m
+ [m
+ [m
+ [m
+[32m+[m[32mexports.getMessageById = async (req, res) => {[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        const { id } = req.params;[m
+ [m
+[32m+[m[32m        const message = await Messages.findOne({[m
+[32m+[m[32m            where: { id },[m
+[32m+[m[32m            include: [{ model: Users }][m
+[32m+[m[32m        });[m
+ [m
+[31m-exports.getMessagesBetweenUsers = async (req, res) => {[m
+[31m-  try {[m
+[31m-    const { senderId, receiverId } = req.params;[m
+[32m+[m[32m        if (!message) {[m
+[32m+[m[32m            return res.status(404).json(ErrorResponse('Message not found.'));[m
+[32m+[m[32m        }[m
+ [m
+[31m-    if (!senderId || !receiverId) {[m
+[31m-      return res.status(400).json({ message: 'Both senderId and receiverId are required' });[m
+[32m+[m[32m        return res.status(200).json({ message });[m
+[32m+[m[32m    } catch (error) {[m
+[32m+[m[32m        console.error(error);[m
+[32m+[m[32m        return res.status(500).json(ErrorResponse('Internal server error'));[m
+     }[m
+[31m-[m
+[31m-    [m
+[31m-    const messages = await Messages.findAll({[m
+[31m-      where: {[m
+[31m-        senderId,[m
+[31m-        receiverId,[m
+[31m-      },[m
+[31m-      include: [[m
+[31m-        { model: Users, as: 'Sender', attributes: ['id', 'name', 'email'] },[m
+[31m-        { model: Users, as: 'Receiver', attributes: ['id', 'name', 'email'] },[m
+[31m-      ],[m
+[31m-      order: [['id', 'ASC']], [m
+[31m-    });[m
+[31m-[m
+[31m-    res.status(200).json({ message: 'Messages retrieved successfully', data: messages });[m
+[31m-  } catch (error) {[m
+[31m-    console.error(error);[m
+[31m-    res.status(500).json({ message: 'Internal server error', error: error.message });[m
+[31m-  }[m
+ };[m
+ [m
+ [m
+[31m-exports.getSentMessages = async (req, res) => {[m
+[31m-  try {[m
+[31m-    const { senderId } = req.params;[m
+[32m+[m[32mexports.updateMessage = async (req, res) => {[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        const { id } = req.params;[m
+[32m+[m[32m        const { Message, lang } = req.body;[m
+ [m
+[31m-    if (!senderId) {[m
+[31m-      return res.status(400).json({ message: 'senderId is required' });[m
+[31m-    }[m
+[32m+[m[41m       [m
+[32m+[m[32m        const validationErrors = validateInput({ Message, lang });[m
+[32m+[m[32m        if (validationErrors.length > 0) {[m
+[32m+[m[32m            return res.status(400).json(new ErrorResponse('Validation failed', validationErrors));[m
+[32m+[m[32m        }[m
+ [m
+[31m-  [m
+[31m-    const messages = await Messages.findAll({[m
+[31m-      where: { senderId },[m
+[31m-      include: [[m
+[31m-        { model: Users, as: 'Receiver', attributes: ['id', 'name', 'email'] },[m
+[31m-      ],[m
+[31m-      order: [['id', 'ASC']],[m
+[31m-    });[m
+[31m-[m
+[31m-    res.status(200).json({ message: 'Sent messages retrieved successfully', data: messages });[m
+[31m-  } catch (error) {[m
+[31m-    console.error(error);[m
+[31m-    res.status(500).json({ message: 'Internal server error', error: error.message });[m
+[31m-  }[m
+[31m-};[m
+[32m+[m[32m        const message = await Messages.findByPk(id);[m
+[32m+[m[32m        if (!message) {[m
+[32m+[m[32m            return res.status(404).json(ErrorResponse('Message not found.'));[m
+[32m+[m[32m        }[m
+ [m
+[32m+[m[41m        [m
+[32m+[m[32m        message.Message = Message || message.Message;[m
+[32m+[m[32m        message.lang = lang || message.lang;[m
+ [m
+[31m- exports.getReceivedMessages = async (req, res) => {[m
+[31m-  try {[m
+[31m-    const { receiverId } = req.params;[m
+[32m+[m[32m        await message.save();[m
+ [m
+[31m-    if (!receiverId) {[m
+[31m-      return res.status(400).json({ message: 'receiverId is required' });[m
+[32m+[m[32m        return res.status(200).json({[m
+[32m+[m[32m            message: 'Message updated successfully',[m
+[32m+[m[32m            data: message[m
+[32m+[m[32m        });[m
+[32m+[m[32m    } catch (error) {[m
+[32m+[m[32m        console.error(error);[m
+[32m+[m[32m        return res.status(500).json(ErrorResponse('Internal server error'));[m
+     }[m
+[31m-[m
+[31m- [m
+[31m-    const messages = await Messages.findAll({[m
+[31m-      where: { receiverId },[m
+[31m-      include: [[m
+[31m-        { model: Users, as: 'Sender', attributes: ['id', 'name', 'email'] },[m
+[31m-      ],[m
+[31m-      order: [['id', 'ASC']],[m
+[31m-    });[m
+[31m-[m
+[31m-    res.status(200).json({ message: 'Received messages retrieved successfully', data: messages });[m
+[31m-  } catch (error) {[m
+[31m-    console.error(error);[m
+[31m-    res.status(500).json({ message: 'Internal server error', error: error.message });[m
+[31m-  }[m
+ };[m
+ [m
+ [m
+ exports.deleteMessage = async (req, res) => {[m
+[31m-  try {[m
+[31m-    const { messageId } = req.params;[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        const { id } = req.params;[m
+ [m
+[31m-    if (!messageId) {[m
+[31m-      return res.status(400).json({ message: 'messageId is required' });[m
+[31m-    }[m
+[32m+[m[32m        const message = await Messages.findByPk(id);[m
+[32m+[m[32m        if (!message) {[m
+[32m+[m[32m            return res.status(404).json(ErrorResponse('Message not found.'));[m
+[32m+[m[32m        }[m
+ [m
+[31m-   [m
+[31m-    const deleted = await Messages.destroy({ where: { id: messageId } });[m
+[32m+[m[32m        await message.destroy();[m
+ [m
+[31m-    if (!deleted) {[m
+[31m-      return res.status(404).json({ message: 'Message not found' });[m
+[32m+[m[32m        return res.status(200).json({ message: 'Message deleted successfully' });[m
+[32m+[m[32m    } catch (error) {[m
+[32m+[m[32m        console.error(error);[m
+[32m+[m[32m        return res.status(500).json(ErrorResponse('Internal server error'));[m
+     }[m
+[31m-[m
+[31m-    res.status(200).json({ message: 'Message deleted successfully' });[m
+[31m-  } catch (error) {[m
+[31m-    console.error(error);[m
+[31m-    res.status(500).json({ message: 'Internal server error', error: error.message });[m
+[31m-  }[m
+ };[m
+ [m
+ [m
+[32m+[m[32mexports.getMessagesByUserId = async (req, res) => {[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        const { User_Id } = req.params;[m
+[32m+[m
+[32m+[m[32m        const user = await Users.findByPk(User_Id);[m
+[32m+[m[32m        if (!user) {[m
+[32m+[m[32m            return res.status(404).json(ErrorResponse('User not found.'));[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        const messages = await Messages.findAll({[m
+[32m+[m[32m            where: { User_Id },[m
+[32m+[m[32m            include: [{ model: Users }][m
+[32m+[m[32m        });[m
+[32m+[m
+[32m+[m[32m        if (messages.length === 0) {[m
+[32m+[m[32m            return res.status(404).json(ErrorResponse('No messages found for this user.'));[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        return res.status(200).json({ messages });[m
+[32m+[m[32m    } catch (error) {[m
+[32m+[m[32m        console.error(error);[m
+[32m+[m[32m        return res.status(500).json(ErrorResponse('Internal server error'));[m
+[32m+[m[32m    }[m
+[32m+[m[32m};[m
+[1mdiff --git a/Models/MessageModel.js b/Models/MessageModel.js[m
+[1mindex 6849be7..f0ec96c 100644[m
+[1m--- a/Models/MessageModel.js[m
+[1m+++ b/Models/MessageModel.js[m
+[36m@@ -2,6 +2,7 @@[m [mconst { DataTypes } = require('sequelize');[m
+ const sequelize = require('../Config/dbConnect');[m
+ const Users = require('../Models/UsersModel');[m
+ [m
+[32m+[m
+ const Messages = sequelize.define('Messages', {[m
+   id: {[m
+     type: DataTypes.INTEGER,[m
+[36m@@ -16,32 +17,11 @@[m [mconst Messages = sequelize.define('Messages', {[m
+     type: DataTypes.STRING,[m
+     allowNull: false,[m
+   },[m
+[31m-  senderId: {[m
+[31m-    type: DataTypes.INTEGER,[m
+[31m-    allowNull: false,[m
+[31m-    references: {[m
+[31m-      model: Users,[m
+[31m-      key: 'id',[m
+[31m-    },[m
+[31m-    onDelete: 'CASCADE',[m
+[31m-  },[m
+[31m-  receiverId: {[m
+[31m-    type: DataTypes.INTEGER,[m
+[31m-    allowNull: false,[m
+[31m-    references: {[m
+[31m-      model: Users,[m
+[31m-      key: 'id',[m
+[31m-    },[m
+[31m-    onDelete: 'CASCADE',[m
+[31m-  },[m
+ }, {[m
+[31m-  timestamps: false,[m
+[32m+[m[32m  timestamps: false,[m[41m [m
+ });[m
+ [m
+ [m
+[31m-Users.hasMany(Messages, { foreignKey: 'senderId', as: 'SentMessages', onDelete: 'CASCADE' });[m
+[31m-Users.hasMany(Messages, { foreignKey: 'receiverId', as: 'ReceivedMessages', onDelete: 'CASCADE' });[m
+[31m-Messages.belongsTo(Users, { foreignKey: 'senderId', as: 'Sender', onDelete: 'CASCADE' });[m
+[31m-Messages.belongsTo(Users, { foreignKey: 'receiverId', as: 'Receiver', onDelete: 'CASCADE' });[m
+[31m-[m
+[32m+[m[32mUsers.hasMany(Messages, { foreignKey: 'User_Id', onDelete: 'CASCADE' });[m[41m [m
+[32m+[m[32mMessages.belongsTo(Users, { foreignKey: 'User_Id', onDelete: 'CASCADE' });[m[41m [m
+ module.exports = Messages;[m
+[1mdiff --git a/Routes/MessagesRoutes.js b/Routes/MessagesRoutes.js[m
+[1mindex baa2ca3..ecdab95 100644[m
+[1m--- a/Routes/MessagesRoutes.js[m
+[1m+++ b/Routes/MessagesRoutes.js[m
+[36m@@ -1,20 +1,26 @@[m
+ const express = require('express');[m
+ const router = express.Router();[m
+[31m-const MessagesController = require('../Controllers/MessagesController');[m
+[32m+[m[32mconst messagesController = require('../Controllers/MessagesController');[m
+[32m+[m[32mconst authMiddleware = require('../MiddleWares/authMiddleware');[m[41m [m
+ [m
+ [m
+[31m-router.post('/SendMessage', MessagesController.createMessage);[m
+ [m
+[32m+[m[32mrouter.post('/createMessage', authMiddleware, messagesController.createMessage);[m
+ [m
+[31m-router.get('/betweenMessage/:senderId/:receiverId', MessagesController.getMessagesBetweenUsers);[m
+ [m
+[32m+[m[32mrouter.get('/messages/lang/:lang', authMiddleware, messagesController.getMessagesByLanguage);[m
+ [m
+[31m-router.get('/sent/:senderId', MessagesController.getSentMessages);[m
+ [m
+[32m+[m[32mrouter.get('/messages/:id', authMiddleware, messagesController.getMessageById);[m
+ [m
+[31m-router.get('/received/:receiverId', MessagesController.getReceivedMessages);[m
+ [m
+ [m
+[31m-router.delete('/:messageId', MessagesController.deleteMessage);[m
+[32m+[m[32mrouter.put('/messages/:id', authMiddleware, messagesController.updateMessage);[m
+[32m+[m
+[32m+[m
+[32m+[m[32mrouter.delete('/messages/:id', authMiddleware, messagesController.deleteMessage);[m
+[32m+[m
+[32m+[m
+[32m+[m[32mrouter.get('/messages/user/:User_Id', authMiddleware, messagesController.getMessagesByUserId);[m
+ [m
+ module.exports = router;[m
+[1mdiff --git a/Routes/ReservationsChaletsRoutes.js b/Routes/ReservationsChaletsRoutes.js[m
+[1mindex 1c80687..705c3f6 100644[m
+[1m--- a/Routes/ReservationsChaletsRoutes.js[m
+[1m+++ b/Routes/ReservationsChaletsRoutes.js[m
+[36m@@ -18,8 +18,9 @@[m [mrouter.get('/getAllReservationChaletById/:id/:lang', ReservationsChaletsControll[m
+ router.put('/reservations/:id', authMiddleware, rateLimiter, ReservationsChaletsController.updateReservation);[m
+ [m
+ [m
+[32m+[m
+ router.get('/reservationsByChaletId/:chalet_id/:lang', ReservationsChaletsController.getReservationsByChaletId);[m
+[31m-router.get('/reservationsByright_time_id/:right_time_id/:lang', ReservationsChaletsController.getReservationsByRightTimeId);[m
+[32m+[m[32mrouter.get('/reservationsByright_time_name/:name/:lang', ReservationsChaletsController.getReservationsByRightTimeName);[m
+ [m
+ router.get('/reservationsByUserId/:user_id/:lang', ReservationsChaletsController.getReservationsByChaletId);[m
+ [m
