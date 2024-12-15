@@ -1,24 +1,36 @@
 const express = require('express');
 const router = express.Router();
-const chaletController = require('../Controllers/ChaletsController');
-const multer = require('../Config/Multer');
-const authMiddleware = require('../MiddleWares/authMiddleware');  
-const rateLimiter = require('../MiddleWares/rateLimiter'); 
+
+const ReservationsChaletsController = require('../Controllers/ReservationsChaletsController');
+const authMiddleware = require('../MiddleWares/authMiddleware');
+const rateLimiter = require('../MiddleWares/rateLimiter');
 
 
-router.post('/createchalet', authMiddleware, rateLimiter, multer.single('image'), chaletController.createChalet);
+router.post('/createReservationChalet', authMiddleware, rateLimiter, ReservationsChaletsController.createReservation);
 
 
-router.get('/getallchalets/:lang', chaletController.getAllChalets);
-router.get('/getchalets/:lang', chaletController.getAllChaletsFront);
-// router.get('/getallchaletsbystatus/:status_id/:lang', authMiddleware, chaletController.getChaletByStatus);
-router.get('/getchaletbyid/:id', chaletController.getChaletById);
-router.get('/getchaletsbydetailtype/:type/:lang', chaletController.getChaletsByDetailType);
+router.get('/getAllReservationChalet/:lang', ReservationsChaletsController.getAllReservations);
 
 
-router.put('/updatechalet/:id', authMiddleware, rateLimiter, multer.single('image'), chaletController.updateChalet);
+router.get('/getAllReservationChaletById/:id/:lang', ReservationsChaletsController.getReservationById);
 
 
-router.delete('/deletechalet/:id/:lang', authMiddleware, chaletController.deleteChalet);
+router.put('/reservations/:id', authMiddleware, rateLimiter, ReservationsChaletsController.updateReservation);
+
+
+
+router.get('/reservationsByChaletId/:chalet_id/:lang', ReservationsChaletsController.getReservationsByChaletId);
+router.get('/reservationsByright_time_name/:name/:lang', ReservationsChaletsController.getReservationsByRightTimeName);
+
+router.get('/reservationsByUserId/:user_id/:lang', ReservationsChaletsController.getReservationsByChaletId);
+
+
+router.delete('/reservations/:id', authMiddleware, ReservationsChaletsController.deleteReservation);
+
+
+router.get('/reservationsByChaletId/:chalet_id/:lang', authMiddleware, ReservationsChaletsController.getReservationsByChaletId);
+
+
+// router.get('/reservations/:chalet_id/:lang', ReservationsChaletsController.getReservationsByChaletId);
 
 module.exports = router;
