@@ -7,7 +7,6 @@ const Wallet = require('../Models/WalletModel')
 
 exports.createReservation = async (req, res) => {
   try {
-    console.log("Received request body:", req.body);
     const {
       initial_amount,
       date,
@@ -67,6 +66,7 @@ exports.createReservation = async (req, res) => {
       });
     }
 
+    
     const existingReservation = await Reservations_Chalets.findOne({
       where: {
         chalet_id,
@@ -80,6 +80,7 @@ exports.createReservation = async (req, res) => {
       });
     }
 
+   
     const reserve_price = chalet.reserve_price;
     let total_amount = reserve_price - initial_amount;  
     let cashback = 0;
@@ -365,24 +366,39 @@ exports.getReservationsByChaletId = async (req, res) => {
 
 
 
-exports.getReservationsByRightTimeId = async (req, res) => {
+exports.getReservationsByRightTimeName = async (req, res) => {
   try {
-    const { right_time_id, lang } = req.params; 
+    const { name, lang } = req.params;
 
+    // Check for valid language
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
         error: lang === 'en' ? 'Invalid language' : 'اللغة غير صالحة',
       });
     }
 
-    if (!right_time_id || isNaN(right_time_id)) {
+    // Validate the name parameter
+    if (!name) {
       return res.status(400).json({
-        error: lang === 'en' ? 'Invalid chalet ID' : 'رقم الشاليه غير صحيح',
+        error: lang === 'en' ? 'Right time name is required' : 'اسم الوقت غير صحيح',
       });
     }
 
+    // Find the RightTimeModel based on the name
+    const rightTime = await RightTimeModel.findOne({
+      where: { name: name }
+    });
+
+    // If no matching RightTimeModel is found
+    if (!rightTime) {
+      return res.status(404).json({
+        error: lang === 'en' ? 'Right time not found' : 'الوقت غير موجود',
+      });
+    }
+
+    // Now, use the right_time_id to filter reservations
     const reservations = await Reservations_Chalets.findAll({
-      where: { right_time_id: right_time_id },
+      where: { right_time_id: rightTime.id },
       include: [
         {
           model: Chalet,
@@ -397,17 +413,19 @@ exports.getReservationsByRightTimeId = async (req, res) => {
         {
           model: RightTimeModel,
           as: 'rightTime', 
-          attributes: ['id', 'time','name','price'], 
+          attributes: ['id', 'time', 'name', 'price'], 
         }
       ]
     });
 
+    // Check if any reservations were found
     if (!reservations || reservations.length === 0) {
       return res.status(404).json({
-        message: lang === 'en' ? 'No reservations found for this chalet' : 'لا توجد حجوزات لهذا الشاليه',
+        message: lang === 'en' ? 'No reservations found for this right time' : 'لا توجد حجوزات لهذا الوقت',
       });
     }
 
+    // Return the reservations
     return res.status(200).json({
       message: lang === 'en' ? 'Reservations retrieved successfully' : 'تم استرجاع الحجوزات بنجاح',
       reservations: reservations.map(reservation => ({
