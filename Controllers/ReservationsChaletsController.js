@@ -4,6 +4,9 @@ const Chalet = require('../Models/ChaletsModel');
 const User = require('../Models/UsersModel');
 const RightTimeModel = require('../Models/RightTimeModel');
 const Wallet = require('../Models/WalletModel')
+const { Op } = require('sequelize');
+
+
 
 exports.createReservation = async (req, res) => {
   try {
@@ -358,6 +361,66 @@ exports.getReservationsByChaletId = async (req, res) => {
     console.error('Error fetching reservations:', error);
     return res.status(500).json({
       error: 'Failed to fetch reservations',
+    });
+  }
+};
+
+
+
+exports.getAvailableTimesByDate = async (req, res) => {
+  try {
+    const { date, lang } = req.body;
+
+    
+    if (!['ar', 'en'].includes(lang)) {
+      return res.status(400).json({
+        error: lang === 'en' ? 'Invalid language' : 'اللغة غير صالحة',
+      });
+    }
+
+    
+    const formattedDate = new Date(date);
+    if (isNaN(formattedDate.getTime())) {
+      return res.status(400).json({
+        error: lang === 'en' ? 'Invalid date format' : 'تنسيق التاريخ غير صالح',
+      });
+    }
+
+    
+    const existingReservations = await Reservations_Chalets.findAll({
+      where: {
+        date: formattedDate,
+      },
+      attributes: ['right_time_id'], 
+    });
+
+    const reservedTimes = existingReservations.map(reservation => reservation.right_time_id);
+
+    
+    const availableTimes = await RightTimeModel.findAll({
+      where: {
+        id: {
+          [Op.notIn]: reservedTimes, 
+        }
+      },
+      attributes: ['id', 'time', 'name'], 
+    });
+
+    if (availableTimes.length === 0) {
+      return res.status(404).json({
+        message: lang === 'en' ? 'No available times for this date' : 'لا توجد أوقات متاحة لهذا التاريخ',
+      });
+    }
+
+    return res.status(200).json({
+      message: lang === 'en' ? 'Available times retrieved successfully' : 'تم استرجاع الأوقات المتاحة بنجاح',
+      availableTimes,
+    });
+
+  } catch (error) {
+    console.error('Error fetching available times:', error);
+    return res.status(500).json({
+     'Failed to fetch available times' : 'فشل في استرجاع الأوقات المتاحة',
     });
   }
 };

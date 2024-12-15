@@ -26,6 +26,8 @@ router.get('/reservationsByright_time_id/:right_time_id/:lang', ReservationsChal
 
 router.get('/reservationsByUserId/:user_id/:lang', ReservationsChaletsController.getReservationsByChaletId);
 
+router.get('/available-times',ReservationsChaletsController.getAvailableTimesByDate)
+
 
 router.delete('/reservations/:id', authMiddleware, ReservationsChaletsController.deleteReservation);
 

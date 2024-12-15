@@ -2,11 +2,25 @@ const express = require('express');
 const sequelize = require('./Config/dbConnect');
 const { handleError } = require('./MiddleWares/errorHandler');
 const helmet = require('helmet');
-
+const https = require('https');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const app = express();
+
+
+
+// if (process.env.NODE_ENV === 'production') {
+//   app.use((req, res, next) => {
+//     if (!req.secure && req.headers['x-forwarded-proto'] !== 'https') {
+//       return res.redirect(`https://${req.headers.host}${req.url}`);
+//     }
+//     next();
+//   });
+// }
+
+
+app.use(helmet());
 
 
 const UsersRoutes = require('./Routes/UsersRoutes')
@@ -45,6 +59,10 @@ const WalletRoutes = require('./Routes/WalletRoutes')
 const PropsChaletsRoutes = require('./Routes/ChaletsPropsRoutes')
 const FeedBackRoutes = require('./Routes/FeedBacksRoutes');
 const MessagesRoutes = require('./Routes/MessagesRoutes')
+
+
+
+
 
 
 app.use(cors());
@@ -89,7 +107,7 @@ app.use('/messages',MessagesRoutes)
 
 
 
-app.use(helmet());
+
 
 
 
