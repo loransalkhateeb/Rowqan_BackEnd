@@ -5,6 +5,7 @@ const User = require('../Models/UsersModel');
 const RightTimeModel = require('../Models/RightTimeModel');
 const Wallet = require('../Models/WalletModel')
 const { Op } = require('sequelize');
+const moment = require('moment');
 
 
 
@@ -22,21 +23,18 @@ exports.createReservation = async (req, res) => {
     } = req.body;
 
 
-    const inputValidation = validateInput(req.body, [
-      'initial_amount',
-      'date',
-      'lang',
-
-      'user_id',
-
-      'chalet_id',
-      'right_time_id'
-    ]);
+    // const inputValidation = validateInput(req.body, [
+    //   'date',
+    //   'lang',
+    //   'user_id',
+    //   'chalet_id',
+    //   'right_time_id'
+    // ]);
     
 
-    if (inputValidation.error) {
-      return res.status(400).json(inputValidation);
-    }
+    // if (inputValidation.error) {
+    //   return res.status(400).json(inputValidation);
+    // }
 
     
     const formattedDate = new Date(date);
@@ -389,76 +387,53 @@ exports.getReservationsByChaletId = async (req, res) => {
 
 
 exports.getAvailableTimesByDate = async (req, res) => {
+  const { chalet_id, date } = req.params; // The date selected by the user
+  const formattedDate = moment(date).format('YYYY-MM-DD'); // Ensure the date is in 'YYYY-MM-DD' format
+
   try {
-    const {chalet_id, date, lang}=req.params
+    // Start and end of the selected day (handling full date range)
+    const startOfDay = moment(formattedDate).startOf('day').toDate();  // 2024-12-23 00:00:00
+    const endOfDay = moment(formattedDate).endOf('day').toDate();      // 2024-12-23 23:59:59
 
-    
-    if (!['ar', 'en'].includes(lang)) {
-      return res.status(400).json({
-        error: lang === 'en' ? 'Invalid language' : 'اللغة غير صالحة',
-      });
-    }
-
-    
-    const formattedDate = new Date(date);
-    if (isNaN(formattedDate.getTime())) {
-      return res.status(400).json({
-        error: lang === 'en' ? 'Invalid date format' : 'تنسيق التاريخ غير صالح',
-      });
-    }
-
-    
-    const existingReservations = await Reservations_Chalets.findAll({
+    // Find all reservations for the selected date and chalet
+    const reservations = await Reservations_Chalets.findAll({
       where: {
-        chalet_id:chalet_id,
-        date: formattedDate,
+        date: {
+          [Op.gte]: startOfDay,  // Match reservations after or at the start of the day
+          [Op.lt]: endOfDay,     // Match reservations before the end of the day
+        },
+        chalet_id: chalet_id,
       },
-      attributes: ['right_time_id'], 
+      include: [{
+        model: RightTimeModel,
+        as: 'rightTime',  // Use the alias for the rightTime relation
+      }],
     });
 
-    
-    const reservedTimes = existingReservations.map(reservation => reservation.right_time_id);
+    // Extract the reserved time slots (Morning, Evening, Full day)
+    const reservedTimes = reservations.map(reservation => reservation.rightTime.name);
 
-        let availableTimes = await RightTimeModel.findAll({
+    // Get all time slots for this chalet (morning, evening, full day)
+    const allTimeSlots = await RightTimeModel.findAll({
       where: {
-        id: {
-          [Op.notIn]: reservedTimes, 
-        }
-      },
-      attributes: ['id', 'time', 'name', 'price'], 
+        chalet_id: chalet_id,
+      }
     });
 
-    
-    const reservedMorning = reservedTimes.includes('morning');
-    const reservedEvening = reservedTimes.includes('evening');
+    // Filter out the reserved time slots
+    let availableTimeSlots = allTimeSlots.filter(slot => !reservedTimes.includes(slot.name));
 
-    if (reservedMorning || reservedEvening) {
-      availableTimes = availableTimes.filter(time => time.name !== 'Full day');
+    // If either Morning or Evening is reserved, exclude Full day
+    if (reservedTimes.includes('Morning') || reservedTimes.includes('Evening')) {
+      availableTimeSlots = availableTimeSlots.filter(slot => slot.name !== 'Full day');
     }
 
-    
-    if (availableTimes.length === 0) {
-      return res.status(404).json({
-        message: lang === 'en' ? 'No available times for this date' : 'لا توجد أوقات متاحة لهذا التاريخ',
-      });
-    }
-
-    
-    return res.status(200).json({
-      message: lang === 'en' ? 'Available times retrieved successfully' : 'تم استرجاع الأوقات المتاحة بنجاح',
-      availableTimes: availableTimes.map(time => ({
-        id: time.id,
-        time: time.time,
-        name: time.name,
-        price: time.price, 
-      })),
-    });
+    // Return the available time slots
+    res.json(availableTimeSlots);
 
   } catch (error) {
-    console.error('Error fetching available times:', error);
-    return res.status(500).json({
-      error: lang === 'en' ? 'Failed to fetch available times' : 'فشل في استرجاع الأوقات المتاحة',
-    });
+    console.error(error);
+    res.status(500).send('Server error');
   }
 };
 
@@ -466,102 +441,75 @@ exports.getAvailableTimesByDate = async (req, res) => {
 
 
 
+
 exports.getReservationsByRightTimeName = async (req, res) => {
+  const { chalet_id, name, lang } = req.params;
+
   try {
-    const { name, lang } = req.params;
+    // Split the rightTimeName to handle cases like "Morning Full day" or "Evening Full day"
+    const timePeriods = name.split(' ');
 
-    // Check for valid language
-    if (!['ar', 'en'].includes(lang)) {
-      return res.status(400).json({
-        error: lang === 'en' ? 'Invalid language' : 'اللغة غير صالحة',
-      });
-    }
+    // Initialize an array to hold all the reservations
+    let reservations = [];
+    let fullDayAdded = false; // To track if Full day has been added already
 
-    // Validate the name parameter
-    if (!name) {
-      return res.status(400).json({
-        error: lang === 'en' ? 'Right time name is required' : 'اسم الوقت غير صحيح',
-      });
-    }
+    // Step 1: Fetch reservations for each time period requested
+    for (let period of timePeriods) {
+      if (period === 'Full' || period === 'day') {
+        if (!fullDayAdded) {
+          // Fetch Full day reservations (where right_time_id is a valid ID, not null)
+          const fullDayRightTime = await RightTimeModel.findOne({
+            where: {
+              name: 'Full day',
+              lang: lang,
+            },
+          });
 
-   
-    let rightTimes;
-    if (name === 'Full day') {
-      rightTimes = await RightTimeModel.findAll({
-        where: {
-          name: { [Op.in]: ['morning', 'evening'] }  
+          // If Full day right time exists, fetch the corresponding reservations
+          if (fullDayRightTime) {
+            const fullDayReservations = await Reservations_Chalets.findAll({
+              where: {
+                lang: lang,
+                chalet_id:chalet_id,
+                right_time_id: fullDayRightTime.id, // Use Full day's right_time_id
+              },
+            });
+            reservations = [...reservations, ...fullDayReservations];
+            fullDayAdded = true; // Mark Full day as added
+          }
         }
-      });
-    } else {
-      rightTimes = await RightTimeModel.findOne({
-        where: { name: name }
-      });
-    }
+      } else {
+        // Fetch the corresponding right time (Morning or Evening)
+        const rightTime = await RightTimeModel.findOne({
+          where: {
+            name: period,
+            lang: lang,
+          },
+        });
 
-        if (!rightTimes || rightTimes.length === 0) {
-      return res.status(404).json({
-        error: lang === 'en' ? 'Right time not found' : 'الوقت غير موجود',
-      });
-    }
-
-    
-    const rightTimeIds = rightTimes.map(rt => rt.id);
-
-    const reservations = await Reservations_Chalets.findAll({
-      where: { right_time_id: { [Op.in]: rightTimeIds } },
-      include: [
-        {
-          model: Chalet,
-          as: 'chalet', 
-          attributes: ['id', 'title', 'reserve_price'], 
-        },
-        {
-          model: User,
-          as: 'user', 
-          attributes: ['id', 'name', 'email'], 
-        },
-        {
-          model: RightTimeModel,
-          as: 'rightTime', 
-          attributes: ['id', 'time', 'name', 'price'], 
+        // If the right time (Morning or Evening) is found, fetch the corresponding reservations
+        if (rightTime) {
+          const timeReservations = await Reservations_Chalets.findAll({
+            where: {
+              lang: lang,
+              chalet_id:chalet_id,
+              right_time_id: rightTime.id,
+            },
+          });
+          reservations = [...reservations, ...timeReservations];
         }
-      ]
+      }
+    }
+
+    // Step 2: Return the combined results
+    res.json({
+      rightTime: name,
+      reservations: reservations,
     });
 
-    // Check if any reservations were found
-    if (!reservations || reservations.length === 0) {
-      return res.status(404).json({
-        message: lang === 'en' ? 'No reservations found for this right time' : 'لا توجد حجوزات لهذا الوقت',
-      });
-    }
-
-    // Return the reservations
-    return res.status(200).json({
-      message: lang === 'en' ? 'Reservations retrieved successfully' : 'تم استرجاع الحجوزات بنجاح',
-      reservations: reservations.map(reservation => ({
-        id: reservation.id,
-        initial_amount: reservation.initial_amount,
-        reserve_price: reservation.reserve_price,
-        total_amount: reservation.total_amount,
-        cashback: reservation.cashback,
-        date: reservation.date,
-        lang: reservation.lang,
-        status: reservation.status,
-        additional_visitors: reservation.additional_visitors,
-        number_of_days: reservation.number_of_days,
-        user_id: reservation.user_id,
-        chalet_id: reservation.chalet_id,
-        right_time_id: reservation.right_time_id,
-        chalet: reservation.chalet, 
-        user: reservation.user,
-        right_time: reservation.rightTime,
-      })),
-    });
   } catch (error) {
-    console.error('Error fetching reservations:', error);
-    return res.status(500).json({
-      error: 'Failed to fetch reservations',
-    });
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
 
