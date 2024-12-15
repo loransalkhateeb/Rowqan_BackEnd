@@ -21,15 +21,15 @@ exports.createReservation = async (req, res) => {
       right_time_id,
     } = req.body;
 
-   
     const inputValidation = validateInput(req.body, [
-      'initial_amount', 
-      'date', 
-      'lang', 
-      'user_id', 
-      'chalet_id', 
+      'initial_amount',
+      'date',
+      'lang',
+      'user_id',
+      'chalet_id',
       'right_time_id'
     ]);
+    
 
     if (inputValidation.error) {
       return res.status(400).json(inputValidation);
@@ -55,12 +55,12 @@ exports.createReservation = async (req, res) => {
       });
     }
 
-    const user = await User.findByPk(user_id);
-    if (!user) {
-      return res.status(404).json({
-        error: lang === 'en' ? 'User not found' : 'المستخدم غير موجود',
-      });
-    }
+    // const user = await User.findByPk(user_id);
+    // if (!user) {
+    //   return res.status(404).json({
+    //     error: lang === 'en' ? 'User not found' : 'المستخدم غير موجود',
+    //   });
+    // }
 
     const rightTime = await RightTimeModel.findByPk(right_time_id);
     if (!rightTime) {
@@ -370,7 +370,7 @@ exports.getReservationsByChaletId = async (req, res) => {
 
 exports.getAvailableTimesByDate = async (req, res) => {
   try {
-    const { date, lang } = req.body;
+    const {chalet_id, date, lang}=req.params
 
     
     if (!['ar', 'en'].includes(lang)) {
@@ -390,6 +390,7 @@ exports.getAvailableTimesByDate = async (req, res) => {
     
     const existingReservations = await Reservations_Chalets.findAll({
       where: {
+        chalet_id:chalet_id,
         date: formattedDate,
       },
       attributes: ['right_time_id'], 
