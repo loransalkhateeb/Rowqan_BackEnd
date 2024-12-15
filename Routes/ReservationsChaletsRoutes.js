@@ -6,7 +6,7 @@ const authMiddleware = require('../MiddleWares/authMiddleware');
 const rateLimiter = require('../MiddleWares/rateLimiter');
 
 
-router.post('/createReservationChalet', authMiddleware, rateLimiter, ReservationsChaletsController.createReservation);
+router.post('/createReservationChalet', rateLimiter, ReservationsChaletsController.createReservation);
 
 
 router.get('/getAllReservationChalet/:lang', ReservationsChaletsController.getAllReservations);
@@ -25,7 +25,7 @@ router.get('/reservationsByright_time_name/:name/:lang', ReservationsChaletsCont
 
 router.get('/reservationsByUserId/:user_id/:lang', ReservationsChaletsController.getReservationsByChaletId);
 
-router.get('/available-times',ReservationsChaletsController.getAvailableTimesByDate)
+router.get('/available-times/:chalet_id/:date/:lang',ReservationsChaletsController.getAvailableTimesByDate)
 
 
 router.delete('/reservations/:id', authMiddleware, ReservationsChaletsController.deleteReservation);

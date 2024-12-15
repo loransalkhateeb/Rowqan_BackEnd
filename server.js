@@ -71,7 +71,6 @@ const allowedOrigins = [
 
 
 
-app.use(cors());
 
 // CORS options with a dynamic origin check
 const corsOptions = {

@@ -15,6 +15,6 @@ router.put('/plans/:id', rateLimiter, plansController.updatePlan);
 
 router.delete('/plans/:id/:lang', authMiddleware, plansController.deletePlan);
 
-router.get('/plans/event/:available_events_id/:lang', authMiddleware, plansController.getPlanByAvailableEventId);
+router.get('/plans/event/:available_events_id/:lang', plansController.getPlanByAvailableEventId);
 
 module.exports = router;
