@@ -60,12 +60,36 @@ const PropsChaletsRoutes = require('./Routes/ChaletsPropsRoutes')
 const FeedBackRoutes = require('./Routes/FeedBacksRoutes');
 const MessagesRoutes = require('./Routes/MessagesRoutes')
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://rowqan.com',
+  'https://rowqanbackend.rowqan.com'
+];
+
 
 
 
 
 
 app.use(cors());
+
+// CORS options with a dynamic origin check
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or Postman)
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true, // Allow credentials
+};
+
+// Use the CORS middleware
+app.use(cors(corsOptions));
+app.use(cookieParser());
+
 app.use(express.json());
 app.use('/users',UsersRoutes)
 app.use('/logos',LogoRoutes)
@@ -90,7 +114,7 @@ app.use('/subevents',SubEventsRoutes)
 app.use('/availablevents',AvailableEventsRoutes)
 app.use('/availableimages',AvailableImages)
 app.use('/plans',PlansRoutes)
-// app.use('/reservationsEvents',ReservatioEventsRoutes)
+app.use('/reservationsEvents',ReservatioEventsRoutes)
 app.use('/categorieslands',CategoryLandsRoutes)
 app.use('/propertyLands',PrpertyLandsRoutes)
 app.use('/imageslands',ImagesLandsRoutes)

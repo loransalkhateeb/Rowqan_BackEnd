@@ -67,7 +67,7 @@ exports.getAllChalets = async (req, res) => {
       include: [
         { model: Status, attributes: ['status'] },
         { model: chaletsImages, attributes: ['image'] },
-        { model: BreifDetailsChalets, attributes: ['detail'] },
+        // { model: BreifDetailsChalets, attributes: ['detail'] },
         { model: RightTimeModel, attributes: ['time'] },
         { model: ReservationDate, attributes: ['date'] },
         { model: ChaletsDetails, attributes: ['detail_type'] },

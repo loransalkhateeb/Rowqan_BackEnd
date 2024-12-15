@@ -18,11 +18,9 @@ router.get('/getAllReservationChaletById/:id/:lang', ReservationsChaletsControll
 router.put('/reservations/:id', authMiddleware, rateLimiter, ReservationsChaletsController.updateReservation);
 
 
+
 router.get('/reservationsByChaletId/:chalet_id/:lang', ReservationsChaletsController.getReservationsByChaletId);
-
-
-router.get('/reservationsByright_time_id/:right_time_id/:lang', ReservationsChaletsController.getReservationsByRightTimeId);
-
+router.get('/reservationsByright_time_name/:name/:lang', ReservationsChaletsController.getReservationsByRightTimeName);
 
 router.get('/reservationsByUserId/:user_id/:lang', ReservationsChaletsController.getReservationsByChaletId);
 

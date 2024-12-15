@@ -10,7 +10,7 @@ router.post('/createchalet', authMiddleware, rateLimiter, multer.single('image')
 
 
 router.get('/getallchalets/:lang', chaletController.getAllChalets);
-router.get('/getchalets/:lang', chaletController.getAllChalets);
+router.get('/getchalets/:lang', chaletController.getAllChaletsFront);
 // router.get('/getallchaletsbystatus/:status_id/:lang', authMiddleware, chaletController.getChaletByStatus);
 router.get('/getchaletbyid/:id', chaletController.getChaletById);
 router.get('/getchaletsbydetailtype/:type/:lang', chaletController.getChaletsByDetailType);
