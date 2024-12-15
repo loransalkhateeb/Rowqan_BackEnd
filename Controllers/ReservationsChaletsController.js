@@ -10,7 +10,6 @@ const { Op } = require('sequelize');
 
 exports.createReservation = async (req, res) => {
   try {
-    console.log("Received request body:", req.body);
     const {
       initial_amount,
       date,
@@ -22,13 +21,12 @@ exports.createReservation = async (req, res) => {
       right_time_id,
     } = req.body;
 
-   
+    
     const inputValidation = validateInput(req.body, [
-      'initial_amount', 
-      'date', 
-      'lang', 
-      'user_id', 
-      'chalet_id', 
+      'initial_amount',
+      'date',
+      'lang',
+      'chalet_id',
       'right_time_id'
     ]);
 
@@ -36,6 +34,7 @@ exports.createReservation = async (req, res) => {
       return res.status(400).json(inputValidation);
     }
 
+    
     const formattedDate = new Date(date);
     if (isNaN(formattedDate.getTime())) {
       return res.status(400).json({
@@ -43,12 +42,14 @@ exports.createReservation = async (req, res) => {
       });
     }
 
+    
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
         error: lang === 'en' ? 'Invalid language' : 'اللغة غير صالحة',
       });
     }
 
+    
     const chalet = await Chalet.findByPk(chalet_id);
     if (!chalet) {
       return res.status(404).json({
@@ -56,13 +57,7 @@ exports.createReservation = async (req, res) => {
       });
     }
 
-    const user = await User.findByPk(user_id);
-    if (!user) {
-      return res.status(404).json({
-        error: lang === 'en' ? 'User not found' : 'المستخدم غير موجود',
-      });
-    }
-
+    
     const rightTime = await RightTimeModel.findByPk(right_time_id);
     if (!rightTime) {
       return res.status(404).json({
@@ -70,6 +65,7 @@ exports.createReservation = async (req, res) => {
       });
     }
 
+    
     const existingReservation = await Reservations_Chalets.findOne({
       where: {
         chalet_id,
@@ -83,8 +79,9 @@ exports.createReservation = async (req, res) => {
       });
     }
 
+    
     const reserve_price = chalet.reserve_price;
-    let total_amount = reserve_price - initial_amount;  
+    let total_amount = reserve_price - initial_amount;
     let cashback = 0;
 
     if (additional_visitors > 0) {
@@ -97,6 +94,7 @@ exports.createReservation = async (req, res) => {
 
     cashback = total_amount * 0.05;
 
+    
     const reservation = await Reservations_Chalets.create({
       initial_amount,
       reserve_price,
@@ -107,26 +105,32 @@ exports.createReservation = async (req, res) => {
       status: initial_amount > 0 ? 'Reserved' : 'Pending',
       additional_visitors,
       number_of_days,
-      user_id,
+      user_id: user_id || null, 
       chalet_id,
       right_time_id,
     });
 
-    let wallet = await Wallet.findOne({ where: { user_id } });
+    let wallet = null;
 
-    if (wallet) {
-      wallet.total_balance += total_amount;
-      wallet.cashback_balance += cashback;
-      await wallet.save();
-    } else {
-      wallet = await Wallet.create({
-        user_id,
-        total_balance: total_amount,
-        cashback_balance: cashback,
-        lang,
-      });
+    
+    if (user_id) {
+      wallet = await Wallet.findOne({ where: { user_id } });
+
+      if (wallet) {
+        wallet.total_balance += total_amount;
+        wallet.cashback_balance += cashback;
+        await wallet.save();
+      } else {
+        wallet = await Wallet.create({
+          user_id,
+          total_balance: total_amount,
+          cashback_balance: cashback,
+          lang,
+        });
+      }
     }
 
+    
     res.status(201).json({
       message: lang === 'en' ? 'Reservation created successfully' : 'تم إنشاء الحجز بنجاح',
       reservation: {
@@ -143,11 +147,13 @@ exports.createReservation = async (req, res) => {
         chalet_id,
         right_time_id,
       },
-      wallet: {
-        total_balance: wallet.total_balance,
-        cashback_balance: wallet.cashback_balance,
-      },
-    });
+      wallet: user_id
+        ? {
+            total_balance: wallet?.total_balance || 0,
+            cashback_balance: wallet?.cashback_balance || 0,
+          }
+        : null, 
+          });
   } catch (error) {
     console.error('Error creating reservation:', error);
     res.status(500).json({
@@ -155,6 +161,7 @@ exports.createReservation = async (req, res) => {
     });
   }
 };
+
 
 
 
@@ -396,33 +403,48 @@ exports.getAvailableTimesByDate = async (req, res) => {
       attributes: ['right_time_id'], 
     });
 
+    
     const reservedTimes = existingReservations.map(reservation => reservation.right_time_id);
 
-    
-    const availableTimes = await RightTimeModel.findAll({
+        let availableTimes = await RightTimeModel.findAll({
       where: {
         id: {
           [Op.notIn]: reservedTimes, 
         }
       },
-      attributes: ['id', 'time', 'name'], 
+      attributes: ['id', 'time', 'name', 'price'], 
     });
 
+    
+    const reservedMorning = reservedTimes.includes('morning');
+    const reservedEvening = reservedTimes.includes('evening');
+
+    if (reservedMorning || reservedEvening) {
+      availableTimes = availableTimes.filter(time => time.name !== 'Full day');
+    }
+
+    
     if (availableTimes.length === 0) {
       return res.status(404).json({
         message: lang === 'en' ? 'No available times for this date' : 'لا توجد أوقات متاحة لهذا التاريخ',
       });
     }
 
+    
     return res.status(200).json({
       message: lang === 'en' ? 'Available times retrieved successfully' : 'تم استرجاع الأوقات المتاحة بنجاح',
-      availableTimes,
+      availableTimes: availableTimes.map(time => ({
+        id: time.id,
+        time: time.time,
+        name: time.name,
+        price: time.price, 
+      })),
     });
 
   } catch (error) {
     console.error('Error fetching available times:', error);
     return res.status(500).json({
-     'Failed to fetch available times' : 'فشل في استرجاع الأوقات المتاحة',
+      error: lang === 'en' ? 'Failed to fetch available times' : 'فشل في استرجاع الأوقات المتاحة',
     });
   }
 };
@@ -430,24 +452,50 @@ exports.getAvailableTimesByDate = async (req, res) => {
 
 
 
-exports.getReservationsByRightTimeId = async (req, res) => {
-  try {
-    const { right_time_id, lang } = req.params; 
 
+exports.getReservationsByRightTimeName = async (req, res) => {
+  try {
+    const { name, lang } = req.params;
+
+    // Check for valid language
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
         error: lang === 'en' ? 'Invalid language' : 'اللغة غير صالحة',
       });
     }
 
-    if (!right_time_id || isNaN(right_time_id)) {
+    // Validate the name parameter
+    if (!name) {
       return res.status(400).json({
-        error: lang === 'en' ? 'Invalid chalet ID' : 'رقم الشاليه غير صحيح',
+        error: lang === 'en' ? 'Right time name is required' : 'اسم الوقت غير صحيح',
       });
     }
 
+   
+    let rightTimes;
+    if (name === 'Full day') {
+      rightTimes = await RightTimeModel.findAll({
+        where: {
+          name: { [Op.in]: ['morning', 'evening'] }  
+        }
+      });
+    } else {
+      rightTimes = await RightTimeModel.findOne({
+        where: { name: name }
+      });
+    }
+
+        if (!rightTimes || rightTimes.length === 0) {
+      return res.status(404).json({
+        error: lang === 'en' ? 'Right time not found' : 'الوقت غير موجود',
+      });
+    }
+
+    
+    const rightTimeIds = rightTimes.map(rt => rt.id);
+
     const reservations = await Reservations_Chalets.findAll({
-      where: { right_time_id: right_time_id },
+      where: { right_time_id: { [Op.in]: rightTimeIds } },
       include: [
         {
           model: Chalet,
@@ -462,17 +510,19 @@ exports.getReservationsByRightTimeId = async (req, res) => {
         {
           model: RightTimeModel,
           as: 'rightTime', 
-          attributes: ['id', 'time','name','price'], 
+          attributes: ['id', 'time', 'name', 'price'], 
         }
       ]
     });
 
+    // Check if any reservations were found
     if (!reservations || reservations.length === 0) {
       return res.status(404).json({
-        message: lang === 'en' ? 'No reservations found for this chalet' : 'لا توجد حجوزات لهذا الشاليه',
+        message: lang === 'en' ? 'No reservations found for this right time' : 'لا توجد حجوزات لهذا الوقت',
       });
     }
 
+    // Return the reservations
     return res.status(200).json({
       message: lang === 'en' ? 'Reservations retrieved successfully' : 'تم استرجاع الحجوزات بنجاح',
       reservations: reservations.map(reservation => ({
@@ -501,6 +551,7 @@ exports.getReservationsByRightTimeId = async (req, res) => {
     });
   }
 };
+
 
 
 

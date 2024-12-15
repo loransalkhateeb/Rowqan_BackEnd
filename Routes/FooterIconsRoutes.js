@@ -8,7 +8,7 @@ const rateLimiter = require('../MiddleWares/rateLimiter');
 
 router.post('/createFooterIcon', authMiddleware, rateLimiter, multer.single('icon'), footerIconsController.createFooterIcon);
 
-router.get('/getAllFooterIcons', authMiddleware, footerIconsController.getAllFooterIcons);
+router.get('/getAllFooterIcons', footerIconsController.getAllFooterIcons);
 
 router.get('/getFooterIconById/:id', footerIconsController.getFooterIconById);
 
