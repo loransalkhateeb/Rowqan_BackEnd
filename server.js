@@ -2,11 +2,25 @@ const express = require('express');
 const sequelize = require('./Config/dbConnect');
 const { handleError } = require('./MiddleWares/errorHandler');
 const helmet = require('helmet');
-
+const https = require('https');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const app = express();
+
+
+
+// if (process.env.NODE_ENV === 'production') {
+//   app.use((req, res, next) => {
+//     if (!req.secure && req.headers['x-forwarded-proto'] !== 'https') {
+//       return res.redirect(`https://${req.headers.host}${req.url}`);
+//     }
+//     next();
+//   });
+// }
+
+
+app.use(helmet());
 
 
 const UsersRoutes = require('./Routes/UsersRoutes')
@@ -52,6 +66,13 @@ const allowedOrigins = [
   'https://rowqanbackend.rowqan.com'
 ];
 
+
+
+
+
+
+app.use(cors());
+
 // CORS options with a dynamic origin check
 const corsOptions = {
   origin: (origin, callback) => {
@@ -68,6 +89,7 @@ const corsOptions = {
 // Use the CORS middleware
 app.use(cors(corsOptions));
 app.use(cookieParser());
+
 app.use(express.json());
 app.use('/users',UsersRoutes)
 app.use('/logos',LogoRoutes)
@@ -109,7 +131,7 @@ app.use('/messages',MessagesRoutes)
 
 
 
-app.use(helmet());
+
 
 
 
