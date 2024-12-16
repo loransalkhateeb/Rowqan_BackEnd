@@ -8,6 +8,8 @@ const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const app = express();
 
+const compression = require('compression');
+app.use(compression());
 
 
 // if (process.env.NODE_ENV === 'production') {
@@ -20,7 +22,10 @@ const app = express();
 // }
 
 
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+}));
 
 
 const UsersRoutes = require('./Routes/UsersRoutes')
@@ -60,16 +65,13 @@ const PropsChaletsRoutes = require('./Routes/ChaletsPropsRoutes')
 const FeedBackRoutes = require('./Routes/FeedBacksRoutes');
 const MessagesRoutes = require('./Routes/MessagesRoutes')
 
+
+
 const allowedOrigins = [
   'http://localhost:5173',
   'https://rowqan.com',
   'https://rowqanbackend.rowqan.com'
 ];
-
-
-
-
-
 
 
 // CORS options with a dynamic origin check
@@ -88,6 +90,7 @@ const corsOptions = {
 // Use the CORS middleware
 app.use(cors(corsOptions));
 app.use(cookieParser());
+
 
 app.use(express.json());
 app.use('/users',UsersRoutes)
@@ -131,13 +134,10 @@ app.use('/messages',MessagesRoutes)
 
 
 
-
-
-
-
 sequelize.sync({ force: false }).then(() => {
     console.log('Database connected and synced!');
   });
+
   
   app.get("/", (req, res) => {
     res.send("Welcome to Rowqan! ");

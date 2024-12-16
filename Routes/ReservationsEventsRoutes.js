@@ -12,6 +12,8 @@ router.get('/getAllreservationevents/:lang', reservationEventsController.getAllR
 
 router.get('/getAllreservationeventsByAvailableId/:available_event_id/:lang', reservationEventsController.getAllReservationEventsByAvailableId);
 
+router.get('/event-status/:date/:available_event_id', reservationEventsController.getEventStatusByDate);
+
 
 router.put('/reservation-events/:id', reservationEventsController.updateReservationEvent);
 
