@@ -157,7 +157,7 @@ exports.getPlanByAvailableEventId = async (req, res) => {
 
         const plans = await Plans.findAll({
             where: { Available_Event_Id: available_events_id, lang },
-            include: { model: Available_Events, attributes: ['title'] },
+            include: { model: Available_Events, attributes: ['title','price'] },
         });
 
         if (!plans.length) {

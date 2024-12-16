@@ -2,7 +2,7 @@ const Available_Events = require('../Models/AvailableEvents');
 const Sub_Events = require('../Models/SubEventsModel');
 const multer = require('../Config/Multer');
 const { validateInput } = require('../Utils/validateInput');
-const {ErrorResponse} = require('../MiddleWares/errorHandler');  // Adjust the path accordingly
+const {ErrorResponse} = require('../MiddleWares/errorHandler');  
 
 exports.createAvailableEvent = async (req, res) => {
   try {

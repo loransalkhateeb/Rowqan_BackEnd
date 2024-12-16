@@ -65,12 +65,6 @@ exports.getPropertyLandByland_id = async (req, res) => {
   try {
     const { category_land_id, lang } = req.params;
 
-  
-    const validationErrors = validateInput({ category_land_id, lang }, ["category_land_id", "lang"]);
-    if (validationErrors) {
-      return res.status(400).json(ErrorResponse(validationErrors));
-    }
-
     const propertyLand = await PropertiesLands.findAll({
       where: { category_land_id, lang },
       include: {
@@ -79,7 +73,7 @@ exports.getPropertyLandByland_id = async (req, res) => {
       }
     });
 
-    if (!propertyLand) {
+    if (!propertyLand || propertyLand.length === 0) {
       return res.status(404).json(ErrorResponse(lang === "en" ? "Property land not found" : "الأرض العقارية غير موجودة"));
     }
 
@@ -87,14 +81,14 @@ exports.getPropertyLandByland_id = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json(ErrorResponse("Failed to retrieve property land"));
-  }
+  } 
 };
+
 
 exports.getPropertyLandById = async (req, res) => {
   try {
     const { id, lang } = req.params;
 
-  
     const validationErrors = validateInput({ id, lang }, ["id", "lang"]);
     if (validationErrors) {
       return res.status(400).json(ErrorResponse(validationErrors));
