@@ -6,8 +6,8 @@ const authMiddleware = require('../MiddleWares/authMiddleware');
 const rateLimiter = require('../MiddleWares/rateLimiter'); 
 
 
-router.post('/createvailableimage', authMiddleware, rateLimiter, multer.array('image'), AvailableEventsImagesController.createAvailableEventImages);
-router.put('/updateimageavailable/:id', authMiddleware, rateLimiter, multer.array('image'), AvailableEventsImagesController.updateAvailableEventImage);
+router.post('/createvailableimage', rateLimiter, multer.array('image'), AvailableEventsImagesController.createAvailableEventImages);
+router.put('/updateimageavailable/:id', rateLimiter, multer.array('image'), AvailableEventsImagesController.updateAvailableEventImage);
 
 
 router.get('/getavailableimage/:event_id', AvailableEventsImagesController.getAvailableEventImages);

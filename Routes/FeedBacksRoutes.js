@@ -5,10 +5,10 @@ const authMiddleware = require('../MiddleWares/authMiddleware');
 const rateLimiter = require('../MiddleWares/rateLimiter');
 
 
-router.post('/createfeedback', authMiddleware, rateLimiter, FeedBackController.createFeedBack);
+router.post('/createfeedback', rateLimiter, FeedBackController.createFeedBack);
 
 
-router.put('/updatefeedback/:id', authMiddleware, rateLimiter, FeedBackController.updateFeedBack);
+router.put('/updatefeedback/:id', rateLimiter, FeedBackController.updateFeedBack);
 
 
 router.get('/getFeedBackByChaletId/:chalet_id/:lang', FeedBackController.getFeedBackByChaletId);
@@ -20,6 +20,6 @@ router.get('/getFeedBackByLandId/:land_id/:lang', FeedBackController.getFeedBack
 router.get('/getfeedbackbyid/:id/:lang', FeedBackController.getFeedBackById);
 
 
-router.delete('/deletefeedback/:id/:lang', authMiddleware, FeedBackController.deleteFeedBack);
+router.delete('/deletefeedback/:id/:lang', FeedBackController.deleteFeedBack);
 
 module.exports = router;
