@@ -6,8 +6,8 @@ const authMiddleware = require('../MiddleWares/authMiddleware');
 const rateLimiter = require('../MiddleWares/rateLimiter'); 
 
 
-router.post('/createimageland', authMiddleware, rateLimiter, multer.array('image'), CategoriesImageLandsController.createAvailableLandsImages);
-router.put('/updateImageCategory/:id', authMiddleware, rateLimiter, multer.single('image'), CategoriesImageLandsController.updateCategoryImageLand);
+router.post('/createimageland', rateLimiter, multer.array('image'), CategoriesImageLandsController.createAvailableLandsImages);
+router.put('/updateImageCategory/:id', rateLimiter, multer.single('image'), CategoriesImageLandsController.updateCategoryImageLand);
 
 
 router.get('/getImagesByCategoryId/:category_id', CategoriesImageLandsController.getAllCategoryImageLands);

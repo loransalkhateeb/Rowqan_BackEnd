@@ -11,6 +11,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@redis/client": "^1.6.0",
+    "argon2": "^0.41.1",
     "bcrypt": "^5.1.1",
     "cloudinary": "^1.41.3",
     "compression": "^1.7.5",
@@ -19,6 +21,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.1",
     "express-rate-limit": "^7.4.1",
+    "geoip-lite": "^1.4.10",
     "helmet": "^8.0.0",
     "https": "^1.0.0",
     "joi": "^17.13.3",
@@ -27,8 +30,12 @@
     "multer-storage-cloudinary": "^4.0.0",
     "mysql2": "^3.11.4",
     "nodemon": "^3.1.7",
+    "path": "^0.12.7",
+    "promise": "^8.3.0",
     "redis": "^4.7.0",
-    "sequelize": "^6.37.5"
+    "request-ip": "^3.3.0",
+    "sequelize": "^6.37.5",
+    "speakeasy": "^2.0.0"
   },
   "devDependencies": {
     "jest": "^29.7.0",

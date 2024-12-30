@@ -6,12 +6,12 @@ const authMiddleware = require('../MiddleWares/authMiddleware');
 const rateLimiter = require('../MiddleWares/rateLimiter'); 
 
 
-router.post('/createherochalets', authMiddleware, rateLimiter, upload.single('image'), chaletsHeroController.createChaletsHero);
-router.put('/updatechaletshero/:id', authMiddleware, rateLimiter, upload.single('image'), chaletsHeroController.updateChaletsHero);
+router.post('/createherochalets', rateLimiter, upload.single('image'), chaletsHeroController.createChaletsHero);
+router.put('/updatechaletshero/:id', rateLimiter, upload.single('image'), chaletsHeroController.updateChaletsHero);
 
 
 router.get('/getherochaletsbyid/:id/:lang', chaletsHeroController.getChaletsHeroById);
 router.get('/getAllHeroChalets/:lang', chaletsHeroController.getAllChaletsHero);
-router.delete('/deleteHeroChalets/:id', authMiddleware, chaletsHeroController.deleteChaletsHero);
+router.delete('/deleteHeroChalets/:id', chaletsHeroController.deleteChaletsHero);
 
 module.exports = router;

@@ -1,19 +1,31 @@
 const CategoriesLandsModel = require("../Models/CategoriesLandsModel");
 const PropertiesLandsModel = require("../Models/PropertiesLandsModel");
 const { validateInput, ErrorResponse } = require('../Utils/validateInput');
+const {client} = require('../Utils/redisClient')
 
 exports.createCategoryLand = async (req, res) => {
   try {
-    const { title, price, location, lang } = req.body;
+    const { title, price, location, lang } = req.body || {};
 
-
-    const validationErrors = validateInput({ title, price, location, lang });
-    if (validationErrors.length > 0) {
-      return res.status(400).json(new ErrorResponse('Invalid input', validationErrors));
+    
+    if (!title || !price || !location || !lang) {
+      return res.status(400).json(
+        ErrorResponse("Validation failed", [
+          "Title, price, location, and language are required",
+        ])
+      );
     }
 
-    const image = req.file ? req.file.filename : null;
+    
+    const validationErrors = validateInput({ title, price, location, lang });
+    if (validationErrors.length > 0) {
+      return res.status(400).json(ErrorResponse("Validation failed", validationErrors));
+    }
 
+  
+    const image = req.file?.filename || null;
+
+   
     const newCategoryLand = await CategoriesLandsModel.create({
       title,
       price,
@@ -22,26 +34,55 @@ exports.createCategoryLand = async (req, res) => {
       image,
     });
 
+    
+    const cacheDeletePromises = [client.del(`categoryLands:page:1:limit:20`)];
+    await Promise.all(cacheDeletePromises);
+
+    
+    await client.set(`categoryLand:${newCategoryLand.id}`, JSON.stringify(newCategoryLand), {
+      EX: 3600,
+    });
+
+   
     res.status(201).json({
       message: lang === "en" ? "Category Land created successfully" : "تم إنشاء الفئة بنجاح",
       categoryLand: newCategoryLand,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json(new ErrorResponse('Failed to create Category Land'));
+    console.error("Error in createCategoryLand:", error.message);
+    res.status(500).json(
+      ErrorResponse("Failed to create Category Land", [
+        "An internal server error occurred.",
+      ])
+    );
   }
 };
 
+
 exports.getAllCategoryLands = async (req, res) => {
   try {
+    const { page = 1, limit = 20 } = req.query;
+    const offset = (page - 1) * limit;
     const { lang } = req.params;
-
 
     const validationErrors = validateInput({ lang });
     if (validationErrors.length > 0) {
       return res.status(400).json(new ErrorResponse('Invalid language', validationErrors));
     }
 
+    
+    const cacheKey = `categoryLands:lang:${lang}:page:${page}:limit:${limit}`;
+    const cachedData = await client.get(cacheKey);
+
+    
+    if (cachedData) {
+      return res.status(200).json({
+        message: lang === "en" ? "Successfully fetched Category Lands from cache" : "تم استرجاع الفئات من الكاش بنجاح",
+        data: JSON.parse(cachedData),
+      });
+    }
+
+   
     const categoryLands = await CategoriesLandsModel.findAll({
       where: { lang },
       include: [
@@ -51,12 +92,20 @@ exports.getAllCategoryLands = async (req, res) => {
           attributes: ["id", "property", "image"], 
         },
       ],
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      order: [["id", "DESC"]], 
     });
 
+    
     if (!categoryLands || categoryLands.length === 0) {
       return res.status(404).json(new ErrorResponse(lang === "en" ? "No Category Lands found" : "لا توجد فئات"));
     }
 
+   
+    await client.setEx(cacheKey, 3600, JSON.stringify(categoryLands));
+
+    
     res.status(200).json({
       message: lang === "en" ? "Category Lands retrieved successfully" : "تم استرجاع الفئات بنجاح",
       categoryLands,
@@ -67,16 +116,31 @@ exports.getAllCategoryLands = async (req, res) => {
   }
 };
 
+
 exports.getCategoryLandById = async (req, res) => {
   try {
     const { id, lang } = req.params;
 
-
+    
     const validationErrors = validateInput({ id, lang });
     if (validationErrors.length > 0) {
       return res.status(400).json(new ErrorResponse('Invalid ID or language', validationErrors));
     }
 
+    const cacheKey = `categoryLand:${id}:${lang}`;
+
+  
+    const cachedData = await client.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit for category land:", id);
+      return res.status(200).json({
+        message: lang === "en" ? "Successfully fetched Category Land by ID from cache" : "تم استرجاع الفئة حسب ID من الكاش بنجاح",
+        data: JSON.parse(cachedData),
+      });
+    }
+    console.log("Cache miss for category land:", id);
+
+    
     const categoryLand = await CategoriesLandsModel.findOne({
       where: { id, lang },
     });
@@ -85,77 +149,106 @@ exports.getCategoryLandById = async (req, res) => {
       return res.status(404).json(new ErrorResponse(lang === "en" ? "Category Land not found" : "الفئة غير موجودة"));
     }
 
-    res.status(200).json({
+    
+    await client.setEx(cacheKey, 3600, JSON.stringify(categoryLand));
+
+    
+    return res.status(200).json({
       message: lang === "en" ? "Category Land retrieved successfully" : "تم استرجاع الفئة بنجاح",
       categoryLand,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json(new ErrorResponse('Failed to retrieve Category Land'));
+    console.error("Error in getCategoryLandById:", error);
+    return res.status(500).json(
+      new ErrorResponse("Failed to retrieve Category Land", [
+        "An internal server error occurred. Please try again later.",
+      ])
+    );
   }
 };
+
 
 exports.updateCategoryLand = async (req, res) => {
   try {
     const { id } = req.params;
     const { title, price, location, lang } = req.body;
+    const image = req.file?.filename || null;
 
-
+    
     const validationErrors = validateInput({ title, price, location, lang });
     if (validationErrors.length > 0) {
       return res.status(400).json(new ErrorResponse('Invalid input', validationErrors));
     }
 
-    const image = req.file ? req.file.filename : null;
-
+    
     const categoryLand = await CategoriesLandsModel.findByPk(id);
     if (!categoryLand) {
       return res.status(404).json(new ErrorResponse(lang === "en" ? "Category Land not found" : "الفئة غير موجودة"));
     }
 
-    categoryLand.title = title || categoryLand.title;
-    categoryLand.price = price || categoryLand.price;
-    categoryLand.location = location || categoryLand.location;
-    categoryLand.lang = lang || categoryLand.lang;
-    categoryLand.image = image || categoryLand.image;
+   
+    const updatedFields = {};
+    if (title && title !== categoryLand.title) updatedFields.title = title;
+    if (price && price !== categoryLand.price) updatedFields.price = price;
+    if (location && location !== categoryLand.location) updatedFields.location = location;
+    if (lang && lang !== categoryLand.lang) updatedFields.lang = lang;
+    if (image && image !== categoryLand.image) updatedFields.image = image;
 
-    await categoryLand.save();
+ 
+    if (Object.keys(updatedFields).length > 0) {
+      await categoryLand.update(updatedFields);
+    }
+
+    
+    const updatedData = categoryLand.toJSON();
+    const cacheKey = `categoryLand:${id}:${lang}`;
+    await client.setEx(cacheKey, 3600, JSON.stringify(updatedData));
+
 
     res.status(200).json({
       message: lang === "en" ? "Category Land updated successfully" : "تم تحديث الفئة بنجاح",
-      categoryLand,
+      categoryLand: updatedData,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json(new ErrorResponse('Failed to update Category Land'));
+    console.error("Error in updateCategoryLand:", error);
+    res.status(500).json(new ErrorResponse('Failed to update Category Land', [
+      "An internal server error occurred. Please try again later.",
+    ]));
   }
 };
+
 
 exports.deleteCategoryLand = async (req, res) => {
   try {
     const { id, lang } = req.params;
 
-  
-    const validationErrors = validateInput({ id, lang });
-    if (validationErrors.length > 0) {
-      return res.status(400).json(new ErrorResponse('Invalid ID or language', validationErrors));
-    }
-
-    const categoryLand = await CategoriesLandsModel.findOne({
-      where: { id, lang },
-    });
+    const [categoryLand, _] = await Promise.all([
+      CategoriesLandsModel.findOne({ where: { id, lang } }),
+      client.del(`categoryLand:${id}:${lang}`),
+    ]);
 
     if (!categoryLand) {
-      return res.status(404).json(new ErrorResponse(lang === "en" ? "Category Land not found" : "الفئة غير موجودة"));
+      return res.status(404).json(
+         ErrorResponse(lang === "en" ? "Category Land not found" : "الفئة غير موجودة", [
+          "No Category Land found with the given ID and language.",
+        ])
+      );
     }
 
+   
     await categoryLand.destroy();
 
-    res.status(200).json({
-      message: lang === "en" ? "Category Land deleted successfully" : "تم حذف الفئة بنجاح",
-    });
+    
+    return res.status(200).json({ message: lang === "en" ? "Category Land deleted successfully" : "تم حذف الفئة بنجاح" });
   } catch (error) {
-    console.error(error);
-    res.status(500).json(new ErrorResponse('Failed to delete Category Land'));
+    console.error("Error in deleteCategoryLand:", error);
+
+    
+    return res.status(500).json(
+       ErrorResponse("Failed to delete Category Land", [
+        "An internal server error occurred. Please try again later.",
+      ])
+    );
   }
 };
+

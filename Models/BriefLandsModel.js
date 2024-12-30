@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../Config/dbConnect');
 
-const BreifEvents = sequelize.define('BreifEvents', {
+const BreifLands = sequelize.define('BreifLands', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -23,4 +23,4 @@ const BreifEvents = sequelize.define('BreifEvents', {
   timestamps: false, 
 });
 
-module.exports = BreifEvents;
+module.exports = BreifLands;

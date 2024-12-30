@@ -6,7 +6,7 @@ const authMiddleware = require('../MiddleWares/authMiddleware');
 const rateLimiter = require('../MiddleWares/rateLimiter'); 
 
 
-router.post('/createchalet', authMiddleware, rateLimiter, multer.single('image'), chaletController.createChalet);
+router.post('/createchalet', rateLimiter, multer.single('image'), chaletController.createChalet);
 
 
 router.get('/getallchalets/:lang', chaletController.getAllChalets);
@@ -16,9 +16,9 @@ router.get('/getchaletbyid/:id', chaletController.getChaletById);
 router.get('/getchaletsbydetailtype/:type/:lang', chaletController.getChaletsByDetailType);
 
 
-router.put('/updatechalet/:id', authMiddleware, rateLimiter, multer.single('image'), chaletController.updateChalet);
+router.put('/updatechalet/:id', rateLimiter, multer.single('image'), chaletController.updateChalet);
 
 
-router.delete('/deletechalet/:id/:lang', authMiddleware, chaletController.deleteChalet);
+router.delete('/deletechalet/:id/:lang', chaletController.deleteChalet);
 
 module.exports = router;

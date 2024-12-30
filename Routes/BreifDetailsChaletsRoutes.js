@@ -5,8 +5,8 @@ const authMiddleware = require('../MiddleWares/authMiddleware');
 const rateLimiter = require('../MiddleWares/rateLimiter'); 
 
 
-router.post('/createBreif', authMiddleware, rateLimiter, BreifDetailsChaletsController.createBreifDetailsChalet);
-router.put('/updateBreif/:id', authMiddleware, rateLimiter, BreifDetailsChaletsController.updateBreifDetailsChalet);
+router.post('/createBreif', rateLimiter, BreifDetailsChaletsController.createBreifDetailsChalet);
+router.put('/updateBreif/:id', rateLimiter, BreifDetailsChaletsController.updateBreifDetailsChalet);
 
 
 router.get('/getBreifsByChaletId/:chalet_id/:lang', BreifDetailsChaletsController.getBreifDetailsByChaletId);
