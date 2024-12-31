@@ -64,7 +64,7 @@ const WalletRoutes = require('./Routes/WalletRoutes')
 const PropsChaletsRoutes = require('./Routes/ChaletsPropsRoutes')
 const FeedBackRoutes = require('./Routes/FeedBacksRoutes');
 const MessagesRoutes = require('./Routes/MessagesRoutes')
-
+const HeroLands = require('./Routes/HeroLandsRoutes')
 
 
 const allowedOrigins = [
@@ -129,7 +129,7 @@ app.use('/Wallet',WalletRoutes)
 app.use('/propschalets',PropsChaletsRoutes)
 app.use('/FeedBacks',FeedBackRoutes)
 app.use('/messages',MessagesRoutes)
-
+app.use('/heroLands',HeroLands)
 
 
 

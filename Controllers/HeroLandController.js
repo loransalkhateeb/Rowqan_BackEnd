@@ -1,33 +1,31 @@
 const HeroLandsModel = require("../Models/HeroLandsModel");
 const { validateInput, ErrorResponse } = require("../Utils/validateInput");
 
+const {client} = require('../Utils/redisClient')
+
+
 exports.createHeroLand = async (req, res) => {
   try {
     const { title, description, title_btn, lang } = req.body;
     const image = req.file?.filename;
 
-
-    const validationErrors = validateInput(
-      { title, description, title_btn, lang },
-      ["title", "description", "title_btn", "lang"]
-    );
-    if (validationErrors) {
-      return res.status(400).json(ErrorResponse(validationErrors));
+    if (!title || !description || !title_btn || !lang) {
+      return res.status(400).json(ErrorResponse("Title, description, title_btn, and language are required."));
     }
 
     if (!["ar", "en"].includes(lang)) {
-      return res
-        .status(400)
-        .json(ErrorResponse("Invalid language. Supported languages are 'ar' and 'en'."));
+      return res.status(400).json(ErrorResponse("Invalid language. Supported languages are 'ar' and 'en'."));
     }
 
-    const newHeroLand = await HeroLandsModel.create({
-      title,
-      description,
-      title_btn,
-      lang,
-      image,
+   
+    const [newHeroLand, created] = await HeroLandsModel.findOrCreate({
+      where: { title, lang },
+      defaults: { title, description, title_btn, lang, image }
     });
+
+    if (!created) {
+      return res.status(400).json(ErrorResponse("HeroLand with the same title and language already exists"));
+    }
 
     res.status(201).json({
       message: lang === "en" ? "HeroLand created successfully" : "تم إنشاء الهيرو بنجاح",
@@ -39,9 +37,14 @@ exports.createHeroLand = async (req, res) => {
   }
 };
 
+
+
+
 exports.getAllHeroLands = async (req, res) => {
   try {
-    const { lang } = req.params;
+    const { page = 1, limit = 20, lang } = req.query;
+    const offset = (page - 1) * limit;
+
 
     if (lang && !["ar", "en"].includes(lang)) {
       return res
@@ -49,14 +52,37 @@ exports.getAllHeroLands = async (req, res) => {
         .json(ErrorResponse("Invalid language. Supported languages are 'ar' and 'en'."));
     }
 
+   
+    const cacheKey = `heroLands:page:${page}:limit:${limit}:lang:${lang || 'all'}`;
+
+   
+    const cachedData = await client.get(cacheKey);
+    if (cachedData) {
+      return res.status(200).json({
+        message: "Successfully fetched HeroLands from cache",
+        data: JSON.parse(cachedData),
+      });
+    }
+
+   
     const whereClause = lang ? { lang } : {};
-    const heroLands = await HeroLandsModel.findAll({ where: whereClause });
+
+   
+    const heroLands = await HeroLandsModel.findAll({
+      where: whereClause,
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      order: [["id", "DESC"]],
+    });
 
     if (!heroLands.length) {
-      return res
-        .status(404)
-        .json(ErrorResponse(lang === "en" ? "No HeroLands found" : "لم يتم العثور على هيرو"));
+      return res.status(404).json(
+        ErrorResponse(lang === "en" ? "No HeroLands found" : "لم يتم العثور على هيرو")
+      );
     }
+
+    await client.setEx(cacheKey, 3600, JSON.stringify(heroLands));
+
 
     res.status(200).json({
       message: lang === "en" ? "HeroLands retrieved successfully" : "تم استرجاع الهيرو بنجاح",
@@ -68,30 +94,45 @@ exports.getAllHeroLands = async (req, res) => {
   }
 };
 
+
+
 exports.getHeroLandById = async (req, res) => {
   try {
     const { id, lang } = req.params;
 
-    const validationErrors = validateInput({ id, lang }, ["id"]);
-    if (validationErrors) {
-      return res.status(400).json(ErrorResponse(validationErrors));
+    if (lang && !["ar", "en"].includes(lang)) {
+      return res.status(400).json(
+        ErrorResponse("Invalid language. Supported languages are 'ar' and 'en'.")
+      );
     }
+
+    const cacheKey = `heroLand:${id}:lang:${lang || 'all'}`;
+
+    
+    const cachedData = await client.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit for heroLand:", id);
+      return res.status(200).json({
+        message: lang === "en" ? "HeroLand retrieved successfully from cache" : "تم استرجاع الهيرو بنجاح من الكاش",
+        data: JSON.parse(cachedData),
+      });
+    }
+    console.log("Cache miss for heroLand:", id);
 
     const whereClause = { id };
     if (lang) {
-      if (!["ar", "en"].includes(lang)) {
-        return res
-          .status(400)
-          .json(ErrorResponse("Invalid language. Supported languages are 'ar' and 'en'."));
-      }
       whereClause.lang = lang;
     }
 
     const heroLand = await HeroLandsModel.findOne({ where: whereClause });
 
     if (!heroLand) {
-      return res.status(404).json(ErrorResponse(lang === "en" ? "HeroLand not found" : "الهيرو غير موجود"));
+      return res.status(404).json(
+        ErrorResponse(lang === "en" ? "HeroLand not found" : "الهيرو غير موجود")
+      );
     }
+
+    await client.setEx(cacheKey, 3600, JSON.stringify(heroLand));
 
     res.status(200).json({
       message: lang === "en" ? "HeroLand retrieved successfully" : "تم استرجاع الهيرو بنجاح",
@@ -102,6 +143,8 @@ exports.getHeroLandById = async (req, res) => {
     res.status(500).json(ErrorResponse("Failed to retrieve HeroLand."));
   }
 };
+
+
 
 exports.updateHeroLand = async (req, res) => {
   try {
@@ -144,32 +187,45 @@ exports.deleteHeroLand = async (req, res) => {
   try {
     const { id, lang } = req.params;
 
-    const validationErrors = validateInput({ id, lang }, ["id", "lang"]);
-    if (validationErrors) {
-      return res.status(400).json(ErrorResponse(validationErrors));
-    }
-
-    if (!["ar", "en"].includes(lang)) {
+   
+    if (lang && !["ar", "en"].includes(lang)) {
       return res
         .status(400)
         .json(ErrorResponse("Invalid language. Supported languages are 'ar' and 'en'."));
     }
 
-    const heroLand = await HeroLandsModel.findOne({ where: { id, lang } });
+   
+    const [heroLand, _] = await Promise.all([
+      HeroLandsModel.findOne({ where: { id, lang } }), 
+      client.del(`heroLand:${id}`),
+    ]);
+
 
     if (!heroLand) {
-      return res
-        .status(404)
-        .json(ErrorResponse(lang === "en" ? "HeroLand not found" : "الهيرو غير موجود"));
+      return res.status(404).json(
+        ErrorResponse(
+          lang === "en"
+            ? "HeroLand not found"
+            : "الهيرو غير موجود"
+        )
+      );
     }
 
+  
     await heroLand.destroy();
 
-    res.status(200).json({
+   
+    return res.status(200).json({
       message: lang === "en" ? "HeroLand deleted successfully" : "تم حذف الهيرو بنجاح",
     });
   } catch (error) {
-    console.error("Error deleting HeroLand:", error);
-    res.status(500).json(ErrorResponse("Failed to delete HeroLand."));
+    console.error("Error in deleteHeroLand:", error);
+
+    return res.status(500).json(
+      ErrorResponse("Failed to delete HeroLand", [
+        "An internal server error occurred. Please try again later.",
+      ])
+    );
   }
 };
+

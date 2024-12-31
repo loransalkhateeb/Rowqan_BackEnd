@@ -6,7 +6,7 @@ const authMiddleware = require('../MiddleWares/authMiddleware');
 const rateLimiter = require('../MiddleWares/rateLimiter');
 
 
-router.post('/createHero', authMiddleware, rateLimiter, multer.single('image'), heroController.createHero);
+router.post('/createHero', rateLimiter, multer.single('image'), heroController.createHero);
 
 
 router.get('/getAllHeroes/:lang', heroController.getHeroesByLang);
@@ -14,9 +14,9 @@ router.get('/getAllHeroes/:lang', heroController.getHeroesByLang);
 
 router.get('/getHeroById/:id/:lang', heroController.getHeroById);
 
-router.put('/updateHero/:id', authMiddleware, rateLimiter, multer.single('image'), heroController.updateHero);
+router.put('/updateHero/:id', rateLimiter, multer.single('image'), heroController.updateHero);
 
 
-router.delete('/deleteHero/:id/:lang', authMiddleware, heroController.deleteHero);
+router.delete('/deleteHero/:id/:lang', heroController.deleteHero);
 
 module.exports = router;

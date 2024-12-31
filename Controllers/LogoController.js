@@ -1,5 +1,5 @@
 const Logo  = require('../Models/LogoModel'); 
-
+const {client} = require('../Utils/redisClient')
 
 exports.createLogo = async (req, res) => {
   try {
@@ -10,11 +10,11 @@ exports.createLogo = async (req, res) => {
       image: imageUrl,
     });
 
-    if (req.user.user_type_id !== 1) {
-      return res.status(403).json({
-        error: 'You are not authorized to update users',
-      });
-    }
+    // if (req.user.user_type_id !== 1) {
+    //   return res.status(403).json({
+    //     error: 'You are not authorized to update users',
+    //   });
+    // }
 
     res.status(201).json({ message: 'Logo created successfully', hero: newLogo });
   } catch (error) {
@@ -27,31 +27,77 @@ exports.createLogo = async (req, res) => {
 
 exports.getAllLogos = async (req, res) => {
   try {
-    const logos = await Logo.findAll();
-    res.status(200).json(logos);
+    const { page = 1, limit = 20 } = req.query;
+    const offset = (page - 1) * limit;
+
+    const cacheKey = `logos:page:${page}:limit:${limit}`;
+    const cachedData = await client.get(cacheKey);
+
+    if (cachedData) {
+      return res.status(200).json({
+        message: "Successfully fetched Logos from cache",
+        data: JSON.parse(cachedData),
+      });
+    }
+
+    const logos = await Logo.findAll({
+      order: [["id", "DESC"]],
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+    });
+
+    if (!logos.length) {
+      return res.status(404).json({ message: "No logos found" });
+    }
+
+    await client.setEx(cacheKey, 3600, JSON.stringify(logos));
+
+    res.status(200).json({
+      message: "Successfully fetched logos",
+      data: logos,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to fetch logos' });
+    console.error("Error in getAllLogos:", error.message);
+    res.status(500).json({
+      error: "Failed to fetch logos",
+    });
   }
 };
+
 
 
 exports.getLogoById = async (req, res) => {
   try {
     const { id } = req.params;
 
+    const cacheKey = `logo:${id}`;
+
+    const cachedData = await client.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit for logo:", id);
+      return res.status(200).json({
+        message: "Successfully fetched Logo by ID from cache",
+        data: JSON.parse(cachedData),
+      });
+    }
+    console.log("Cache miss for logo:", id);
+
+    
     const logo = await Logo.findOne({ where: { id } });
 
     if (!logo) {
       return res.status(404).json({ error: 'Logo not found' });
     }
 
+    await client.setEx(cacheKey, 3600, JSON.stringify(logo));
+
     res.status(200).json(logo);
   } catch (error) {
-    console.error(error);
+    console.error("Error in getLogoById:", error);
     res.status(500).json({ error: 'Failed to fetch logo' });
   }
 };
+
 
 
 exports.updatelogo = async (req, res) => {
@@ -67,11 +113,11 @@ exports.updatelogo = async (req, res) => {
         return res.status(404).json({ error: 'Logo not found' });
       }
 
-      if (req.user.user_type_id !== 1) {
-        return res.status(403).json({
-          error:'You are not authorized to update users',
-        });
-      }
+      // if (req.user.user_type_id !== 1) {
+      //   return res.status(403).json({
+      //     error:'You are not authorized to update users',
+      //   });
+      // }
   
  
       logo.image = image || logo.image; 
@@ -89,24 +135,31 @@ exports.updatelogo = async (req, res) => {
   
 
 
-exports.deleteLogo = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const logo = await Logo.findOne({ where: { id } });
-
-    if (!logo) {
-      return res.status(404).json({ error: 'Logo not found' });
+  exports.deleteLogo = async (req, res) => {
+    try {
+      const { id } = req.params;
+  
+      const [logo, _] = await Promise.all([
+        Logo.findByPk(id),
+        client.del(`logo:${id}`),
+      ]);
+  
+      if (!logo) {
+        return res.status(404).json({
+          error: 'Logo not found',
+        });
+      }
+  
+      await logo.destroy();
+  
+      return res.status(200).json({ message: 'Logo deleted successfully' });
+    } catch (error) {
+      console.error("Error in deleteLogo:", error);
+  
+      return res.status(500).json({
+        error: 'Failed to delete logo',
+        message: 'An internal server error occurred. Please try again later.',
+      });
     }
-
-
-    await logo.destroy();
-
-    res.status(200).json({
-      message: 'Logo deleted successfully',
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to delete logo' });
-  }
-};
+  };
+  
