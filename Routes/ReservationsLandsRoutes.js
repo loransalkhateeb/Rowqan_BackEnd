@@ -5,7 +5,7 @@ const authMiddleware = require('../MiddleWares/authMiddleware');
 const rateLimiter = require('../MiddleWares/rateLimiter');
 
 
-router.use(authMiddleware);
+// router.use(authMiddleware);
 
 
 router.post('/createreservationslands', rateLimiter, ResevationLandsController.createReservationLand);

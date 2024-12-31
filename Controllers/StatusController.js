@@ -20,10 +20,9 @@ exports.createStatus = async (req, res, next) => {
 
     const newStatus = await Status.create({ status, lang });
 
-    res.status(201).json({
-      message: 'Status created successfully',
-      status: newStatus,
-    });
+    res.status(201).json(
+      newStatus,
+    );
   } catch (error) {
     next(new ErrorResponse('Failed to create Status', 500)); 
   }
@@ -37,18 +36,39 @@ exports.getAllStatuses = async (req, res) => {
       return res.status(400).json({ error: 'Invalid language' });
     }
 
+   
+    const cacheKey = `statuses:lang:${lang}`;
+    const cachedData = await client.get(cacheKey);
+
+    
+    if (cachedData) {
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
+    }
+
+    
     const statuses = await Status.findAll({ where: { lang } });
 
     if (!statuses.length) {
       return res.status(404).json({ error: 'No statuses found for this language' });
     }
 
-    res.status(200).json({ statuses });
+    
+    await client.setEx(cacheKey, 3600, JSON.stringify(statuses));
+
+    res.status(200).json(
+      statuses,
+    );
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to retrieve statuses' });
+    console.error("Error in getAllStatuses:", error.message);
+    res.status(500).json({
+      error: 'Failed to retrieve statuses',
+      message: "An internal server error occurred. Please try again later.",
+    });
   }
 };
+
 
 
 exports.getStatusById = async (req, res) => {
@@ -60,18 +80,44 @@ exports.getStatusById = async (req, res) => {
       return res.status(400).json({ error: 'Invalid language' });
     }
 
-    const status = await Status.findOne({ where: { id, lang } });
+    
+    const cacheKey = `status:${id}:lang:${lang}`;
+    const cachedData = await client.get(cacheKey);
+
+    
+    if (cachedData) {
+      console.log("Cache hit for status:", id);
+      return res.status(200).json(
+        JSON.parse(cachedData)
+      );
+    }
+    console.log("Cache miss for status:", id);
+
+    
+    const status = await Status.findOne({
+      where: { id, lang }
+    });
 
     if (!status) {
-      return res.status(404).json({ error: 'Status not found for the specified language' });
+      return res.status(404).json({
+        error: 'Status not found for the specified language'
+      });
     }
+
+    
+    await client.setEx(cacheKey, 3600, JSON.stringify(status));
 
     res.status(200).json({ status });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to fetch Status' });
+    console.error("Error in getStatusById:", error);
+
+    res.status(500).json({
+      error: 'Failed to fetch Status',
+      message: "An internal server error occurred. Please try again later."
+    });
   }
 };
+
 
 
 exports.updateStatus = async (req, res) => {
@@ -111,23 +157,34 @@ exports.deleteStatus = async (req, res) => {
     const { id } = req.params;
     const { lang } = req.query;
 
+
     if (!['en', 'ar'].includes(lang)) {
       return res.status(400).json({ error: 'Invalid language' });
     }
 
-    const status = await Status.findOne({ where: { id, lang } });
+    
+    const [status, _] = await Promise.all([
+      Status.findOne({ where: { id, lang } }),
+      client.del(`status:${id}:lang:${lang}`), 
+    ]);
 
     if (!status) {
-      return res.status(404).json({ error: 'Status not found for the specified language' });
+      return res.status(404).json({
+        error: 'Status not found for the specified language',
+      });
     }
-
+    
     await status.destroy();
-
-    res.status(200).json({
+   
+    return res.status(200).json({
       message: 'Status deleted successfully',
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to delete Status' });
+    console.error("Error in deleteStatus:", error);
+
+    return res.status(500).json({
+      error: 'Failed to delete Status',
+      message: "An internal server error occurred. Please try again later.",
+    });
   }
 };

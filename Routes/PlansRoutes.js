@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const plansController = require('../Controllers/plansController');
+const plansController = require('../Controllers/PlansController');
 const authMiddleware = require('../MiddleWares/authMiddleware');  
 const rateLimiter = require('../MiddleWares/rateLimiter');
 router.post('/createplan', rateLimiter, plansController.createPlan); 

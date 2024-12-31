@@ -36,18 +36,44 @@ exports.createStatusChalet = async (req, res) => {
 
 exports.getAllStatusChalets = async (req, res) => {
   try {
-    const statusChalets = await StatusChalets.findAll();
+    const { page = 1, limit = 20 } = req.query;
+    const offset = (page - 1) * limit;
 
-    if (!statusChalets.length) {
-      return res.status(404).json(new ErrorResponse('No StatusChalets found'));
+    const cacheKey = `statusChalets:page:${page}:limit:${limit}`;
+    const cachedData = await client.get(cacheKey);
+
+    if (cachedData) {
+      return res.status(200).json({
+        message: "Successfully fetched StatusChalets entries from cache",
+        data: JSON.parse(cachedData),
+      });
     }
 
-    res.status(200).json({ statusChalets });
+    const statusChalets = await StatusChalets.findAll({
+      order: [["id", "DESC"]],
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+    });
+
+    if (!statusChalets.length) {
+      return res.status(404).json({ error: "No StatusChalets found" });
+    }
+
+    await client.setEx(cacheKey, 3600, JSON.stringify(statusChalets));
+
+    res.status(200).json({
+      message: "Successfully fetched StatusChalets entries",
+      data: statusChalets,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json(new ErrorResponse('Failed to retrieve StatusChalets'));
+    console.error("Error in getAllStatusChalets:", error.message);
+    res.status(500).json({
+      error: "Failed to fetch StatusChalets entries",
+      details: ["An internal server error occurred."],
+    });
   }
 };
+
 
 exports.updateStatusChalet = async (req, res) => {
   try {
@@ -83,34 +109,75 @@ exports.getStatusChaletById = async (req, res) => {
   try {
     const { id } = req.params;
 
+    const cacheKey = `statusChalet:${id}`;
+    
+   
+    const cachedData = await client.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit for statusChalet:", id);
+      return res.status(200).json({
+        message: "Successfully fetched StatusChalet By Id entry from cache",
+        data: JSON.parse(cachedData),
+      });
+    }
+    console.log("Cache miss for statusChalet:", id);
+
+    
     const statusChalet = await StatusChalets.findOne({ where: { id } });
 
     if (!statusChalet) {
-      return res.status(404).json(new ErrorResponse('StatusChalet not found'));
+      return res.status(404).json(
+        new ErrorResponse("StatusChalet not found", [
+          "No StatusChalet entry found with the given ID.",
+        ])
+      );
     }
 
-    res.status(200).json({ statusChalet });
+   
+    await client.setEx(cacheKey, 3600, JSON.stringify(statusChalet));
+
+    return res.status(200).json(statusChalet);
   } catch (error) {
-    console.error(error);
-    res.status(500).json(new ErrorResponse('Failed to fetch StatusChalet'));
+    console.error("Error in getStatusChaletById:", error);
+    
+    return res.status(500).json(
+       ErrorResponse("Failed to fetch StatusChalet entry", [
+        "An internal server error occurred. Please try again later.",
+      ])
+    );
   }
 };
+
 
 exports.deleteStatusChalet = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const statusChalet = await StatusChalets.findOne({ where: { id } });
+  
+    const [statusChalet, _] = await Promise.all([
+      StatusChalets.findByPk(id),
+      client.del(`statusChalet:${id}`),  
+    ]);
 
     if (!statusChalet) {
-      return res.status(404).json(new ErrorResponse('StatusChalet not found'));
+      return res.status(404).json(
+        new ErrorResponse("StatusChalet not found", [
+          "No StatusChalet entry found with the given ID.",
+        ])
+      );
     }
+
 
     await statusChalet.destroy();
 
-    res.status(200).json({ message: 'StatusChalet deleted successfully' });
+    return res.status(200).json({ message: "StatusChalet deleted successfully" });
   } catch (error) {
-    console.error(error);
-    res.status(500).json(new ErrorResponse('Failed to delete StatusChalet'));
+    console.error("Error in deleteStatusChalet:", error);
+
+    return res.status(500).json(
+      new ErrorResponse("Failed to delete StatusChalet", [
+        "An internal server error occurred. Please try again later.",
+      ])
+    );
   }
 };

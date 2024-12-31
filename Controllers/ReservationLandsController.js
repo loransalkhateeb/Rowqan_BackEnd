@@ -1,6 +1,8 @@
 const { validateInput, ErrorResponse } = require("../Utils/validateInput");
 const ReservationLandsModel = require('../Models/ReservationsLandsModel');
 const CategoriesLandsModel = require('../Models/CategoriesLandsModel');
+const {client} = require('../Utils/redisClient')
+
 
 exports.createReservationLand = async (req, res) => {
   try {
@@ -50,7 +52,8 @@ exports.createReservationLand = async (req, res) => {
 
 exports.getAllReservations = async (req, res) => {
   try {
-    const { page = 1, limit = 20, lang } = req.query;
+    const { page = 1, limit = 20 } = req.query;
+    const {lang} = req.params
     const offset = (page - 1) * limit;
 
     const validationErrors = validateInput({ lang });
@@ -79,7 +82,7 @@ exports.getAllReservations = async (req, res) => {
 
     if (reservations.length === 0) {
       return res.status(404).json({
-        error: lang === 'en' ? 'No reservations found' : 'لا توجد حجوزات',
+ 'No reservations found' : 'لا توجد حجوزات',
       });
     }
 
@@ -91,8 +94,7 @@ exports.getAllReservations = async (req, res) => {
     );
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      error: lang === 'en' ? 'Failed to retrieve reservations' : 'فشل في استرجاع الحجوزات',
+    res.status(500).json({ 'Failed to retrieve reservations' : 'فشل في استرجاع الحجوزات',
     });
   }
 };

@@ -50,54 +50,100 @@ exports.createRightTime = async (req, res) => {
 
 exports.getRightTimeById = async (req, res) => {
     try {
-        const { id, lang } = req.params;
-
-        const rightTime = await RightTimeModel.findOne({
-            where: { id, lang },
-            include: [
-                { model: Chalet },
-                { model: ReservationDate }
-            ]
+      const { id, lang } = req.params;
+      const cacheKey = `rightTime:${id}:${lang}`;
+  
+      const cachedData = await redisClient.get(cacheKey);
+      if (cachedData) {
+        console.log("Cache hit for RightTime:", id);
+        return res.status(200).json({
+          message: "Successfully fetched RightTime by Id entry from cache", 
+          data: JSON.parse(cachedData),
         });
+      }
+      console.log("Cache miss for RightTime:", id);
+  
 
-        if (!rightTime) {
-            return res.status(404).json(new ErrorResponse('RightTime not found'));
-        }
-
-        return res.status(200).json({ rightTime });
+      const rightTime = await RightTimeModel.findOne({
+        where: { id, lang },
+        include: [
+          { model: Chalet },
+          { model: ReservationDate }
+        ]
+      });
+  
+      if (!rightTime) {
+        return res.status(404).json({
+          message: lang === 'en' ? 'RightTime not found' : 'لم يتم العثور على الوقت المناسب'
+        });
+      }
+  
+      await redisClient.setEx(cacheKey, 3600, JSON.stringify(rightTime));
+  
+      return res.status(200).json({ rightTime });
     } catch (error) {
-        console.error(error);
-        return res.status(500).json(new ErrorResponse('Internal server error'));
+      console.error("Error in getRightTimeById:", error);
+  
+      return res.status(500).json({
+        message: lang === 'en' ? 'Failed to fetch RightTime entry' : 'فشل في جلب الوقت المناسب'
+      });
     }
-};
+  };
+  
 
 
-exports.getAllRightTimesByChaletId = async (req, res) => {
+  exports.getAllRightTimesByChaletId = async (req, res) => {
     try {
-        const { chalet_id, lang } = req.params;
-
-        const chalet = await Chalet.findByPk(chalet_id);
-        if (!chalet) {
-            return res.status(404).json(new ErrorResponse('Chalet not found'));
-        }
-
-        const rightTimes = await RightTimeModel.findAll({
-            where: { chalet_id, lang },
-            include: [
-                { model: ReservationDate }
-            ]
+      const { chalet_id, lang } = req.params;
+      const cacheKey = `rightTimes:chalet:${chalet_id}:${lang}`;
+  
+      
+      const cachedData = await redisClient.get(cacheKey);
+      if (cachedData) {
+        console.log("Cache hit for RightTimes by Chalet:", chalet_id);
+        return res.status(200).json({
+          message: "Successfully fetched RightTimes by Chalet from cache", 
+          data: JSON.parse(cachedData),
         });
-
-        if (rightTimes.length === 0) {
-            return res.status(404).json(new ErrorResponse('No RightTimes found for this chalet in the specified language'));
-        }
-
-        return res.status(200).json({ rightTimes });
+      }
+      console.log("Cache miss for RightTimes by Chalet:", chalet_id);
+  
+      
+      const chalet = await Chalet.findByPk(chalet_id);
+      if (!chalet) {
+        return res.status(404).json({
+          message: lang === 'en' ? 'Chalet not found' : 'الشاليه غير موجود'
+        });
+      }
+  
+      const rightTimes = await RightTimeModel.findAll({
+        where: { chalet_id, lang },
+        include: [
+          { model: ReservationDate }
+        ]
+      });
+  
+      if (rightTimes.length === 0) {
+        return res.status(404).json({
+          message: lang === 'en' ? 'No RightTimes found for this chalet in the specified language' : 'لم يتم العثور على أوقات مناسبة لهذا الشاليه باللغة المحددة'
+        });
+      }
+  
+     
+      await redisClient.setEx(cacheKey, 3600, JSON.stringify(rightTimes));
+  
+      return res.status(200).json({ rightTimes });
     } catch (error) {
-        console.error(error);
-        return res.status(500).json(new ErrorResponse('Internal server error'));
+      console.error("Error in getAllRightTimesByChaletId:", error);
+  
+      return res.status(500).json({
+        message: lang === 'en' ? 'Failed to fetch RightTimes' : 'فشل في جلب الأوقات المناسبة'
+      });
     }
-};
+  };
+
+  
+
 
 
 exports.updateRightTime = async (req, res) => {
@@ -127,10 +173,9 @@ exports.updateRightTime = async (req, res) => {
 
         await rightTime.save();
 
-        return res.status(200).json({
-            message: 'RightTime updated successfully',
+        return res.status(200).json(
             rightTime
-        });
+        );
     } catch (error) {
         console.error(error);
         return res.status(500).json(new ErrorResponse('Internal server error'));
@@ -140,42 +185,88 @@ exports.updateRightTime = async (req, res) => {
 
 exports.deleteRightTime = async (req, res) => {
     try {
-        const { id, lang } = req.params;
-
-        const rightTime = await RightTimeModel.findOne({ where: { id, lang } });
-        if (!rightTime) {
-            return res.status(404).json(new ErrorResponse('RightTime not found'));
-        }
-
-        await rightTime.destroy();
-
-        return res.status(200).json({ message: 'RightTime deleted successfully' });
+      const { id, lang } = req.params;
+  
+     
+      const [rightTime, _] = await Promise.all([
+        RightTimeModel.findByPk(id, { where: { lang } }),
+        redisClient.del(`rightTime:${id}:${lang}`), 
+      ]);
+  
+      if (!rightTime) {
+        return res.status(404).json(
+          ErrorResponse("RightTime not found", [
+            "No RightTime found with the given ID and language.",
+          ])
+        );
+      }
+  
+    
+      await rightTime.destroy();
+  
+      
+      return res.status(200).json({ message: "RightTime deleted successfully" });
     } catch (error) {
-        console.error(error);
-        return res.status(500).json(new ErrorResponse('Internal server error'));
+      console.error("Error in deleteRightTime:", error);
+  
+      return res.status(500).json(
+        ErrorResponse("Failed to delete RightTime", [
+          "An internal server error occurred. Please try again later.",
+        ])
+      );
     }
-};
-
+  };
+  
 
 exports.get = async (req, res) => {
     try {
-        const { lang } = req.params;
-
-        const rightTimes = await RightTimeModel.findAll({
-            where: { lang },
-            include: [
-                { model: Chalet },
-                { model: ReservationDate }
-            ]
+      const { lang } = req.params;
+      const { page = 1, limit = 20 } = req.query;
+      const offset = (page - 1) * limit;
+  
+      
+      const cacheKey = `rightTimes:lang:${lang}:page:${page}:limit:${limit}`;
+      const cachedData = await redisClient.get(cacheKey);
+  
+      if (cachedData) {
+        console.log("Cache hit for RightTimes:", lang, page, limit);
+        return res.status(200).json({
+          message: "Successfully fetched RightTimes from cache", 
+          data: JSON.parse(cachedData),
         });
-
-        if (rightTimes.length === 0) {
-            return res.status(404).json(new ErrorResponse('No RightTimes found for this language'));
-        }
-
-        return res.status(200).json({ rightTimes });
+      }
+      console.log("Cache miss for RightTimes:", lang, page, limit);
+  
+     
+      const rightTimes = await RightTimeModel.findAll({
+        where: { lang },
+        include: [
+          { model: Chalet },
+          { model: ReservationDate }
+        ],
+        limit: parseInt(limit),
+        offset: parseInt(offset),
+      });
+  
+      if (rightTimes.length === 0) {
+        return res.status(404).json({
+          message: lang === 'en' ? 'No RightTimes found for this language' : 'لم يتم العثور على الأوقات المناسبة لهذه اللغة'
+        });
+      }
+  
+    
+      await redisClient.setEx(cacheKey, 3600, JSON.stringify(rightTimes));
+  
+      return res.status(200).json({
+        message: lang === 'en' ? 'Successfully fetched RightTimes' : 'تم جلب الأوقات المناسبة بنجاح',
+        data: rightTimes,
+      });
     } catch (error) {
-        console.error(error);
-        return res.status(500).json(new ErrorResponse('Internal server error'));
+      console.error("Error in getRightTimes:", error);
+  
+      return res.status(500).json({
+        message: lang === 'en' ? 'Failed to fetch RightTimes' : 'فشل في جلب الأوقات المناسبة'
+      });
     }
-};
+  };
+  
