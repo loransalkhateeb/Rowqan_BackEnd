@@ -6,14 +6,14 @@ const authMiddleware = require('../MiddleWares/authMiddleware');
 const rateLimiter = require('../MiddleWares/rateLimiter'); 
 
 
-router.post('/createlogo', authMiddleware, rateLimiter, multer.single('image'), logoController.createLogo);
+router.post('/createlogo', rateLimiter, multer.single('image'), logoController.createLogo);
 
 router.get('/getalllogos', logoController.getAllLogos);
 
 router.get('/getlogobyid/:id', logoController.getLogoById);
 
-router.put('/updatelogo/:id', authMiddleware, rateLimiter, multer.single('image'), logoController.updatelogo);
+router.put('/updatelogo/:id', rateLimiter, multer.single('image'), logoController.updatelogo);
 
-router.delete('/deletelogo/:id', authMiddleware, logoController.deleteLogo);
+router.delete('/deletelogo/:id', logoController.deleteLogo);
 
 module.exports = router;

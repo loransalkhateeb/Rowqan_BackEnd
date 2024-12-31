@@ -1,71 +1,139 @@
 const Footer = require('../Models/FooterModel');
 const { validateInput, ErrorResponse } = require('../Utils/validateInput');
-
+const {client} = require('../Utils/redisClient')
 
 exports.createFooter = async (req, res) => {
   try {
     const { title, lang } = req.body;
-
-  
-    const validationErrors = validateInput({ title, lang }, ['title', 'lang']);
-    if (validationErrors) {
-      return res.status(400).json(ErrorResponse(validationErrors));
+    if (!title || !lang) {
+      return res.status(400).json(ErrorResponse("Title and language are required."));
     }
 
-    const existingFooter = await Footer.findOne({ where: { title, lang } });
-    if (existingFooter) {
-      return res.status(400).json(ErrorResponse('Footer with the same title and language already exists'));
-    }
+   
+    const [newFooter, created] = await Footer.findOrCreate({
+      where: { title, lang },
+      defaults: { title, lang }
+    });
 
-    const newFooter = await Footer.create({ title, lang });
+    if (!created) {
+      return res
+        .status(400)
+        .json(ErrorResponse("Footer with the same title and language already exists"));
+    }
 
     res.status(201).json({
-      message: 'Footer created successfully',
+      message: "Footer created successfully",
       footer: newFooter,
     });
   } catch (error) {
-    console.error('Error creating footer:', error);
-    res.status(500).json(ErrorResponse('Failed to create footer'));
+    console.error("Error creating footer:", error);
+    res.status(500).json(ErrorResponse("Failed to create footer"));
   }
 };
+
+
 
 
 exports.getAllFooters = async (req, res) => {
   try {
-    const { lang } = req.params;
-
+    const { page = 1, limit = 20 } = req.query;
+    const offset = (page - 1) * limit;
+    const {lang} = req.params
     if (!lang) {
-      return res.status(400).json(ErrorResponse('Language is required'));
+      return res.status(400).json(ErrorResponse("Language is required"));
     }
 
-    const footers = await Footer.findAll({ where: { lang } });
+    const cacheKey = `footers:lang:${lang}:page:${page}:limit:${limit}`;
+    const cachedData = await client.get(cacheKey);
+
+    if (cachedData) {
+      return res.status(200).json({
+        message: "Successfully fetched footers from cache",
+        data: JSON.parse(cachedData),
+      });
+    }
+
+  
+    const footers = await Footer.findAll({
+      where: { lang },
+      order: [["id", "DESC"]],
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+    });
 
     if (footers.length === 0) {
-      return res.status(404).json(ErrorResponse('No footers found for the specified language'));
+      return res
+        .status(404)
+        .json(ErrorResponse("No footers found for the specified language"));
     }
 
-    res.status(200).json({ footers });
+    await client.setEx(cacheKey, 3600, JSON.stringify(footers));
+
+    res.status(200).json({
+      message: "Successfully fetched footers",
+      data: footers,
+    });
   } catch (error) {
-    console.error('Error fetching footers:', error);
-    res.status(500).json(ErrorResponse('Failed to fetch footers'));
+    console.error("Error fetching footers:", error);
+    res.status(500).json(
+      ErrorResponse("Failed to fetch footers", [
+        "An internal server error occurred.",
+      ])
+    );
   }
 };
+
 
 
 exports.getFooterById = async (req, res) => {
   try {
     const { id, lang } = req.params;
 
-    const footer = await Footer.findOne({ where: { id, lang } });
-
-    if (!footer) {
-      return res.status(404).json(ErrorResponse('Footer not found'));
+    if (!id || !lang) {
+      return res.status(400).json(ErrorResponse("ID and Language are required"));
     }
 
-    res.status(200).json({ footer });
+    const cacheKey = `footer:${id}:lang:${lang}`;
+
+    const cachedData = await client.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit for footer:", cacheKey);
+      return res.status(200).json({
+        message: "Successfully fetched Footer By Id entry from cache",
+        data: JSON.parse(cachedData),
+      });
+    }
+    console.log("Cache miss for footer:", cacheKey);
+
+   
+    const footer = await Footer.findOne({
+      where: { id, lang },
+    });
+
+    if (!footer) {
+      return res
+        .status(404)
+        .json(
+          ErrorResponse("Footer not found", [
+            "No Footer found with the given ID and language.",
+          ])
+        );
+    }
+
+   
+    await client.setEx(cacheKey, 3600, JSON.stringify(footer));
+
+    return res.status(200).json({
+      message: "Successfully fetched Footer By Id entry",
+      data: footer,
+    });
   } catch (error) {
-    console.error('Error fetching footer:', error);
-    res.status(500).json(ErrorResponse('Failed to fetch footer'));
+    console.error("Error fetching footer:", error);
+    return res.status(500).json(
+      ErrorResponse("Failed to fetch Footer entry", [
+        "An internal server error occurred. Please try again later.",
+      ])
+    );
   }
 };
 
@@ -75,46 +143,94 @@ exports.updateFooter = async (req, res) => {
     const { id } = req.params;
     const { title, lang } = req.body;
 
+    const validationErrors = validateInput({ title, lang });
+    if (validationErrors.length > 0) {
+      return res
+        .status(400)
+        .json(ErrorResponse("Validation failed", validationErrors));
+    }
+
+   
+    const footerEntry = await Footer.findByPk(id);
+    if (!footerEntry) {
+      return res
+        .status(404)
+        .json(
+          ErrorResponse("Footer entry not found", [
+            "No Footer entry found with the given ID.",
+          ])
+        );
+    }
+
  
-    const validationErrors = validateInput({ title, lang }, []);
-    if (validationErrors) {
-      return res.status(400).json(ErrorResponse(validationErrors));
+    const updatedFields = {};
+    if (title && title !== footerEntry.title) updatedFields.title = title;
+    if (lang && lang !== footerEntry.lang) updatedFields.lang = lang;
+
+  
+    if (Object.keys(updatedFields).length > 0) {
+      await footerEntry.update(updatedFields);
     }
 
-    const footer = await Footer.findOne({ where: { id } });
+   
+    const updatedData = footerEntry.toJSON();
 
-    if (!footer) {
-      return res.status(404).json(ErrorResponse('Footer not found'));
-    }
-
-    footer.title = title || footer.title;
-    footer.lang = lang || footer.lang;
-
-    await footer.save();
-
-    res.status(200).json({ message: 'Footer updated successfully', footer });
+    return res.status(200).json({
+      message: "Footer updated successfully",
+      footer: updatedData,
+    });
   } catch (error) {
-    console.error('Error updating footer:', error);
-    res.status(500).json(ErrorResponse('Failed to update footer'));
+    console.error("Error in updateFooter:", error);
+
+    return res
+      .status(500)
+      .json(
+        ErrorResponse("Failed to update Footer entry", [
+          "An internal server error occurred. Please try again later.",
+        ])
+      );
   }
 };
+
+
+
 
 
 exports.deleteFooter = async (req, res) => {
   try {
     const { id, lang } = req.params;
 
-    const footer = await Footer.findOne({ where: { id, lang } });
+    if (!id || !lang) {
+      return res.status(400).json(
+        ErrorResponse("ID and Language are required", [
+          "Both ID and language parameters must be provided.",
+        ])
+      );
+    }
+
+    const [footer, _] = await Promise.all([
+      Footer.findOne({ where: { id, lang } }),
+      client.del(`footer:${id}:lang:${lang}`),
+    ]);
 
     if (!footer) {
-      return res.status(404).json(ErrorResponse('Footer not found'));
+      return res.status(404).json(
+        ErrorResponse("Footer not found", [
+          "No Footer found with the given ID and language.",
+        ])
+      );
     }
 
     await footer.destroy();
 
-    res.status(200).json({ message: 'Footer deleted successfully' });
+    return res.status(200).json({ message: "Footer deleted successfully" });
   } catch (error) {
-    console.error('Error deleting footer:', error);
-    res.status(500).json(ErrorResponse('Failed to delete footer'));
+    console.error("Error deleting footer:", error);
+
+    return res.status(500).json(
+      ErrorResponse("Failed to delete Footer", [
+        "An internal server error occurred. Please try again later.",
+      ])
+    );
   }
 };

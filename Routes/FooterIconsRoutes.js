@@ -6,14 +6,14 @@ const authMiddleware = require('../MiddleWares/authMiddleware');
 const rateLimiter = require('../MiddleWares/rateLimiter'); 
 
 
-router.post('/createFooterIcon', authMiddleware, rateLimiter, multer.single('icon'), footerIconsController.createFooterIcon);
+router.post('/createFooterIcon', rateLimiter, multer.single('icon'), footerIconsController.createFooterIcon);
 
 router.get('/getAllFooterIcons', footerIconsController.getAllFooterIcons);
 
 router.get('/getFooterIconById/:id', footerIconsController.getFooterIconById);
 
-router.put('/updateFooterIcon/:id', authMiddleware, rateLimiter, multer.single('icon'), footerIconsController.updateFooterIcon);
+router.put('/updateFooterIcon/:id', rateLimiter, multer.single('icon'), footerIconsController.updateFooterIcon);
 
-router.delete('/deleteFooterIcon/:id', authMiddleware, footerIconsController.deleteFooterIcon);
+router.delete('/deleteFooterIcon/:id', footerIconsController.deleteFooterIcon);
 
 module.exports = router;
