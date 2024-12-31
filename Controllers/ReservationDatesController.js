@@ -34,10 +34,9 @@ exports.createReservationDate = async (req, res) => {
       right_time_id,
     });
 
-    res.status(201).json({
-      message: 'Reservation Date created successfully',
-      reservationDate: newReservationDate,
-    });
+    res.status(201).json(
+     newReservationDate,
+    );
   } catch (error) {
     console.error("Error creating Reservation Date:", error.message);
     return res.status(500).json({ error: 'Failed to create Reservation Date' });
@@ -58,10 +57,9 @@ exports.getReservationDatesByChaletId = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for reservation dates:", chalet_id);
-      return res.status(200).json({
-        message: "Successfully fetched reservation dates from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for reservation dates:", chalet_id);
 
@@ -70,7 +68,7 @@ exports.getReservationDatesByChaletId = async (req, res) => {
       include: [
         {
           model: ReservationDates,
-          where: { lang },
+          where: { chalet_id },
           required: false,
           include: [
             {
@@ -98,10 +96,10 @@ exports.getReservationDatesByChaletId = async (req, res) => {
 
     await client.setEx(cacheKey, 3600, JSON.stringify(reservationDates));
 
-    return res.status(200).json({
-      message: 'Reservation Dates retrieved successfully',
+    return res.status(200).json(
+     
       reservationDates,
-    });
+  );
   } catch (error) {
     console.error("Error fetching reservation dates:", error.message);
     return res.status(500).json({ error: 'Failed to retrieve Reservation Dates' });
@@ -126,15 +124,13 @@ exports.getAllReservationsDates = async (req, res) => {
     const cachedData = await client.get(cacheKey);
 
     if (cachedData) {
-      return res.status(200).json({
-        message: lang === 'en' ? 'Successfully fetched Reservation Dates from cache' : 'تم جلب تواريخ الحجز بنجاح من الكاش',
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
 
   
     const reservationDates = await ReservationDates.findAll({
-      where: { lang },
       include: [
         {
           model: Chalet,
@@ -159,14 +155,13 @@ exports.getAllReservationsDates = async (req, res) => {
     
     await client.setEx(cacheKey, 3600, JSON.stringify(reservationDates));
 
-    return res.status(200).json({
-      message: lang === 'en' ? 'Reservation Dates retrieved successfully' : 'تم جلب تواريخ الحجز بنجاح',
+    return res.status(200).json(
       reservationDates,
-    });
+    );
   } catch (error) {
     console.error('Error fetching reservation dates:', error.message);
     return res.status(500).json({
-      error: lang === 'en' ? 'Failed to retrieve Reservation Dates' : 'فشل في جلب تواريخ الحجز',
+      error: 'Failed to retrieve Reservation Dates',
     });
   }
 };
@@ -188,10 +183,9 @@ exports.getReservationDateById = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for reservation date:", id);
-      return res.status(200).json({
-        message: 'Successfully fetched Reservation Date from cache',
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for reservation date:", id);
 
@@ -218,16 +212,15 @@ exports.getReservationDateById = async (req, res) => {
     
     await client.setEx(cacheKey, 3600, JSON.stringify(reservationDate));
 
-    return res.status(200).json({
-      message: 'Reservation Date retrieved successfully',
+    return res.status(200).json(
       reservationDate,
-    });
+    );
   } catch (error) {
     console.error("Error fetching reservation date:", error.message);
     return res.status(500).json({ error: 'Failed to retrieve Reservation Date' });
   }
 };
-;
+
 
 exports.updateReservationDate = async (req, res) => {
   try {
@@ -264,10 +257,9 @@ exports.updateReservationDate = async (req, res) => {
 
     await reservationDate.save();
 
-    res.status(200).json({
-      message: 'Reservation Date updated successfully',
+    res.status(200).json(
       reservationDate,
-    });
+    );
   } catch (error) {
     console.error("Error updating Reservation Date:", error.message);
     return res.status(500).json({ error: 'Failed to update Reservation Date' });
@@ -287,7 +279,7 @@ exports.deleteReservationDate = async (req, res) => {
 
     
     const [reservationDate, _] = await Promise.all([
-      ReservationDates.findOne({ where: { id, lang } }),
+      ReservationDates.findOne({ where: { id} }),
       client.del(cacheKey),
     ]);
 

@@ -34,10 +34,9 @@ exports.createEventHero = async (req, res) => {
     }
 
 
-    res.status(201).json({
-      message: "Event Hero created successfully",
-      eventHero: newEventHero,
-    });
+    res.status(201).json(
+      newEventHero,
+    );
   } catch (error) {
     console.error("Error creating Event Hero:", error);
     res.status(500).json(ErrorResponse("Failed to create Event Hero."));
@@ -65,10 +64,9 @@ exports.getAllEventHeroes = async (req, res) => {
     
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
-      return res.status(200).json({
-        message: "Successfully fetched Event Heroes entries from cache", 
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
 
     
@@ -87,10 +85,9 @@ exports.getAllEventHeroes = async (req, res) => {
     await client.setEx(cacheKey, 3600, JSON.stringify(eventHeroes));
 
   
-    res.status(200).json({
-      message: "Successfully fetched Event Heroes entries", 
-      data: eventHeroes,
-    });
+    res.status(200).json(
+      eventHeroes,
+    );
   } catch (error) {
     console.error('Error fetching Event Heroes:', error);
     res.status(500).json(ErrorResponse('Failed to fetch Event Heroes.'));
@@ -119,10 +116,9 @@ exports.getEventHeroById = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for eventHero:", id);
-      return res.status(200).json({
-        message: "Successfully fetched Event Hero By Id entry from cache", 
-        data: JSON.parse(cachedData)
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData)
+      );
     }
     console.log("Cache miss for eventHero:", id);
 
@@ -170,7 +166,7 @@ exports.updateEventHero = async (req, res) => {
 
     await eventHero.save();
 
-    res.status(200).json({ message: 'Event Hero updated successfully', eventHero });
+    res.status(200).json( eventHero );
   } catch (error) {
     console.error('Error updating Event Hero:', error);
     res.status(500).json(ErrorResponse('Failed to update Event Hero.'));

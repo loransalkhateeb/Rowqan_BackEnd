@@ -41,10 +41,8 @@ exports.createAvailableLandsImages = async (req, res) => {
     await client.setEx(`availableLands:${category_id}`, 3600, JSON.stringify(newImages));
 
    
-    res.status(201).json({
-      message: 'Images added to Available Lands successfully',
-      images: newImages
-    });
+    res.status(201).json( newImages
+    );
   } catch (error) {
     console.error("Error in createAvailableLandsImages:", error.message);
     res.status(500).json( ErrorResponse('Failed to add images to Available Lands'));
@@ -68,10 +66,9 @@ exports.getAllCategoryImageLands = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for category image lands:", category_id);
-      return res.status(200).json({
-        message: "Successfully fetched Category Image Lands from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for category image lands:", category_id);
 
@@ -116,10 +113,8 @@ exports.getCategoryImageLandById = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for category image land:", id);
-      return res.status(200).json({
-        message: "Successfully fetched Category Image Land from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json( JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for category image land:", id);
 
@@ -139,10 +134,9 @@ exports.getCategoryImageLandById = async (req, res) => {
     await client.setEx(cacheKey, 3600, JSON.stringify(categoryImageLand));
 
     
-    res.status(200).json({
-      message: 'Category Image Land retrieved successfully',
+    res.status(200).json(
       categoryImageLand,
-    });
+    );
   } catch (error) {
     console.error("Error in getCategoryImageLandById:", error);
     res.status(500).json(new ErrorResponse('Failed to retrieve Category Image Land'));
@@ -185,10 +179,9 @@ exports.updateCategoryImageLand = async (req, res) => {
     await client.setEx(cacheKey, 3600, JSON.stringify(updatedData));
 
    
-    res.status(200).json({
-      message: 'Category Image Land updated successfully',
-      categoryImageLand: updatedData,
-    });
+    res.status(200).json(
+    updatedData,
+    );
   } catch (error) {
     console.error("Error in updateCategoryImageLand:", error);
     res.status(500).json(new ErrorResponse('Failed to update Category Image Land'));

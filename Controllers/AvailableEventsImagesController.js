@@ -99,10 +99,8 @@ exports.getAvailableEventImages = async (req, res) => {
     await client.setEx(cacheKey, 3600, JSON.stringify(images));
 
     
-    return res.status(200).json({
-      message: "Images retrieved successfully",
-      images,
-    });
+    return res.status(200).json(
+      images);
   } catch (error) {
     console.error("Error in getAvailableEventImages:", error);
     res.status(500).json(ErrorResponse("Failed to retrieve images"));
@@ -152,10 +150,7 @@ exports.updateAvailableEventImage = async (req, res) => {
     
     client.setEx(cacheKey, 3600, JSON.stringify(updatedData));
 
-    res.status(200).json({
-      message: "Image updated successfully",
-      image: updatedData,
-    });
+    res.status(200).json(updatedData);
   } catch (error) {
     console.error("Error in updateAvailableEventImage:", error);
     res.status(500).json(ErrorResponse("Failed to update image"));

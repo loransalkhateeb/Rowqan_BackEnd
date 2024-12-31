@@ -21,10 +21,9 @@ exports.createFooter = async (req, res) => {
         .json(ErrorResponse("Footer with the same title and language already exists"));
     }
 
-    res.status(201).json({
-      message: "Footer created successfully",
-      footer: newFooter,
-    });
+    res.status(201).json(
+    newFooter,
+    );
   } catch (error) {
     console.error("Error creating footer:", error);
     res.status(500).json(ErrorResponse("Failed to create footer"));
@@ -47,10 +46,9 @@ exports.getAllFooters = async (req, res) => {
     const cachedData = await client.get(cacheKey);
 
     if (cachedData) {
-      return res.status(200).json({
-        message: "Successfully fetched footers from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+    );
     }
 
   
@@ -69,10 +67,9 @@ exports.getAllFooters = async (req, res) => {
 
     await client.setEx(cacheKey, 3600, JSON.stringify(footers));
 
-    res.status(200).json({
-      message: "Successfully fetched footers",
-      data: footers,
-    });
+    res.status(200).json(
+      footers,
+    );
   } catch (error) {
     console.error("Error fetching footers:", error);
     res.status(500).json(
@@ -98,10 +95,9 @@ exports.getFooterById = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for footer:", cacheKey);
-      return res.status(200).json({
-        message: "Successfully fetched Footer By Id entry from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+    );
     }
     console.log("Cache miss for footer:", cacheKey);
 
@@ -123,10 +119,9 @@ exports.getFooterById = async (req, res) => {
    
     await client.setEx(cacheKey, 3600, JSON.stringify(footer));
 
-    return res.status(200).json({
-      message: "Successfully fetched Footer By Id entry",
-      data: footer,
-    });
+    return res.status(200).json(
+      footer,
+    );
   } catch (error) {
     console.error("Error fetching footer:", error);
     return res.status(500).json(

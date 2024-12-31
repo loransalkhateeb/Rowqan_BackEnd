@@ -42,10 +42,9 @@ exports.createChaletsHero = async (req, res) => {
     await client.set(cacheKey, JSON.stringify(newChaletsHero), { EX: 3600 });
 
   
-    res.status(201).json({
-      message: 'Chalets Hero created successfully',
-      chaletHero: newChaletsHero,
-    });
+    res.status(201).json(
+    newChaletsHero,
+    );
   } catch (error) {
     console.error('Error creating Chalets Hero:', error);
     res.status(500).json(ErrorResponse('Failed to create Chalets Hero'));
@@ -98,10 +97,9 @@ exports.updateChaletsHero = async (req, res) => {
     await client.setEx(cacheKey, 3600, JSON.stringify(updatedData));
 
    
-    return res.status(200).json({
-      message: "Chalet Hero updated successfully",
-      chaletHero: updatedData,
-    });
+    return res.status(200).json(
+       updatedData,
+    );
   } catch (error) {
     console.error("Error updating Chalets Hero:", error);
 
@@ -125,10 +123,9 @@ exports.getChaletsHeroById = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for chaletsHero:", id, lang);
-      return res.status(200).json({
-        message: "Successfully fetched Chalets Hero entry from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
 
     console.log("Cache miss for chaletsHero:", id, lang);
@@ -172,10 +169,9 @@ exports.getAllChaletsHero = async (req, res) => {
     const cachedData = await client.get(cacheKey);
 
     if (cachedData) {
-      return res.status(200).json({
-        message: "Successfully fetched Chalets Heroes from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+    );
     }
 
     
@@ -195,10 +191,9 @@ exports.getAllChaletsHero = async (req, res) => {
     await client.setEx(cacheKey, 3600, JSON.stringify(chaletsHeroes));
 
     
-    res.status(200).json({
-      message: "Successfully fetched Chalets Heroes",
-      data: chaletsHeroes,
-    });
+    res.status(200).json(
+      chaletsHeroes,
+    );
   } catch (error) {
     console.error('Error fetching Chalets Heroes by language:', error);
     res.status(500).json(ErrorResponse('Failed to fetch Chalets Heroes'));

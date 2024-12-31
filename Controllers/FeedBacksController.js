@@ -59,10 +59,9 @@ exports.createFeedBack = async (req, res) => {
     
     await client.set(`feedback:${newFeedBack.id}`, JSON.stringify(newFeedBack), { EX: 3600 });
 
-    res.status(201).json({
-      message: 'Feedback created successfully',
-      feedback: newFeedBack,
-    });
+    res.status(201).json(
+      newFeedBack,
+    );
   } catch (error) {
     console.error("Error in createFeedBack:", error.message);
     res.status(500).json(
@@ -87,10 +86,9 @@ exports.getFeedBackById = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for feedback:", id);
-      return res.status(200).json({
-        message: "Successfully fetched Feedback from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for feedback:", id);
 
@@ -130,10 +128,9 @@ exports.getFeedBackByChaletId = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for feedbacks:", chalet_id);
-      return res.status(200).json({
-        message: "Successfully fetched Feedbacks from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+       JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for feedbacks:", chalet_id);
 
@@ -181,10 +178,9 @@ exports.getFeedBackByEventId = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for feedbacks:", available_event_id);
-      return res.status(200).json({
-        message: "Successfully fetched Feedbacks from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for feedbacks:", available_event_id);
 
@@ -227,10 +223,9 @@ exports.getFeedBackByLandId = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for feedbacks:", land_id);
-      return res.status(200).json({
-        message: "Successfully fetched Feedbacks from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for feedbacks:", land_id);
 
@@ -315,10 +310,9 @@ exports.updateFeedBack = async (req, res) => {
     const cacheKey = `feedback:${id}`;
     await client.setEx(cacheKey, 3600, JSON.stringify(updatedData));
 
-    return res.status(200).json({
-      message: "Feedback updated successfully",
-      feedback: updatedData,
-    });
+    return res.status(200).json(
+      updatedData,
+    );
   } catch (error) {
     console.error("Error in updateFeedBack:", error);
     return res.status(500).json(

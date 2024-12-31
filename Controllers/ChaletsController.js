@@ -71,10 +71,9 @@ exports.createChalet = async (req, res) => {
     });
 
     
-    res.status(201).json({
-      message: "Chalet created successfully",
-      chalet: newChalet,
-    });
+    res.status(201).json(
+    newChalet,
+    );
   } catch (error) {
     console.error("Error in createChalet:", error);
 
@@ -106,10 +105,9 @@ exports.getAllChalets = async (req, res) => {
 
     
     if (cachedData) {
-      return res.status(200).json({
-        message: "Successfully fetched chalets from cache", 
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+       JSON.parse(cachedData),
+      );
     }
 
    
@@ -133,10 +131,9 @@ exports.getAllChalets = async (req, res) => {
    
     await client.setEx(cacheKey, 3600, JSON.stringify(chalets));
 
-    res.status(200).json({
-      message: "Successfully fetched chalets", 
-      data: chalets,
-    });
+    res.status(200).json(
+     chalets,
+    );
   } catch (error) {
     console.error("Error in getAllChalets:", error.message);
     res.status(500).json({
@@ -157,10 +154,9 @@ exports.getChaletById = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for chalet:", id);
-      return res.status(200).json({
-        message: "Successfully fetched Chalet by ID from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for chalet:", id);
 
@@ -255,10 +251,9 @@ exports.updateChalet = async (req, res) => {
     await client.setEx(cacheKey, 3600, JSON.stringify(updatedData));
 
    
-    return res.status(200).json({
-      message: "Chalet updated successfully",
-      chalet: updatedData,
-    });
+    return res.status(200).json(
+      updatedData,
+  );
   } catch (error) {
     console.error("Error in updateChalet:", error);
     return res.status(500).json(ErrorResponse("Failed to update chalet"));
@@ -341,10 +336,9 @@ exports.getChaletByStatus = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for chalets with status:", status_id);
-      return res.status(200).json({
-        message: "Successfully fetched chalets from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for chalets with status:", status_id);
 
@@ -409,10 +403,9 @@ exports.getChaletsByDetailType = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for chalets with detail type:", type);
-      return res.status(200).json({
-        message: "Successfully fetched chalets by detail type from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+       JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for chalets with detail type:", type);
 
@@ -439,10 +432,9 @@ exports.getChaletsByDetailType = async (req, res) => {
     await client.setEx(cacheKey, 3600, JSON.stringify(chalets));
 
   
-    res.status(200).json({
-      message: 'Chalets retrieved successfully',
+    res.status(200).json(
       chalets
-    });
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to retrieve chalets by detail type' });
@@ -464,13 +456,9 @@ exports.createCategoryLand = async (req, res) => {
       image,
     });
 
-    res.status(201).json({
-      message:
-        lang === "en"
-          ? "Category Land created successfully"
-          : "تم إنشاء الفئة بنجاح",
-      categoryLand: newCategoryLand,
-    });
+    res.status(201).json(
+      newCategoryLand,
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to create Category Land" });
@@ -497,10 +485,9 @@ exports.getAllChaletsFront = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for chalets");
-      return res.status(200).json({
-        message: lang === 'en' ? 'Chalets retrieved successfully from cache' : 'تم استرجاع الشاليهات من الكاش بنجاح',
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+       JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for chalets");
 
@@ -529,10 +516,9 @@ exports.getAllChaletsFront = async (req, res) => {
     await client.setEx(cacheKey, 3600, JSON.stringify(chalets));
 
    
-    res.status(200).json({
-      message: lang === 'en' ? 'Chalets retrieved successfully' : 'تم استرجاع الشاليهات بنجاح',
+    res.status(200).json(
       chalets,
-    });
+    );
   } catch (error) {
     console.error("Error in getAllChaletsFront:", error);
     res.status(500).json({

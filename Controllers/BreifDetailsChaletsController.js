@@ -49,10 +49,7 @@ exports.createBreifDetailsChalet = async (req, res) => {
     await Promise.all(cacheDeletePromises);
 
     
-    res.status(201).json({
-      message: 'BreifDetailsChalet created successfully',
-      breifDetailsChalet: newBreifDetailsChalet,
-    });
+    res.status(201).json(newBreifDetailsChalet,);
   } catch (error) {
     console.error("Error in createBreifDetailsChalet:", error.message);
     res.status(500).json(
@@ -78,10 +75,7 @@ exports.getBreifDetailsByChaletId = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for BreifDetails:", chalet_id);
-      return res.status(200).json({
-        message: "Successfully fetched BreifDetails from cache",
-        breifDetails: JSON.parse(cachedData),
-      });
+      return res.status(200).json(JSON.parse(cachedData),);
     }
     console.log("Cache miss for BreifDetails:", chalet_id);
 
@@ -104,10 +98,7 @@ exports.getBreifDetailsByChaletId = async (req, res) => {
     
     await client.setEx(cacheKey, 3600, JSON.stringify(chalet.BreifDetailsChalets));
 
-    return res.status(200).json({
-      message: 'BreifDetailsChalets retrieved successfully',
-      breifDetails: chalet.BreifDetailsChalets,
-    });
+    return res.status(200).json(chalet.BreifDetailsChalets);
   } catch (error) {
     console.error("Error in getBreifDetailsByChaletId:", error);
     return res.status(500).json(
@@ -133,10 +124,8 @@ exports.getBreifDetailsById = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for BreifDetailsChalet:", id);
-      return res.status(200).json({
-        message: "Successfully fetched BreifDetailsChalet from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(JSON.parse(cachedData),
+    );
     }
     console.log("Cache miss for BreifDetailsChalet:", id);
 
@@ -153,10 +142,9 @@ exports.getBreifDetailsById = async (req, res) => {
     
     await client.setEx(cacheKey, 3600, JSON.stringify(breifDetailsChalet));
 
-    return res.status(200).json({
-      message: 'BreifDetailsChalet retrieved successfully',
+    return res.status(200).json(
       breifDetailsChalet,
-    });
+    );
   } catch (error) {
     console.error("Error in getBreifDetailsById:", error);
     return res.status(500).json(
@@ -207,10 +195,8 @@ exports.updateBreifDetailsChalet = async (req, res) => {
     const cacheKey = `breifDetails:${id}:${lang}`;
     await client.setEx(cacheKey, 3600, JSON.stringify(updatedData));
 
-    return res.status(200).json({
-      message: 'BreifDetailsChalet updated successfully',
-      breifDetailsChalet: updatedData,
-    });
+    return res.status(200).json(updatedData,
+    );
   } catch (error) {
     console.error("Error in updateBreifDetailsChalet:", error);
 

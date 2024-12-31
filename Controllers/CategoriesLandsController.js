@@ -44,10 +44,9 @@ exports.createCategoryLand = async (req, res) => {
     });
 
    
-    res.status(201).json({
-      message: lang === "en" ? "Category Land created successfully" : "تم إنشاء الفئة بنجاح",
-      categoryLand: newCategoryLand,
-    });
+    res.status(201).json(
+    newCategoryLand,
+    );
   } catch (error) {
     console.error("Error in createCategoryLand:", error.message);
     res.status(500).json(
@@ -76,10 +75,9 @@ exports.getAllCategoryLands = async (req, res) => {
 
     
     if (cachedData) {
-      return res.status(200).json({
-        message: lang === "en" ? "Successfully fetched Category Lands from cache" : "تم استرجاع الفئات من الكاش بنجاح",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
 
    
@@ -106,10 +104,9 @@ exports.getAllCategoryLands = async (req, res) => {
     await client.setEx(cacheKey, 3600, JSON.stringify(categoryLands));
 
     
-    res.status(200).json({
-      message: lang === "en" ? "Category Lands retrieved successfully" : "تم استرجاع الفئات بنجاح",
+    res.status(200).json(
       categoryLands,
-    });
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json(new ErrorResponse('Failed to retrieve Category Lands'));
@@ -133,10 +130,10 @@ exports.getCategoryLandById = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for category land:", id);
-      return res.status(200).json({
-        message: lang === "en" ? "Successfully fetched Category Land by ID from cache" : "تم استرجاع الفئة حسب ID من الكاش بنجاح",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+       
+         JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for category land:", id);
 
@@ -153,10 +150,9 @@ exports.getCategoryLandById = async (req, res) => {
     await client.setEx(cacheKey, 3600, JSON.stringify(categoryLand));
 
     
-    return res.status(200).json({
-      message: lang === "en" ? "Category Land retrieved successfully" : "تم استرجاع الفئة بنجاح",
+    return res.status(200).json(
       categoryLand,
-    });
+    );
   } catch (error) {
     console.error("Error in getCategoryLandById:", error);
     return res.status(500).json(
@@ -205,10 +201,9 @@ exports.updateCategoryLand = async (req, res) => {
     await client.setEx(cacheKey, 3600, JSON.stringify(updatedData));
 
 
-    res.status(200).json({
-      message: lang === "en" ? "Category Land updated successfully" : "تم تحديث الفئة بنجاح",
-      categoryLand: updatedData,
-    });
+    res.status(200).json(
+      updatedData,
+    );
   } catch (error) {
     console.error("Error in updateCategoryLand:", error);
     res.status(500).json(new ErrorResponse('Failed to update Category Land', [

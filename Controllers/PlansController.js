@@ -31,10 +31,9 @@ exports.createPlan = async (req, res) => {
             Available_Event_Id: available_event_id || null,
         });
 
-        return res.status(201).json({
-            message: 'Plan created successfully',
-            plan: newPlan,
-        });
+        return res.status(201).json(
+            newPlan,
+        );
     } catch (error) {
         console.error(error);
         return res.status(500).json( ErrorResponse('Internal server error'));
@@ -52,10 +51,9 @@ exports.getPlans = async (req, res) => {
       const cachedData = await client.get(cacheKey);
   
       if (cachedData) {
-        return res.status(200).json({
-          message: "Successfully fetched plans from cache",
-          data: JSON.parse(cachedData),
-        });
+        return res.status(200).json(
+          JSON.parse(cachedData),
+        );
       }
   
       const plans = await Plans.findAll({
@@ -77,10 +75,9 @@ exports.getPlans = async (req, res) => {
   
       await client.setEx(cacheKey, 3600, JSON.stringify(plans));
   
-      return res.status(200).json({
-        message: 'Plans retrieved successfully',
-        data: plans,
-      });
+      return res.status(200).json(
+       plans,
+      );
     } catch (error) {
       console.error("Error in getPlans:", error);
       return res.status(500).json({
@@ -101,10 +98,9 @@ exports.getPlans = async (req, res) => {
       const cachedData = await client.get(cacheKey);
       if (cachedData) {
         console.log("Cache hit for plan:", id);
-        return res.status(200).json({
-          message: "Successfully fetched Plan By Id entry from cache",
-          data: JSON.parse(cachedData),
-        });
+        return res.status(200).json(
+          JSON.parse(cachedData),
+        );
       }
       console.log("Cache miss for plan:", id);
   
@@ -123,10 +119,9 @@ exports.getPlans = async (req, res) => {
   
       await client.setEx(cacheKey, 3600, JSON.stringify(plan));
   
-      return res.status(200).json({
-        message: 'Plan retrieved successfully',
-        data: plan,
-      });
+      return res.status(200).json(
+        plan,
+      );
     } catch (error) {
       console.error("Error in getPlanById:", error);
   
@@ -170,10 +165,10 @@ exports.updatePlan = async (req, res) => {
             Available_Event_Id: available_event_id || null,
         });
 
-        return res.status(200).json({
-            message: 'Plan updated successfully',
+        return res.status(200).json(
+           
             plan,
-        });
+        );
     } catch (error) {
         console.error(error);
         return res.status(500).json( ErrorResponse('Internal server error'));
@@ -222,10 +217,9 @@ exports.getPlanByAvailableEventId = async (req, res) => {
       const cachedData = await client.get(cacheKey);
       if (cachedData) {
         console.log("Cache hit for plans:", available_events_id);
-        return res.status(200).json({
-          message: "Successfully fetched Plans for Available Event from cache",
-          data: JSON.parse(cachedData),
-        });
+        return res.status(200).json(
+          JSON.parse(cachedData),
+        );
       }
       console.log("Cache miss for plans:", available_events_id);
   
@@ -240,10 +234,9 @@ exports.getPlanByAvailableEventId = async (req, res) => {
   
       await client.setEx(cacheKey, 3600, JSON.stringify(plans));
   
-      return res.status(200).json({
-        message: 'Plans retrieved successfully',
-        data: plans,
-      });
+      return res.status(200).json(
+        plans,
+      );
     } catch (error) {
       console.error("Error in getPlanByAvailableEventId:", error);
   
