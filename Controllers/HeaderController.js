@@ -15,7 +15,7 @@ exports.createHeader = async (req, res) => {
         lang,
       });
   
-      res.status(201).json({ message: 'Header created successfully', header: newheader });
+      res.status(201).json( newheader );
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Failed to create Header' });
@@ -37,10 +37,9 @@ exports.createHeader = async (req, res) => {
       const cachedData = await client.get(cacheKey);
   
       if (cachedData) {
-        return res.status(200).json({
-          message: "Successfully fetched headers from cache",
-          data: JSON.parse(cachedData),
-        });
+        return res.status(200).json(
+        JSON.parse(cachedData),
+        );
       }
   
       const headers = await Header.findAll({
@@ -56,10 +55,9 @@ exports.createHeader = async (req, res) => {
   
       await client.setEx(cacheKey, 3600, JSON.stringify(headers));
   
-      res.status(200).json({
-        message: "Successfully fetched headers",
-        data: headers,
-      });
+      res.status(200).json(
+        headers,
+      );
     } catch (error) {
       console.error('Error retrieving headers:', error);
       res.status(500).json(ErrorResponse('Failed to retrieve headers'));
@@ -81,10 +79,9 @@ exports.createHeader = async (req, res) => {
       const cachedData = await client.get(cacheKey);
       if (cachedData) {
         console.log("Cache hit for header:", id);
-        return res.status(200).json({
-          message: "Successfully fetched Header By Id from cache",
-          data: JSON.parse(cachedData),
-        });
+        return res.status(200).json(
+           JSON.parse(cachedData),
+        );
       }
       console.log("Cache miss for header:", id);
   
@@ -127,7 +124,7 @@ exports.updateHeader = async (req, res) => {
 
     await header.save();
 
-    res.status(200).json({ message: 'Header updated successfully', header });
+    res.status(200).json( header );
   } catch (error) {
     console.error('Error updating header:', error);
     res.status(500).json(ErrorResponse('Failed to update header'));

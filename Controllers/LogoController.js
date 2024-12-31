@@ -16,7 +16,7 @@ exports.createLogo = async (req, res) => {
     //   });
     // }
 
-    res.status(201).json({ message: 'Logo created successfully', hero: newLogo });
+    res.status(201).json(  newLogo );
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to create Logo' });
@@ -34,10 +34,9 @@ exports.getAllLogos = async (req, res) => {
     const cachedData = await client.get(cacheKey);
 
     if (cachedData) {
-      return res.status(200).json({
-        message: "Successfully fetched Logos from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+      JSON.parse(cachedData),
+      );
     }
 
     const logos = await Logo.findAll({
@@ -52,10 +51,9 @@ exports.getAllLogos = async (req, res) => {
 
     await client.setEx(cacheKey, 3600, JSON.stringify(logos));
 
-    res.status(200).json({
-      message: "Successfully fetched logos",
-      data: logos,
-    });
+    res.status(200).json(
+       logos,
+    );
   } catch (error) {
     console.error("Error in getAllLogos:", error.message);
     res.status(500).json({
@@ -75,10 +73,9 @@ exports.getLogoById = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for logo:", id);
-      return res.status(200).json({
-        message: "Successfully fetched Logo by ID from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+    );
     }
     console.log("Cache miss for logo:", id);
 
@@ -125,7 +122,7 @@ exports.updatelogo = async (req, res) => {
   
       await logo.save();
       
-      res.status(200).json({ message: 'Logo updated successfully', logo });
+      res.status(200).json( logo );
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Failed to update logo' });

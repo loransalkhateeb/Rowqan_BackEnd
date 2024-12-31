@@ -27,10 +27,9 @@ exports.createHeroLand = async (req, res) => {
       return res.status(400).json(ErrorResponse("HeroLand with the same title and language already exists"));
     }
 
-    res.status(201).json({
-      message: lang === "en" ? "HeroLand created successfully" : "تم إنشاء الهيرو بنجاح",
-      heroLand: newHeroLand,
-    });
+    res.status(201).json(
+    newHeroLand,
+    );
   } catch (error) {
     console.error("Error creating HeroLand:", error);
     res.status(500).json(ErrorResponse("Failed to create HeroLand."));
@@ -58,10 +57,9 @@ exports.getAllHeroLands = async (req, res) => {
    
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
-      return res.status(200).json({
-        message: "Successfully fetched HeroLands from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
 
    
@@ -84,10 +82,9 @@ exports.getAllHeroLands = async (req, res) => {
     await client.setEx(cacheKey, 3600, JSON.stringify(heroLands));
 
 
-    res.status(200).json({
-      message: lang === "en" ? "HeroLands retrieved successfully" : "تم استرجاع الهيرو بنجاح",
+    res.status(200).json(
       heroLands,
-    });
+  );
   } catch (error) {
     console.error("Error fetching HeroLands:", error);
     res.status(500).json(ErrorResponse("Failed to retrieve HeroLands."));
@@ -112,10 +109,9 @@ exports.getHeroLandById = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for heroLand:", id);
-      return res.status(200).json({
-        message: lang === "en" ? "HeroLand retrieved successfully from cache" : "تم استرجاع الهيرو بنجاح من الكاش",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for heroLand:", id);
 
@@ -134,10 +130,9 @@ exports.getHeroLandById = async (req, res) => {
 
     await client.setEx(cacheKey, 3600, JSON.stringify(heroLand));
 
-    res.status(200).json({
-      message: lang === "en" ? "HeroLand retrieved successfully" : "تم استرجاع الهيرو بنجاح",
+    res.status(200).json(
       heroLand,
-    });
+    );
   } catch (error) {
     console.error("Error fetching HeroLand:", error);
     res.status(500).json(ErrorResponse("Failed to retrieve HeroLand."));
@@ -173,10 +168,9 @@ exports.updateHeroLand = async (req, res) => {
 
     await heroLand.save();
 
-    res.status(200).json({
-      message: lang === "en" ? "HeroLand updated successfully" : "تم تحديث الهيرو بنجاح",
+    res.status(200).json(
       heroLand,
-    });
+    );
   } catch (error) {
     console.error("Error updating HeroLand:", error);
     res.status(500).json(ErrorResponse("Failed to update HeroLand."));

@@ -37,10 +37,9 @@ exports.createReservationLand = async (req, res) => {
       user_id
     });
 
-    res.status(201).json({
-      message: lang === 'en' ? 'Reservation created successfully' : 'تم إنشاء الحجز بنجاح',
-      reservation: newReservation,
-    });
+    res.status(201).json(
+     newReservation,
+  );
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -51,11 +50,21 @@ exports.createReservationLand = async (req, res) => {
 
 exports.getAllReservations = async (req, res) => {
   try {
-    const { lang } = req.params;
+    const { page = 1, limit = 20, lang } = req.query;
+    const offset = (page - 1) * limit;
 
     const validationErrors = validateInput({ lang });
     if (validationErrors.length > 0) {
       return res.status(400).json(ErrorResponse(lang, validationErrors));
+    }
+
+    const cacheKey = `reservations:page:${page}:limit:${limit}:lang:${lang}`;
+    const cachedData = await client.get(cacheKey);
+
+    if (cachedData) {
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
 
     const reservations = await ReservationLandsModel.findAll({
@@ -64,40 +73,56 @@ exports.getAllReservations = async (req, res) => {
         model: CategoriesLandsModel,
         attributes: ['id', 'title', 'price'],
       },
+      limit: parseInt(limit),
+      offset: parseInt(offset),
     });
 
     if (reservations.length === 0) {
       return res.status(404).json({
-        error: lang === 'en' 
-          ? 'No reservations found' 
-          : 'لا توجد حجوزات',
+        error: lang === 'en' ? 'No reservations found' : 'لا توجد حجوزات',
       });
     }
 
-    res.status(200).json({
-      message: lang === 'en' 
-        ? 'Reservations retrieved successfully' 
-        : 'تم استرجاع الحجوزات بنجاح',
+    
+    await client.setEx(cacheKey, 3600, JSON.stringify(reservations));
+
+    res.status(200).json(
       reservations,
-    });
+    );
   } catch (error) {
     console.error(error);
-    res.status(500).json({ 
-      error: lang === 'en' ? 'Failed to retrieve reservations' : 'فشل في استرجاع الحجوزات' 
+    res.status(500).json({
+      error: lang === 'en' ? 'Failed to retrieve reservations' : 'فشل في استرجاع الحجوزات',
     });
   }
 };
+
+
+
+
 
 exports.getReservationByAvailable_land_id = async (req, res) => {
   try {
     const { available_land_id, lang } = req.params;
 
- 
     const validationErrors = validateInput({ available_land_id, lang });
     if (validationErrors.length > 0) {
       return res.status(400).json(ErrorResponse(lang, validationErrors));
     }
 
+    const cacheKey = `reservation:available_land_id:${available_land_id}:lang:${lang}`;
+
+   
+    const cachedData = await client.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit for reservation:", available_land_id);
+      return res.status(200).json(
+       JSON.parse(cachedData),
+      );
+    }
+    console.log("Cache miss for reservation:", available_land_id);
+
+   
     const reservation = await ReservationLandsModel.findAll({
       where: { available_land_id, lang },
       include: {
@@ -106,7 +131,7 @@ exports.getReservationByAvailable_land_id = async (req, res) => {
       },
     });
 
-    if (!reservation) {
+    if (reservation.length === 0) {
       return res.status(404).json({
         error: lang === 'en' 
           ? 'Reservation not found' 
@@ -114,12 +139,12 @@ exports.getReservationByAvailable_land_id = async (req, res) => {
       });
     }
 
-    res.status(200).json({
-      message: lang === 'en' 
-        ? 'Reservation retrieved successfully' 
-        : 'تم استرجاع الحجز بنجاح',
+    
+    await client.setEx(cacheKey, 3600, JSON.stringify(reservation));
+
+    res.status(200).json(  
       reservation,
-    });
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json({ 
@@ -129,6 +154,12 @@ exports.getReservationByAvailable_land_id = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
 exports.getReservationByUser_id = async (req, res) => {
   try {
     const { user_id, lang } = req.params;
@@ -149,12 +180,9 @@ exports.getReservationByUser_id = async (req, res) => {
       });
     }
 
-    res.status(200).json({
-      message: lang === 'en' 
-        ? 'Reservation retrieved successfully' 
-        : 'تم استرجاع الحجز بنجاح',
+    res.status(200).json(
       reservations,
-    });
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json({ 
@@ -164,6 +192,10 @@ exports.getReservationByUser_id = async (req, res) => {
     });
   }
 };
+
+
+
+
 exports.getReservationById = async (req, res) => {
   try {
     const { id, lang } = req.params;
@@ -190,12 +222,9 @@ exports.getReservationById = async (req, res) => {
       });
     }
 
-    res.status(200).json({
-      message: lang === 'en' 
-        ? 'Reservation retrieved successfully' 
-        : 'تم استرجاع الحجز بنجاح',
+    res.status(200).json(
       reservation,
-    });
+  );
   } catch (error) {
     console.error(error);
     res.status(500).json({ 
@@ -231,12 +260,10 @@ exports.updateReservation = async (req, res) => {
 
     await reservation.save();
 
-    res.status(200).json({
-      message: lang === 'en' 
-        ? 'Reservation updated successfully' 
-        : 'تم تحديث الحجز بنجاح',
+    res.status(200).json(
+  
       reservation,
-    });
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json({ 

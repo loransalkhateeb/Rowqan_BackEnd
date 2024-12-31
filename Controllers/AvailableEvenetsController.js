@@ -89,10 +89,7 @@ exports.createAvailableEvent = async (req, res) => {
       }
     );
 
-    res.status(201).json({
-      message: "Available Event created successfully",
-      event: newEvent,
-    });
+    res.status(201).json( newEvent);
   } catch (error) {
     console.error("Error in createAvailableEvent:", error.message);
     res
@@ -225,10 +222,7 @@ exports.getAvailableEventsBySubEventId = async (req, res) => {
 
     await client.setEx(cacheKey, 3600, JSON.stringify(availableEvents));
 
-    return res.status(200).json({
-      message: "Successfully fetched Available Events",
-      data: availableEvents,
-    });
+    return res.status(200).json( availableEvents);
   } catch (error) {
     console.error("Error in getAvailableEventsBySubEventId:", error);
 
@@ -314,10 +308,9 @@ exports.updateAvailableEvent = async (req, res) => {
     const cacheKey = `availableEvent:${id}`;
     await client.setEx(cacheKey, 3600, JSON.stringify(updatedData));
 
-    return res.status(200).json({
-      message: "Available Event updated successfully",
-      event: updatedData,
-    });
+    return res.status(200).json(
+      updatedData,
+    );
   } catch (error) {
     console.error("Error in updateAvailableEvent:", error);
 
@@ -345,10 +338,8 @@ exports.getAvailableEventsBySubEventIdAndDate = async (req, res) => {
         lang,
         date
       );
-      return res.status(200).json({
-        message: "Successfully fetched Available Events from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData));
     }
     console.log(
       "Cache miss for available events by sub-event and date:",
@@ -402,10 +393,7 @@ exports.getAvailableEventsBySubEventIdAndDate = async (req, res) => {
 
     await client.setEx(cacheKey, 3600, JSON.stringify(availableEvents));
 
-    return res.status(200).json({
-      message: "Successfully fetched Available Events",
-      data: availableEvents,
-    });
+    return res.status(200).json(availableEvents);
   } catch (error) {
     console.error("Error in getAvailableEventsBySubEventIdAndDate:", error);
 
@@ -432,10 +420,7 @@ exports.getAvailableEventsBySubDateOnly = async (req, res) => {
         lang,
         date
       );
-      return res.status(200).json({
-        message: "Successfully fetched Available Events from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json( JSON.parse(cachedData));
     }
     console.log(
       "Cache miss for available events by lang and date:",
@@ -489,10 +474,7 @@ exports.getAvailableEventsBySubDateOnly = async (req, res) => {
 
     await client.setEx(cacheKey, 3600, JSON.stringify(availableEvents));
 
-    return res.status(200).json({
-      message: "Successfully fetched Available Events",
-      data: availableEvents,
-    });
+    return res.status(200).json(availableEvents);
   } catch (error) {
     console.error("Error in getAvailableEventsBySubDateOnly:", error);
 

@@ -29,10 +29,9 @@ exports.createPropertyLand = async (req, res) => {
     }
 
     
-    res.status(201).json({
-      message: lang === "en" ? "Property Land created successfully" : "تم إنشاء العقار بنجاح",
-      propertyLand: newPropertyLand,
-    });
+    res.status(201).json(
+      newPropertyLand,
+    );
   } catch (error) {
     console.error("Error creating Property Land:", error);
     res.status(500).json(ErrorResponse("Failed to create Property Land"));
@@ -56,10 +55,9 @@ exports.getAllPropertyLands = async (req, res) => {
 
     if (cachedData) {
 
-      return res.status(200).json({
-        message: lang === "en" ? "Successfully fetched property lands from cache" : "تم جلب الأراضي العقارية من الكاش بنجاح",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+       JSON.parse(cachedData),
+      );
     }
 
    
@@ -82,10 +80,9 @@ exports.getAllPropertyLands = async (req, res) => {
    
     await client.setEx(cacheKey, 3600, JSON.stringify(propertyLands));
 
-    res.status(200).json({
-      message: lang === "en" ? "Successfully fetched property lands" : "تم جلب الأراضي العقارية بنجاح",
-      data: propertyLands,
-    });
+    res.status(200).json(
+      propertyLands,
+    );
   } catch (error) {
     console.error("Error in getAllPropertyLands:", error.message);
     res.status(500).json(ErrorResponse("Failed to retrieve property lands", ["An internal server error occurred. Please try again later."]));
@@ -103,10 +100,9 @@ exports.getPropertyLandByland_id = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for property land:", category_land_id);
-      return res.status(200).json({
-        message: lang === "en" ? "Successfully fetched property land from cache" : "تم جلب الأرض العقارية من الكاش بنجاح",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for property land:", category_land_id);
 
@@ -126,10 +122,9 @@ exports.getPropertyLandByland_id = async (req, res) => {
 
     await client.setEx(cacheKey, 3600, JSON.stringify(propertyLand));
 
-    res.status(200).json({
-      message: lang === "en" ? "Successfully fetched property land" : "تم جلب الأرض العقارية بنجاح",
-      data: propertyLand,
-    });
+    res.status(200).json(
+      propertyLand,
+    );
   } catch (error) {
     console.error("Error in getPropertyLandByland_id:", error);
     res.status(500).json(
@@ -151,10 +146,9 @@ exports.getPropertyLandById = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for property land:", id);
-      return res.status(200).json({
-        message: lang === "en" ? "Successfully fetched property land from cache" : "تم جلب الأرض العقارية من الكاش بنجاح",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+       JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for property land:", id);
 
@@ -176,10 +170,9 @@ exports.getPropertyLandById = async (req, res) => {
     await client.setEx(cacheKey, 3600, JSON.stringify(propertyLand));
 
 
-    res.status(200).json({
-      message: lang === "en" ? "Property land retrieved successfully" : "تم استرجاع الأرض العقارية بنجاح",
+    res.status(200).json(
       propertyLand,
-    });
+    );
   } catch (error) {
     console.error("Error in getPropertyLandById:", error);
     res.status(500).json(
@@ -225,10 +218,9 @@ exports.updatePropertyLand = async (req, res) => {
 
     const updatedData = propertyLand.toJSON();
 
-    return res.status(200).json({
-      message: lang === "en" ? "Property land updated successfully" : "تم تحديث الأرض العقارية بنجاح",
-      propertyLand: updatedData,
-    });
+    return res.status(200).json(
+       updatedData,
+  );
   } catch (error) {
     console.error("Error in updatePropertyLand:", error);
 

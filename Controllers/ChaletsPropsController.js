@@ -50,10 +50,9 @@ exports.createChaletProp = async (req, res) => {
     });
 
   
-    res.status(201).json({
-      message: 'Property created successfully',
-      data: newChaletProp,
-    });
+    res.status(201).json(
+    newChaletProp,
+    );
   } catch (error) {
     console.error('Error in createChaletProp:', error);
     res.status(500).json(ErrorResponse('Error creating property'));
@@ -73,10 +72,9 @@ exports.getAllChaletProps = async (req, res) => {
     const cachedData = await client.get(cacheKey);
 
     if (cachedData) {
-      return res.status(200).json({
-        message: "Successfully fetched Chalet properties from cache", 
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+       JSON.parse(cachedData),
+      );
     }
 
     const whereClause = lang ? { lang } : {};
@@ -91,10 +89,9 @@ exports.getAllChaletProps = async (req, res) => {
    
     await client.setEx(cacheKey, 3600, JSON.stringify(properties));
 
-    res.status(200).json({
-      message: "Successfully fetched Chalet properties", 
-      data: properties,
-    });
+    res.status(200).json(
+    properties,
+    );
   } catch (error) {
     console.error("Error in getAllChaletProps:", error.message);
     res.status(500).json(ErrorResponse("Failed to fetch Chalet properties", [
@@ -122,10 +119,9 @@ exports.getChaletPropById = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for chalet prop:", id, lang);
-      return res.status(200).json({
-        message: "Successfully fetched Chalet property from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for chalet prop:", id, lang);
 
@@ -154,10 +150,9 @@ exports.getChaletPropById = async (req, res) => {
     
     await client.setEx(cacheKey, 3600, JSON.stringify(property));
 
-    res.status(200).json({
-      message: 'Property fetched successfully',
-      data: property,
-    });
+    res.status(200).json(
+     property,
+    );
   } catch (error) {
     console.error("Error in getChaletPropById:", error);
     res.status(500).json(ErrorResponse('Error fetching property'));
@@ -223,10 +218,9 @@ exports.updateProperty = async (req, res) => {
     const updatedData = await property.reload();
     await client.setEx(cacheKey, 3600, JSON.stringify(updatedData));
 
-    return res.status(200).json({
-      message: "Property updated successfully",
-      property: updatedData,
-    });
+    return res.status(200).json(
+      updatedData,
+    );
   } catch (error) {
     console.error("Error in updateProperty:", error);
 

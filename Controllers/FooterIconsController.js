@@ -25,10 +25,9 @@ exports.createFooterIcon = async (req, res) => {
         .json(ErrorResponse("Footer Icon with the same footer_id and link already exists"));
     }
 
-    res.status(201).json({
-      message: 'Footer Icon created successfully',
-      footerIcon: newIcon,
-    });
+    res.status(201).json(
+     newIcon,
+    );
   } catch (error) {
     console.error('Error creating Footer Icon:', error);
     res.status(500).json(ErrorResponse('Failed to create Footer Icon'));
@@ -47,10 +46,9 @@ exports.getAllFooterIcons = async (req, res) => {
     const cachedData = await client.get(cacheKey);
 
     if (cachedData) {
-      return res.status(200).json({
-        message: "Successfully fetched Footer Icons from cache", 
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
 
     const footerIcons = await FooterIcons.findAll({
@@ -66,10 +64,9 @@ exports.getAllFooterIcons = async (req, res) => {
 
     await client.setEx(cacheKey, 3600, JSON.stringify(footerIcons));
 
-    res.status(200).json({
-      message: "Successfully fetched Footer Icons", 
-      data: footerIcons,
-    });
+    res.status(200).json(
+    footerIcons,
+    );
   } catch (error) {
     console.error("Error fetching footer icons:", error);
     res.status(500).json(ErrorResponse('Failed to fetch footer icons'));
@@ -86,10 +83,9 @@ exports.getFooterIconById = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for footer icon:", id);
-      return res.status(200).json({
-        message: "Successfully fetched Footer Icon By Id from cache", 
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+         JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for footer icon:", id);
 
@@ -142,10 +138,9 @@ exports.updateFooterIcon = async (req, res) => {
 
     const updatedData = footerIcon.toJSON();
 
-    res.status(200).json({
-      message: 'Footer Icon updated successfully',
-      footerIcon: updatedData,
-    });
+    res.status(200).json(
+      updatedData,
+    );
   } catch (error) {
     console.error('Error updating footer icon:', error);
     res.status(500).json(ErrorResponse('Failed to update footer icon'));

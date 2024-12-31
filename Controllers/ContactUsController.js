@@ -31,14 +31,13 @@ exports.createContactUs = async (req, res) => {
 
    
     const cacheKey = `contactUs:${newContactUs.id}`;
-    client.del(cacheKey); // حذف الكاش القديم
+    client.del(cacheKey); 
     client.setEx(cacheKey, 3600, JSON.stringify(newContactUs)); 
 
    
-    res.status(201).json({
-      message: 'ContactUs created successfully',
-      contactUs: newContactUs,
-    });
+    res.status(201).json(
+      newContactUs,
+    );
   } catch (error) {
     console.error("Error in createContactUs:", error.message);
     res.status(500).json(
@@ -92,10 +91,9 @@ exports.updateContactUs = async (req, res) => {
     await client.setEx(cacheKey, 3600, JSON.stringify(updatedData));
 
    
-    return res.status(200).json({
-      message: "ContactUs updated successfully",
-      contactUs: updatedData,
-    });
+    return res.status(200).json(
+   updatedData,
+    );
   } catch (error) {
     console.error("Error in updateContactUs:", error);
     return res.status(500).json(
@@ -118,10 +116,9 @@ exports.getContactUsById = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for contactUs:", id);
-      return res.status(200).json({
-        message: "Successfully fetched ContactUs entry from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+       JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for contactUs:", id);
 
@@ -140,10 +137,10 @@ exports.getContactUsById = async (req, res) => {
     await client.setEx(cacheKey, 3600, JSON.stringify(contactUs));
 
     
-    return res.status(200).json({
-      message: 'ContactUs retrieved successfully',
+    return res.status(200).json(
+    
       contactUs,
-    });
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json(ErrorResponse('Failed to retrieve ContactUs'));
@@ -164,10 +161,9 @@ exports.getALLContactUs = async (req, res) => {
     const cachedData = await client.get(cacheKey);
 
     if (cachedData) {
-      return res.status(200).json({
-        message: "Successfully fetched ContactUs entries from cache", 
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+      JSON.parse(cachedData),
+      );
     }
 
     const contactUs = await ContactUs.findAll({
@@ -181,10 +177,10 @@ exports.getALLContactUs = async (req, res) => {
     
     await client.setEx(cacheKey, 3600, JSON.stringify(contactUs));
    
-    res.status(200).json({
-      message: 'ContactUs retrieved successfully',
+    res.status(200).json(
+   
       contactUs,
-    });
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json(ErrorResponse('Failed to retrieve ContactUs'));

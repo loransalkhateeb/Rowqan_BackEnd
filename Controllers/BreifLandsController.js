@@ -47,10 +47,8 @@ exports.createBreifLand = async (req, res) => {
       EX: 3600,
     });
 
-    res.status(201).json({
-      message: "Breif Land created successfully",
-      breifLand: newBreifLand,
-    });
+    res.status(201).json( newBreifLand,
+    );
   } catch (error) {
     console.error("Error in createBreifLand:", error.message);
     res
@@ -73,10 +71,9 @@ exports.getAllBreifLandsByCategory = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for breif lands in category:", category_id);
-      return res.status(200).json({
-        message: "Successfully fetched Breif Lands from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for breif lands in category:", category_id);
 
@@ -96,10 +93,9 @@ exports.getAllBreifLandsByCategory = async (req, res) => {
     
     await client.setEx(cacheKey, 3600, JSON.stringify(breifLands));
 
-    return res.status(200).json({
-      message: 'Breif Lands retrieved successfully',
+    return res.status(200).json(
       breifLands,
-    });
+    );
   } catch (error) {
     console.error("Error in getAllBreifLandsByCategory:", error);
 
@@ -119,10 +115,8 @@ exports.getBreifLandById = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for breif land:", id);
-      return res.status(200).json({
-        message: "Successfully fetched Breif Land from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json( JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for breif land:", id);
 
@@ -141,10 +135,9 @@ exports.getBreifLandById = async (req, res) => {
 
     await client.setEx(cacheKey, 3600, JSON.stringify(breifLand));
 
-    return res.status(200).json({
-      message: 'Breif Land retrieved successfully',
+    return res.status(200).json(
       breifLand,
-    });
+    );
   } catch (error) {
     console.error("Error in getBreifLandById:", error);
 
@@ -203,10 +196,10 @@ exports.updateBreifLand = async (req, res) => {
     await client.setEx(cacheKey, 3600, JSON.stringify(updatedData));
 
     
-    return res.status(200).json({
-      message: 'Breif Land updated successfully',
-      breifLand: updatedData,
-    });
+    return res.status(200).json(
+   
+      updatedData,
+    );
   } catch (error) {
     console.error("Error in updateBreifLand:", error);
 

@@ -22,10 +22,9 @@ exports.createHero = async (req, res) => {
       lang,
     });
 
-    res.status(201).json({
-      message: 'Hero created successfully',
-      hero: newHero
-    });
+    res.status(201).json(
+      newHero
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json(new ErrorResponse('Failed to create Hero', ['An error occurred while creating the hero']));
@@ -41,10 +40,9 @@ exports.getHeroById = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for hero:", id, lang);
-      return res.status(200).json({
-        message: "Successfully fetched Hero By Id from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for hero:", id, lang);
 
@@ -106,10 +104,9 @@ exports.updateHero = async (req, res) => {
 
     await hero.save();
 
-    res.status(200).json({
-      message: 'Hero updated successfully',
+    res.status(200).json(
       hero
-    });
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json(new ErrorResponse('Failed to update Hero', ['An error occurred while updating the hero']));
@@ -163,10 +160,9 @@ exports.getHeroesByLang = async (req, res) => {
     
     if (cachedData) {
       console.log("Cache hit for heroes:", lang);
-      return res.status(200).json({
-        message: "Successfully fetched Heroes from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for heroes:", lang);
 
@@ -186,10 +182,9 @@ exports.getHeroesByLang = async (req, res) => {
 
     await client.setEx(cacheKey, 3600, JSON.stringify(heroes));
 
-    res.status(200).json({
-      message: "Successfully fetched Heroes",
-      data: heroes,
-    });
+    res.status(200).json(
+       heroes,
+    );
   } catch (error) {
     console.error("Error in getHeroesByLang:", error.message);
     res.status(500).json(

@@ -46,10 +46,9 @@ exports.createChaletImages = async (req, res) => {
     const cacheKey = `chaletImages:${chalet_id}`;
     await client.set(cacheKey, JSON.stringify(newImages), { EX: 3600 });
 
-    res.status(201).json({
-      message: 'Chalet images created successfully',
-      chaletImages: newImages,
-    });
+    res.status(201).json(
+      newImages,
+    );
   } catch (error) {
     console.error('Error in createChaletImages:', error);
     res.status(500).json(ErrorResponse('Failed to create chalet images'));
@@ -66,10 +65,9 @@ exports.getImagesByChaletId = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for chalet images:", chalet_id);
-      return res.status(200).json({
-        message: "Successfully fetched chalet images from cache",
-        images: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+       JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for chalet images:", chalet_id);
 
@@ -88,10 +86,9 @@ exports.getImagesByChaletId = async (req, res) => {
     const images = chaletImages.map((img) => img.image);
     await client.setEx(cacheKey, 3600, JSON.stringify(images));
 
-    res.status(200).json({
-      message: 'Chalet images retrieved successfully',
-      images: images,
-    });
+    res.status(200).json(
+     images,
+    );
   } catch (error) {
     console.error("Error in getImagesByChaletId:", error);
     res.status(500).json(ErrorResponse('Failed to retrieve chalet images'));
@@ -127,10 +124,9 @@ exports.updateChaletImage = async (req, res) => {
     await client.del(cacheKey);  
     await client.setEx(cacheKey, 3600, JSON.stringify(chaletImage));
 
-    res.status(200).json({
-      message: 'Chalet image updated successfully',
+    res.status(200).json(
       chaletImage,
-    });
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json(ErrorResponse('Failed to update chalet image'));
@@ -185,10 +181,9 @@ exports.getChaletImageById = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for chalet image:", id);
-      return res.status(200).json({
-        message: "Successfully fetched chalet image from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for chalet image:", id);
 
@@ -201,10 +196,9 @@ exports.getChaletImageById = async (req, res) => {
    
     await client.setEx(cacheKey, 3600, JSON.stringify(chaletImage));
 
-    return res.status(200).json({
-      message: 'Chalet image retrieved successfully',
+    return res.status(200).json(
       chaletImage,
-    });
+    );
   } catch (error) {
     console.error("Error in getChaletImageById:", error);
     return res.status(500).json(
