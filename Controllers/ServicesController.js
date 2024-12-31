@@ -38,23 +38,49 @@ exports.createService = async (req, res) => {
 exports.getAllServices = async (req, res) => {
   try {
     const { lang } = req.params;
+    const { page = 1, limit = 20 } = req.query;
+    const offset = (page - 1) * limit;
 
     if (!['en', 'ar'].includes(lang)) {
       return res.status(400).json({ error: 'Invalid language' });
     }
 
-    const services = await Services.findAll({ where: { lang } });
+    const cacheKey = `services:lang:${lang}:page:${page}:limit:${limit}`;
+    const cachedData = await client.get(cacheKey);
+
+    if (cachedData) {
+      return res.status(200).json({
+        message: "Successfully fetched services from cache",
+        data: JSON.parse(cachedData),
+      });
+    }
+
+    const services = await Services.findAll({
+      where: { lang },
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      order: [["id", "DESC"]],
+    });
 
     if (!services.length) {
       return res.status(404).json({ error: 'No services found for this language' });
     }
 
-    res.status(200).json(services);
+    await client.setEx(cacheKey, 3600, JSON.stringify(services));
+
+    res.status(200).json({
+      message: "Successfully fetched services",
+      data: services,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to retrieve services' });
+    console.error("Error in getAllServices:", error.message);
+    res.status(500).json({
+      error: "Failed to retrieve services",
+      details: ["An internal server error occurred."],
+    });
   }
 };
+
 
 exports.getServiceByStatus = async (req, res) => {
   try {
@@ -64,6 +90,20 @@ exports.getServiceByStatus = async (req, res) => {
       return res.status(400).json({ error: 'status_service and lang are required' });
     }
 
+    const cacheKey = `services:status:${status_service}:lang:${lang}`;
+    
+    
+    const cachedData = await client.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit for services with status:", status_service, "and language:", lang);
+      return res.status(200).json({
+        message: "Successfully fetched services from cache",
+        data: JSON.parse(cachedData)
+      });
+    }
+    console.log("Cache miss for services with status:", status_service, "and language:", lang);
+
+   
     const services = await Services.findAll({
       where: {
         lang,
@@ -75,10 +115,19 @@ exports.getServiceByStatus = async (req, res) => {
       return res.status(404).json({ error: `No services found for language: ${lang} and status: ${status_service}` });
     }
 
-    res.status(200).json(services);
+   
+    await client.setEx(cacheKey, 3600, JSON.stringify(services));
+
+    res.status(200).json({
+      message: "Successfully fetched services",
+      data: services
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to retrieve services' });
+    console.error("Error in getServiceByStatus:", error.message);
+    res.status(500).json({
+      error: "Failed to retrieve services",
+      details: ["An internal server error occurred."]
+    });
   }
 };
 
@@ -90,20 +139,43 @@ exports.getServiceByStatusOnlyLang = async (req, res) => {
       return res.status(400).json({ error: 'Invalid language' });
     }
 
+    const cacheKey = `services:lang:${lang}`;
+    
+    const cachedData = await client.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit for services with language:", lang);
+      return res.status(200).json({
+        message: "Successfully fetched services from cache",
+        data: JSON.parse(cachedData)
+      });
+    }
+    console.log("Cache miss for services with language:", lang);
+
+    
     const services = await Services.findAll({
       where: { lang }
     });
 
-    if (!services.length) {
+    if (services.length === 0) {
       return res.status(404).json({ error: 'No services found for this language' });
     }
 
-    res.status(200).json(services);
+  
+    await client.setEx(cacheKey, 3600, JSON.stringify(services));
+
+    res.status(200).json({
+      message: "Successfully fetched services",
+      data: services
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to retrieve services' });
+    console.error("Error in getServiceByStatusOnlyLang:", error.message);
+    res.status(500).json({
+      error: "Failed to retrieve services",
+      details: ["An internal server error occurred."]
+    });
   }
 };
+
 
 exports.updateService = async (req, res) => {
   try {
@@ -145,16 +217,43 @@ exports.getServiceById = async (req, res) => {
       return res.status(400).json({ error: 'Invalid language' });
     }
 
-    const service = await Services.findOne({ where: { id, lang } });
+    const cacheKey = `service:${id}:lang:${lang}`;
+
+   
+    const cachedData = await client.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit for service with id:", id, "and language:", lang);
+      return res.status(200).json({
+        message: "Successfully fetched service from cache",
+        data: JSON.parse(cachedData)
+      });
+    }
+    console.log("Cache miss for service with id:", id, "and language:", lang);
+
+    
+    const service = await Services.findOne({
+      where: { id, lang }
+    });
 
     if (!service) {
-      return res.status(404).json({ error: `Service with id ${id} and language ${lang} not found` });
+      return res.status(404).json({
+        error: `Service with id ${id} and language ${lang} not found`
+      });
     }
 
-    res.status(200).json({ service });
+    
+    await client.setEx(cacheKey, 3600, JSON.stringify(service));
+
+    res.status(200).json({
+      message: "Successfully fetched service",
+      data: service
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to fetch service' });
+    console.error("Error in getServiceById:", error.message);
+    res.status(500).json({
+      error: "Failed to fetch service",
+      details: ["An internal server error occurred."]
+    });
   }
 };
 
@@ -166,17 +265,28 @@ exports.deleteService = async (req, res) => {
       return res.status(400).json({ error: 'Invalid language' });
     }
 
-    const service = await Services.findOne({ where: { id, lang } });
+    const [service, _] = await Promise.all([
+      Services.findByPk(id),
+      client.del(`service:${id}:lang:${lang}`) 
+    ]);
 
     if (!service) {
-      return res.status(404).json({ error: 'Service not found' });
+      return res.status(404).json({
+        error: "Service not found",
+        details: ["No service found with the given ID and language."]
+      });
     }
+
 
     await service.destroy();
 
-    res.status(200).json({ message: 'Service deleted successfully' });
+    return res.status(200).json({ message: "Service deleted successfully" });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to delete service' });
+    console.error("Error in deleteService:", error);
+
+    return res.status(500).json({
+      error: "Failed to delete service",
+      details: ["An internal server error occurred. Please try again later."]
+    });
   }
 };

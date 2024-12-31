@@ -5,7 +5,7 @@ const User = require('../Models/UsersModel');
 const RightTimeModel = require('../Models/RightTimeModel');
 const Wallet = require('../Models/WalletModel')
 const { Op } = require('sequelize');
-
+const {client} = require('../Utils/redisClient')
 
 
 exports.createReservation = async (req, res) => {
@@ -180,13 +180,32 @@ exports.createReservation = async (req, res) => {
 exports.getAllReservations = async (req, res) => {
   try {
     const { lang } = req.params; 
+    const { page = 1, limit = 20 } = req.query;
+    const offset = (page - 1) * limit;
 
+    
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
         error: lang === 'en' ? 'Invalid language' : 'اللغة غير صالحة',
       });
     }
 
+    const cacheKey = `reservations:page:${page}:limit:${limit}:lang:${lang}`;
+    
+   
+    const cachedData = await client.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit for reservations:", lang);
+      return res.status(200).json({
+        message: lang === 'en' 
+          ? 'Reservations fetched from cache successfully' 
+          : 'تم استرجاع الحجوزات من الكاش بنجاح',
+        data: JSON.parse(cachedData),
+      });
+    }
+    console.log("Cache miss for reservations:", lang);
+
+    
     const reservations = await Reservations_Chalets.findAll({
       include: [
         {
@@ -204,7 +223,9 @@ exports.getAllReservations = async (req, res) => {
           as: 'rightTime',
           attributes: ['id', 'time'], 
         }
-      ]
+      ],
+      limit: parseInt(limit),
+      offset: parseInt(offset),
     });
 
     if (!reservations || reservations.length === 0) {
@@ -213,8 +234,13 @@ exports.getAllReservations = async (req, res) => {
       });
     }
 
+
+    await client.setEx(cacheKey, 3600, JSON.stringify(reservations));
+
     return res.status(200).json({
-      message: lang === 'en' ? 'Reservations retrieved successfully' : 'تم استرجاع الحجوزات بنجاح',
+      message: lang === 'en' 
+        ? 'Reservations retrieved successfully' 
+        : 'تم استرجاع الحجوزات بنجاح',
       reservations: reservations.map(reservation => ({
         id: reservation.id,
         initial_amount: reservation.initial_amount,
@@ -236,15 +262,20 @@ exports.getAllReservations = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching reservations:', error);
-    return res.status(500).json({
-      error: 'Failed to fetch reservations',
-    });
+    return res.status(500).json(
+       'Failed to fetch reservations'
+    );
   }
 };
+
+
+
+
 
 exports.getReservationById = async (req, res) => {
   try {
     const { lang, id } = req.params; 
+
 
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
@@ -252,11 +283,27 @@ exports.getReservationById = async (req, res) => {
       });
     }
 
+    
     if (!id || isNaN(id)) {
       return res.status(400).json({
         error: lang === 'en' ? 'Invalid reservation ID' : 'رقم الحجز غير صحيح',
       });
     }
+
+    const cacheKey = `reservation:${id}:lang:${lang}`;
+
+    const cachedData = await client.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit for reservation:", id);
+      return res.status(200).json({
+        message: lang === 'en' 
+          ? 'Reservation fetched from cache successfully' 
+          : 'تم استرجاع الحجز من الكاش بنجاح',
+        data: JSON.parse(cachedData),
+      });
+    }
+    console.log("Cache miss for reservation:", id);
+
 
     const reservation = await Reservations_Chalets.findOne({
       where: { id: id }, 
@@ -279,14 +326,20 @@ exports.getReservationById = async (req, res) => {
       ]
     });
 
+    
     if (!reservation) {
       return res.status(404).json({
         message: lang === 'en' ? 'Reservation not found' : 'لم يتم العثور على الحجز',
       });
     }
 
+
+    await client.setEx(cacheKey, 3600, JSON.stringify(reservation));
+
     return res.status(200).json({
-      message: lang === 'en' ? 'Reservation retrieved successfully' : 'تم استرجاع الحجز بنجاح',
+      message: lang === 'en' 
+        ? 'Reservation retrieved successfully' 
+        : 'تم استرجاع الحجز بنجاح',
       reservation: {
         id: reservation.id,
         initial_amount: reservation.initial_amount,
@@ -309,27 +362,55 @@ exports.getReservationById = async (req, res) => {
   } catch (error) {
     console.error('Error fetching reservation:', error);
     return res.status(500).json({
-      error: 'Failed to fetch reservation',
+      error: lang === 'en' 
+        ? 'Failed to fetch reservation' 
+        : 'فشل في استرجاع الحجز',
     });
   }
 };
 
+
+
+
+
+
+
+
+
 exports.getReservationsByChaletId = async (req, res) => {
   try {
-    const { chalet_id, lang } = req.params; 
+    const { chalet_id, lang } = req.params;
 
+    
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
         error: lang === 'en' ? 'Invalid language' : 'اللغة غير صالحة',
       });
     }
 
+    
     if (!chalet_id || isNaN(chalet_id)) {
       return res.status(400).json({
         error: lang === 'en' ? 'Invalid chalet ID' : 'رقم الشاليه غير صحيح',
       });
     }
 
+    const cacheKey = `reservations:${chalet_id}:lang:${lang}`;
+
+   
+    const cachedData = await client.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit for reservations:", chalet_id);
+      return res.status(200).json({
+        message: lang === 'en' 
+          ? 'Reservations fetched from cache successfully' 
+          : 'تم استرجاع الحجوزات من الكاش بنجاح',
+        data: JSON.parse(cachedData),
+      });
+    }
+    console.log("Cache miss for reservations:", chalet_id);
+
+  
     const reservations = await Reservations_Chalets.findAll({
       where: { chalet_id: chalet_id },
       include: [
@@ -346,19 +427,25 @@ exports.getReservationsByChaletId = async (req, res) => {
         {
           model: RightTimeModel,
           as: 'rightTime', 
-          attributes: ['id', 'time','name'], 
+          attributes: ['id', 'time', 'name'], 
         }
       ]
     });
 
+    
     if (!reservations || reservations.length === 0) {
       return res.status(404).json({
         message: lang === 'en' ? 'No reservations found for this chalet' : 'لا توجد حجوزات لهذا الشاليه',
       });
     }
 
+  
+    await client.setEx(cacheKey, 3600, JSON.stringify(reservations));
+
     return res.status(200).json({
-      message: lang === 'en' ? 'Reservations retrieved successfully' : 'تم استرجاع الحجوزات بنجاح',
+      message: lang === 'en' 
+        ? 'Reservations retrieved successfully' 
+        : 'تم استرجاع الحجوزات بنجاح',
       reservations: reservations.map(reservation => ({
         id: reservation.id,
         initial_amount: reservation.initial_amount,
@@ -373,7 +460,7 @@ exports.getReservationsByChaletId = async (req, res) => {
         user_id: reservation.user_id,
         chalet_id: reservation.chalet_id,
         right_time_id: reservation.right_time_id,
-        chalet: reservation.chalet, 
+        chalet: reservation.chalet,
         user: reservation.user,
         right_time: reservation.rightTime,
       })),
@@ -381,16 +468,21 @@ exports.getReservationsByChaletId = async (req, res) => {
   } catch (error) {
     console.error('Error fetching reservations:', error);
     return res.status(500).json({
-      error: 'Failed to fetch reservations',
+      error: lang === 'en' 
+        ? 'Failed to fetch reservations' 
+        : 'فشل في استرجاع الحجوزات',
     });
   }
 };
 
 
 
+
+
+
 exports.getAvailableTimesByDate = async (req, res) => {
   try {
-    const {chalet_id, date, lang}=req.params
+    const { chalet_id, date, lang } = req.params;
 
     
     if (!['ar', 'en'].includes(lang)) {
@@ -407,28 +499,44 @@ exports.getAvailableTimesByDate = async (req, res) => {
       });
     }
 
-    
+    const cacheKey = `availableTimes:${chalet_id}:${date}:lang:${lang}`;
+
+   
+    const cachedData = await client.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit for available times:", chalet_id, date);
+      return res.status(200).json({
+        message: lang === 'en' 
+          ? 'Available times fetched from cache successfully' 
+          : 'تم استرجاع الأوقات المتاحة من الكاش بنجاح',
+        data: JSON.parse(cachedData),
+      });
+    }
+    console.log("Cache miss for available times:", chalet_id, date);
+
+   
     const existingReservations = await Reservations_Chalets.findAll({
       where: {
-        chalet_id:chalet_id,
+        chalet_id: chalet_id,
         date: formattedDate,
       },
-      attributes: ['right_time_id'], 
+      attributes: ['right_time_id'],
     });
 
-    
+   
     const reservedTimes = existingReservations.map(reservation => reservation.right_time_id);
 
-        let availableTimes = await RightTimeModel.findAll({
+    
+    let availableTimes = await RightTimeModel.findAll({
       where: {
         id: {
           [Op.notIn]: reservedTimes, 
         }
       },
-      attributes: ['id', 'time', 'name', 'price'], 
+      attributes: ['id', 'time', 'name', 'price'],
     });
 
-    
+   
     const reservedMorning = reservedTimes.includes('morning');
     const reservedEvening = reservedTimes.includes('evening');
 
@@ -436,21 +544,25 @@ exports.getAvailableTimesByDate = async (req, res) => {
       availableTimes = availableTimes.filter(time => time.name !== 'Full day');
     }
 
-    
+   
     if (availableTimes.length === 0) {
       return res.status(404).json({
         message: lang === 'en' ? 'No available times for this date' : 'لا توجد أوقات متاحة لهذا التاريخ',
       });
     }
 
-    
+  
+    await client.setEx(cacheKey, 3600, JSON.stringify(availableTimes));
+
     return res.status(200).json({
-      message: lang === 'en' ? 'Available times retrieved successfully' : 'تم استرجاع الأوقات المتاحة بنجاح',
+      message: lang === 'en' 
+        ? 'Available times retrieved successfully' 
+        : 'تم استرجاع الأوقات المتاحة بنجاح',
       availableTimes: availableTimes.map(time => ({
         id: time.id,
         time: time.time,
         name: time.name,
-        price: time.price, 
+        price: time.price,
       })),
     });
 
@@ -466,25 +578,37 @@ exports.getAvailableTimesByDate = async (req, res) => {
 
 
 
+
 exports.getReservationsByRightTimeName = async (req, res) => {
   try {
     const { name, lang } = req.params;
 
-    // Check for valid language
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
         error: lang === 'en' ? 'Invalid language' : 'اللغة غير صالحة',
       });
     }
 
-    // Validate the name parameter
     if (!name) {
       return res.status(400).json({
         error: lang === 'en' ? 'Right time name is required' : 'اسم الوقت غير صحيح',
       });
     }
 
-   
+    const cacheKey = `reservationsByRightTime:${name}:${lang}`;
+
+    const cachedData = await client.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit for reservations by right time:", name);
+      return res.status(200).json({
+        message: lang === 'en' 
+          ? 'Reservations fetched from cache successfully' 
+          : 'تم استرجاع الحجوزات من الكاش بنجاح',
+        data: JSON.parse(cachedData),
+      });
+    }
+    console.log("Cache miss for reservations by right time:", name);
+
     let rightTimes;
     if (name === 'Full day') {
       rightTimes = await RightTimeModel.findAll({
@@ -496,15 +620,17 @@ exports.getReservationsByRightTimeName = async (req, res) => {
       rightTimes = await RightTimeModel.findOne({
         where: { name: name }
       });
+
+    
+      rightTimes = rightTimes ? [rightTimes] : [];
     }
 
-        if (!rightTimes || rightTimes.length === 0) {
+    if (!rightTimes || rightTimes.length === 0) {
       return res.status(404).json({
         error: lang === 'en' ? 'Right time not found' : 'الوقت غير موجود',
       });
     }
 
-    
     const rightTimeIds = rightTimes.map(rt => rt.id);
 
     const reservations = await Reservations_Chalets.findAll({
@@ -528,16 +654,18 @@ exports.getReservationsByRightTimeName = async (req, res) => {
       ]
     });
 
-    // Check if any reservations were found
     if (!reservations || reservations.length === 0) {
       return res.status(404).json({
         message: lang === 'en' ? 'No reservations found for this right time' : 'لا توجد حجوزات لهذا الوقت',
       });
     }
 
-    // Return the reservations
+    await client.setEx(cacheKey, 3600, JSON.stringify(reservations));
+
     return res.status(200).json({
-      message: lang === 'en' ? 'Reservations retrieved successfully' : 'تم استرجاع الحجوزات بنجاح',
+      message: lang === 'en' 
+        ? 'Reservations retrieved successfully' 
+        : 'تم استرجاع الحجوزات بنجاح',
       reservations: reservations.map(reservation => ({
         id: reservation.id,
         initial_amount: reservation.initial_amount,
@@ -559,11 +687,12 @@ exports.getReservationsByRightTimeName = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching reservations:', error);
-    return res.status(500).json({
-      error: 'Failed to fetch reservations',
-    });
+    return res.status(500).json(
+      'Failed to fetch reservations',
+    );
   }
 };
+
 
 
 
@@ -620,7 +749,12 @@ exports.deleteReservation = async (req, res) => {
       });
     }
 
-    const reservation = await Reservations_Chalets.findByPk(id);
+   
+    const [reservation, _] = await Promise.all([
+      Reservations_Chalets.findByPk(id),
+      client.del(`reservation:${id}`), 
+    ]);
+
     if (!reservation) {
       return res.status(404).json({
         error: lang === 'en' ? 'Reservation not found' : 'الحجز غير موجود',
@@ -628,12 +762,14 @@ exports.deleteReservation = async (req, res) => {
     }
 
     await reservation.destroy();
-    res.status(200).json({
+
+    return res.status(200).json({
       message: lang === 'en' ? 'Reservation deleted successfully' : 'تم حذف الحجز بنجاح',
     });
   } catch (error) {
     console.error('Error deleting reservation:', error);
-    res.status(500).json({
+
+    return res.status(500).json({
       error: lang === 'en' ? 'Failed to delete reservation' : 'فشل في حذف الحجز',
     });
   }

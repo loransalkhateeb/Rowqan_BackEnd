@@ -7,7 +7,7 @@ exports.createSubEvent = async (req, res) => {
     const { title, date, time, lang, event_id } = req.body;
     const image = req.file ? req.file.filename : null;
 
-    // Validate input
+ 
     const validationErrors = validateInput({ title, date, time, lang, event_id, image });
     if (validationErrors) {
       return res.status(400).json(validationErrors);
@@ -43,48 +43,129 @@ exports.createSubEvent = async (req, res) => {
 
 exports.getSubEventsById = async (req, res) => {
   try {
-    const { id, lang } = req.params;
+    const { id } = req.params;
 
-    const subevents = await Sub_Events.findOne({ where: { id, lang } });
+    const cacheKey = `subevent:${id}`;
 
-    if (!subevents) {
-      return res.status(404).json(new ErrorResponse(`Sub event with id ${id} and language ${lang} not found`));
+
+    const cachedData = await client.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit for subevent:", id);
+      return res.status(200).json(
+      JSON.parse(cachedData),
+      );
+    }
+    console.log("Cache miss for subevent:", id);
+
+  
+    const subEvent = await Sub_Events.findOne({
+      attributes: ["id", "title", "descr", "date", "location"], 
+      where: { id },
+    });
+
+    if (!subEvent) {
+      return res.status(404).json(
+        new ErrorResponse("Sub Event not found", [
+          "No Sub Event found with the given ID.",
+        ])
+      );
     }
 
-    res.status(200).json({ subevents });
+    
+    await client.setEx(cacheKey, 3600, JSON.stringify(subEvent));
+
+  
+    return res.status(200).json(subEvent);
   } catch (error) {
-    console.error(error);
-    res.status(500).json(new ErrorResponse('Failed to fetch sub events'));
+    console.error("Error in getSubEventsById:", error);
+
+  
+    return res.status(500).json(
+      new ErrorResponse("Failed to fetch Sub Event", [
+        "An internal server error occurred. Please try again later.",
+      ])
+    );
   }
 };
+
+
+
+
+
 
 exports.getAllSubEvents = async (req, res) => {
   try {
-    const { lang } = req.params;
-
-    const sub_events = await Sub_Events.findAll({ where: { lang } });
-
-    if (!sub_events.length) {
-      return res.status(404).json(new ErrorResponse('No Sub Events found for this language'));
+    const { page = 1, limit = 20 } = req.query; 
+    const offset = (page - 1) * limit; 
+    const cacheKey = `subevents:page:${page}:limit:${limit}`;
+    const cachedData = await client.get(cacheKey); 
+    if (cachedData) {
+      
+      return res.status(200).json(
+         JSON.parse(cachedData),
+      );
     }
 
-    res.status(200).json(sub_events);
+   
+    const subEvents = await Sub_Events.findAll({
+      attributes: ["id", "title", "descr", "date", "location"],
+      order: [["id", "DESC"]], 
+      limit: parseInt(limit), 
+      offset: parseInt(offset), 
+    });
+
+   
+    if (!subEvents.length) {
+      return res.status(404).json(new ErrorResponse("No Sub Events found"));
+    }
+
+   
+    await client.setEx(cacheKey, 3600, JSON.stringify(subEvents));
+
+   
+    res.status(200).json(
+       subEvents,
+    );
   } catch (error) {
-    console.error(error);
-    res.status(500).json(new ErrorResponse('Failed to retrieve sub events'));
+    console.error("Error in getAllSubEvents:", error.message);
+
+  
+    res.status(500).json(
+      new ErrorResponse("Failed to fetch Sub Events", [
+        "An internal server error occurred.",
+      ])
+    );
   }
 };
+
+
 
 exports.getSubEventsByEventId = async (req, res) => {
   try {
     const { event_id, lang } = req.params;
 
+    const cacheKey = `subevents:event_id:${event_id}:lang:${lang}`;
+
+    
+    const cachedData = await client.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit for subevents:", event_id, lang);
+      return res.status(200).json({
+        message: "Successfully fetched Sub Events from cache",
+        data: JSON.parse(cachedData),
+      });
+    }
+
+    console.log("Cache miss for subevents:", event_id, lang);
+
+    
     const event = await Types_Events.findOne({ where: { id: event_id, lang } });
 
     if (!event) {
       return res.status(404).json(new ErrorResponse(`Event with ID ${event_id} and language ${lang} not found.`));
     }
 
+  
     const subEvents = await Sub_Events.findAll({
       where: { event_id },
       include: {
@@ -97,12 +178,16 @@ exports.getSubEventsByEventId = async (req, res) => {
       return res.status(404).json(new ErrorResponse('No sub events found for this event and language.'));
     }
 
+  
+    await client.setEx(cacheKey, 3600, JSON.stringify(subEvents));
+
     res.status(200).json(subEvents);
   } catch (error) {
-    console.error(error);
+    console.error("Error in getSubEventsByEventId:", error);
     res.status(500).json(new ErrorResponse('Failed to retrieve sub events'));
   }
 };
+
 
 exports.updateSubEvent = async (req, res) => {
   try {
@@ -120,7 +205,7 @@ exports.updateSubEvent = async (req, res) => {
       return res.status(404).json(new ErrorResponse(`Event with ID ${event_id} not found.`));
     }
 
-    // Validate input
+  
     const validationErrors = validateInput({ title, date, time, lang, event_id, image });
     if (validationErrors) {
       return res.status(400).json(validationErrors);
@@ -149,16 +234,29 @@ exports.deleteSubEvent = async (req, res) => {
   try {
     const { id, lang } = req.params;
 
-    const subEvent = await Sub_Events.findOne({ where: { id, lang } });
+    const [subEvent, _] = await Promise.all([
+      Sub_Events.findOne({ where: { id, lang } }),
+      client.del(`subevent:${id}:${lang}`), 
+    ]);
+
     if (!subEvent) {
       return res.status(404).json(new ErrorResponse(`Sub Event with ID ${id} not found.`));
     }
 
+   
     await subEvent.destroy();
 
-    res.status(200).json({ message: 'Sub Event deleted successfully' });
+   
+    return res.status(200).json({ message: "Sub Event deleted successfully" });
   } catch (error) {
-    console.error(error);
-    res.status(500).json(new ErrorResponse('Failed to delete sub event'));
+    console.error("Error in deleteSubEvent:", error);
+
+
+    return res.status(500).json(
+      new ErrorResponse("Failed to delete Sub Event", [
+        "An internal server error occurred. Please try again later.",
+      ])
+    );
   }
 };
+

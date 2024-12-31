@@ -33,13 +33,12 @@ exports.createReservationEvent = async (req, res) => {
     });
 
  
-    res.status(201).json({
-      message: 'Reservation Event created successfully',
-      reservationEvent: newReservationEvent
-    });
+    res.status(201).json(
+     newReservationEvent
+    );
   } catch (error) {
     console.error(error);
-    res.status(500).json(new ErrorResponse('Failed to create Reservation Event', ['An error occurred while creating the event']));
+    res.status(500).json( ErrorResponse('Failed to create Reservation Event', ['An error occurred while creating the event']));
   }
 };
 
@@ -48,34 +47,52 @@ exports.getReservationEventById = async (req, res) => {
   try {
     const { id, lang } = req.params;
 
-    
-    redisClient.get(`reservationEvent:${id}:${lang}`, async (err, data) => {
-      if (data) {
-        return res.status(200).json(JSON.parse(data)); 
-      }
+    const cacheKey = `reservationEvent:${id}:${lang}`;
 
-     
-      const reservationEvent = await Reservation_Events.findOne({
-        where: { id, lang },
-        include: [
-          { model: Available_Events },
-          { model: User },
-          { model: Plan }
-        ]
+
+    const cachedData = await redisClient.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit for reservation event:", id);
+      return res.status(200).json({
+        message: lang === 'en' ? 'Reservation Event fetched from cache successfully' : 'تم استرجاع حدث الحجز من الكاش بنجاح',
+        data: JSON.parse(cachedData),
       });
+    }
+    console.log("Cache miss for reservation event:", id);
 
-      if (!reservationEvent) {
-        return res.status(404).json(new ErrorResponse(`Reservation Event with id ${id} and language ${lang} not found`, ['No event found with the given parameters']));
-      }
+    const reservationEvent = await Reservation_Events.findOne({
+      where: { id, lang },
+      include: [
+        { model: Available_Events },
+        { model: User },
+        { model: Plan },
+      ],
+    });
 
-     
-      redisClient.setex(`reservationEvent:${id}:${lang}`, 600, JSON.stringify(reservationEvent));
+    if (!reservationEvent) {
+      return res.status(404).json(
+        new ErrorResponse(
+          lang === 'en' ? `Reservation Event with id ${id} not found` : `حدث الحجز بالمعرف ${id} غير موجود`,
+          [lang === 'en' ? 'No event found with the given parameters' : 'لم يتم العثور على حدث بالحجز بالمعرف المحدد']
+        )
+      );
+    }
 
-      res.status(200).json(reservationEvent);
+    await redisClient.setex(cacheKey, 600, JSON.stringify(reservationEvent));
+
+    return res.status(200).json({
+      message: lang === 'en' ? 'Reservation Event fetched successfully' : 'تم استرجاع حدث الحجز بنجاح',
+      data: reservationEvent,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json(new ErrorResponse('Failed to fetch Reservation Event', ['An error occurred while fetching the event']));
+    console.error("Error in getReservationEventById:", error);
+
+    return res.status(500).json(
+      new ErrorResponse(
+        lang === 'en' ? 'Failed to fetch Reservation Event' : 'فشل في استرجاع حدث الحجز',
+        [lang === 'en' ? 'An internal server error occurred. Please try again later.' : 'حدث خطأ داخلي. يرجى المحاولة لاحقًا.']
+      )
+    );
   }
 };
 
@@ -83,29 +100,62 @@ exports.getReservationEventById = async (req, res) => {
 exports.getAllReservationEvents = async (req, res) => {
   try {
     const { lang } = req.params;
+    const { page = 1, limit = 20 } = req.query;
+    const offset = (page - 1) * limit;
+
+    const cacheKey = `reservationEvents:lang:${lang}:page:${page}:limit:${limit}`;
+    
+   
+    const cachedData = await redisClient.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit for reservation events:", lang, page, limit);
+      return res.status(200).json({
+        message: lang === 'en' ? 'Successfully fetched Reservation Events from cache' : 'تم استرجاع الأحداث من الكاش بنجاح',
+        data: JSON.parse(cachedData),
+      });
+    }
+    console.log("Cache miss for reservation events:", lang, page, limit);
+
+   
     const reservationEvents = await Reservation_Events.findAll({
       where: { lang },
-      include: [  
+      include: [
         { model: Available_Events },
         { model: User },
         { model: Plan }
-      ]
+      ],
+      order: [["id", "DESC"]],
+      limit: parseInt(limit),
+      offset: parseInt(offset),
     });
+
     if (reservationEvents.length === 0) {
-      return res.status(404).json({ message: 'No reservation events found' });
+      return res.status(404).json({
+        message: lang === 'en' ? 'No reservation events found' : 'لا توجد أحداث حجز'
+      });
     }
-   
+
+    
     const eventDetails = reservationEvents.map(event => ({
       date: event.date,
-      status: [' Mornning', ' Evenning', 'AfterNoon'].includes(event.Duration) ? 'Reserved' : 'Available'
+      status: ['Morning', 'Evening', 'Afternoon'].includes(event.Duration) ? 'Reserved' : 'Available'
     }));
 
-    res.status(200).json(eventDetails);
+    
+    await redisClient.setEx(cacheKey, 3600, JSON.stringify(eventDetails));
+
+    return res.status(200).json(
+     eventDetails,
+    );
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'An error occurred while retrieving events' });
+    console.error("Error in getAllReservationEvents:", error);
+
+    return res.status(500).json({
+      message: lang === 'en' ? 'An error occurred while retrieving events' : 'حدث خطأ أثناء استرجاع الأحداث',
+    });
   }
 };
+
 
 
 
@@ -117,6 +167,20 @@ exports.getAllReservationEventsByAvailableId = async (req, res) => {
   try {
     const { available_event_id, lang } = req.params;
 
+    const cacheKey = `reservationEventsByAvailableId:${available_event_id}:${lang}`;
+    
+    
+    const cachedData = await client.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit for reservation events by available event:", available_event_id, lang);
+      return res.status(200).json({
+        message: lang === 'en' ? 'Successfully fetched Reservation Events from cache' : 'تم استرجاع الأحداث من الكاش بنجاح',
+        data: JSON.parse(cachedData),
+      });
+    }
+    console.log("Cache miss for reservation events by available event:", available_event_id, lang);
+
+    
     const reservationEvents = await Reservation_Events.findAll({
       where: { available_event_id },
       include: [
@@ -127,19 +191,29 @@ exports.getAllReservationEventsByAvailableId = async (req, res) => {
     });
 
     if (reservationEvents.length === 0) {
-      return res.status(404).json({ message: 'No reservation events found for this available event' });
+      return res.status(404).json({
+        message: lang === 'en' ? 'No reservation events found for this available event' : 'لا توجد أحداث حجز لهذا الحدث المتاح'
+      });
     }
 
     
     const eventDetails = reservationEvents.map(event => ({
       date: event.date,
-      status: [' Mornning', ' Evenning', 'AfterNoon'].includes(event.Duration) ? 'Reserved' : 'Available'
+      status: ['Morning', 'Evening', 'Afternoon'].includes(event.Duration) ? 'Reserved' : 'Available'
     }));
 
-    res.status(200).json(eventDetails);
+
+    await client.setEx(cacheKey, 3600, JSON.stringify(eventDetails));
+
+    return res.status(200).json(
+     eventDetails,
+    );
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'An error occurred while retrieving the events' });
+    console.error("Error in getAllReservationEventsByAvailableId:", error);
+
+    return res.status(500).json({
+      message: lang === 'en' ? 'An error occurred while retrieving events' : 'حدث خطأ أثناء استرجاع الأحداث',
+    });
   }
 };
 
@@ -151,7 +225,20 @@ exports.getAllReservationEventsByAvailableId = async (req, res) => {
 
 exports.getEventStatusByDate = async (req, res) => {
   try {
-    const { date, available_event_id } = req.params;
+    const { date, available_event_id, lang } = req.params;
+
+    const cacheKey = `eventStatus:${date}:${available_event_id}:${lang}`;
+    
+    
+    const cachedData = await client.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit for event status:", date, available_event_id);
+      return res.status(200).json({
+        message: lang === 'en' ? 'Successfully fetched Event Status from cache' : 'تم استرجاع حالة الحدث من الكاش بنجاح',
+        data: JSON.parse(cachedData),
+      });
+    }
+    console.log("Cache miss for event status:", date, available_event_id);
 
    
     const reservationEvents = await Reservation_Events.findAll({
@@ -162,16 +249,17 @@ exports.getEventStatusByDate = async (req, res) => {
     });
 
     if (reservationEvents.length === 0) {
-      return res.status(404).json({ message: 'No events found for this date and available event' });
+      return res.status(404).json({
+        message: lang === 'en' ? 'No events found for this date and available event' : 'لا توجد أحداث لهذا التاريخ والحدث المتاح'
+      });
     }
 
-  
+    
     let statusData = [
-      { duration: 'Mornning', status: 'Available' },
+      { duration: 'Morning', status: 'Available' },
       { duration: 'Afternoon', status: 'Available' },
-      { duration: 'Evenning', status: 'Available' }
+      { duration: 'Evening', status: 'Available' }
     ];
-
 
     reservationEvents.forEach(event => {
       const duration = event.Duration.trim(); 
@@ -181,11 +269,19 @@ exports.getEventStatusByDate = async (req, res) => {
       }
     });
 
-   
-    res.status(200).json(statusData);
+  
+    await client.setEx(cacheKey, 3600, JSON.stringify(statusData));
+
+    return res.status(200).json({
+      message: lang === 'en' ? 'Successfully fetched Event Status' : 'تم استرجاع حالة الحدث بنجاح',
+      data: statusData,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'An error occurred while retrieving the event status' });
+    console.error("Error in getEventStatusByDate:", error);
+
+    return res.status(500).json({
+      message: lang === 'en' ? 'An error occurred while retrieving the event status' : 'حدث خطأ أثناء استرجاع حالة الحدث',
+    });
   }
 };
 
@@ -242,21 +338,30 @@ exports.deleteReservationEvent = async (req, res) => {
   try {
     const { id, lang } = req.params;
 
-   
-    redisClient.del(`reservationEvent:${id}:${lang}`, async (err, data) => {
-      const reservationEvent = await Reservation_Events.findByPk(id);
-      if (!reservationEvent) {
-        return res.status(404).json(new ErrorResponse('Reservation Event not found', ['No event found with the given id']));
-      }
+    
+    const [reservationEvent, _] = await Promise.all([
+      Reservation_Events.findByPk(id), 
+      redisClient.del(`reservationEvent:${id}:${lang}`) 
+    ]);
 
-      await reservationEvent.destroy();
-
-      res.status(200).json({
-        message: 'Reservation Event deleted successfully'
+    if (!reservationEvent) {
+      return res.status(404).json({
+        message: lang === 'en' ? 'Reservation Event not found' : 'لم يتم العثور على الحدث'
       });
+    }
+
+
+    await reservationEvent.destroy();
+
+    return res.status(200).json({
+      message: lang === 'en' ? 'Reservation Event deleted successfully' : 'تم حذف الحدث بنجاح'
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json(new ErrorResponse('Failed to delete Reservation Event', ['An error occurred while deleting the event']));
+    console.error("Error in deleteReservationEvent:", error);
+
+    return res.status(500).json({
+      message: lang === 'en' ? 'Failed to delete Reservation Event' : 'فشل في حذف الحدث'
+    });
   }
 };
+

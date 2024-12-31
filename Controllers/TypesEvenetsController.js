@@ -5,7 +5,7 @@ exports.createEventType = async (req, res) => {
   try {
     const { event_type, lang } = req.body;
 
-    // Validate input
+  
     const validationErrors = validateInput({ event_type, lang });
     if (validationErrors) {
       return res.status(400).json(validationErrors);
@@ -32,33 +32,75 @@ exports.createEventType = async (req, res) => {
 
 exports.getAllEventTypes = async (req, res) => {
   try {
-    const { lang } = req.query;
+    const { lang, page = 1, limit = 20 } = req.query;
+    const offset = (page - 1) * limit;
 
     if (lang && !['ar', 'en'].includes(lang)) {
       return res.status(400).json(new ErrorResponse('Invalid language'));
     }
 
+    const cacheKey = `eventTypes:page:${page}:limit:${limit}:lang:${lang || 'all'}`;
+    const cachedData = await client.get(cacheKey);
+
+    if (cachedData) {
+      return res.status(200).json({
+        message: "Successfully fetched event types from cache",
+        data: JSON.parse(cachedData),
+      });
+    }
+
     const whereClause = lang ? { lang } : {};
+
+   
     const eventTypes = await Types_Events.findAll({
       where: whereClause,
+      limit: parseInt(limit),
+      offset: parseInt(offset),
     });
 
+   
     if (!eventTypes.length) {
       return res.status(404).json(new ErrorResponse('No event types found'));
     }
 
-    res.status(200).json(eventTypes);
+  
+    await client.setEx(cacheKey, 3600, JSON.stringify(eventTypes));
+
+
+    res.status(200).json({
+      message: "Successfully fetched event types",
+      data: eventTypes,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json(new ErrorResponse('Failed to fetch event types'));
+    console.error("Error in getAllEventTypes:", error.message);
+    res.status(500).json(
+      new ErrorResponse("Failed to fetch event types", [
+        "An internal server error occurred.",
+      ])
+    );
   }
 };
+
 
 exports.getEventTypeById = async (req, res) => {
   try {
     const { id } = req.params;
     const { lang } = req.query;
 
+  
+    const cacheKey = `eventType:${id}:lang:${lang || 'not_provided'}`;
+
+    
+    const cachedData = await client.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit for event type:", id);
+      return res.status(200).json(
+         JSON.parse(cachedData),
+      );
+    }
+    console.log("Cache miss for event type:", id);
+
+    
     const whereClause = { id };
     if (lang) {
       if (!['ar', 'en'].includes(lang)) {
@@ -67,20 +109,27 @@ exports.getEventTypeById = async (req, res) => {
       whereClause.lang = lang;
     }
 
+   
     const eventType = await Types_Events.findOne({
       where: whereClause,
     });
 
+    
     if (!eventType) {
       return res.status(404).json(new ErrorResponse(`Event type with id ${id} and language ${lang || 'not provided'} not found`));
     }
 
-    res.status(200).json({ eventType });
+  
+    await client.setEx(cacheKey, 3600, JSON.stringify(eventType));
+
+  
+    res.status(200).json(eventType);
   } catch (error) {
-    console.error(error);
+    console.error("Error in getEventTypeById:", error);
     res.status(500).json(new ErrorResponse('Failed to fetch event type'));
   }
 };
+
 
 exports.updateEventType = async (req, res) => {
   try {
@@ -112,29 +161,31 @@ exports.updateEventType = async (req, res) => {
 exports.deleteEventType = async (req, res) => {
   try {
     const { id } = req.params;
-    const { lang } = req.query;
 
-    const whereClause = { id };
-    if (lang) {
-      if (!['ar', 'en'].includes(lang)) {
-        return res.status(400).json(new ErrorResponse('Invalid language'));
-      }
-      whereClause.lang = lang;
-    }
-
-    const eventType = await Types_Events.findOne({
-      where: whereClause,
-    });
+    const [eventType, _] = await Promise.all([
+      Types_Events.findByPk(id),
+      client.del(`eventType:${id}`),
+    ]);
 
     if (!eventType) {
-      return res.status(404).json(new ErrorResponse(`Event type with id ${id} and language ${lang || 'not provided'} not found`));
+      return res.status(404).json(
+        ErrorResponse("Event type not found", [
+          `No event type found with the given ID ${id}.`,
+        ])
+      );
     }
 
     await eventType.destroy();
 
-    res.status(200).json({ message: 'Event type deleted successfully' });
+    return res.status(200).json({ message: "Event type deleted successfully" });
   } catch (error) {
-    console.error(error);
-    res.status(500).json(new ErrorResponse('Failed to delete event type'));
+    console.error("Error in deleteEventType:", error);
+
+    return res.status(500).json(
+      ErrorResponse("Failed to delete event type", [
+        "An internal server error occurred. Please try again later.",
+      ])
+    );
   }
 };
+
