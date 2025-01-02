@@ -25,10 +25,9 @@ exports.createService = async (req, res) => {
       image,
     });
 
-    res.status(201).json({
-      message: 'Service created successfully',
-      service: newService,
-    });
+    res.status(201).json(
+    newService,
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to create service' });
@@ -49,10 +48,9 @@ exports.getAllServices = async (req, res) => {
     const cachedData = await client.get(cacheKey);
 
     if (cachedData) {
-      return res.status(200).json({
-        message: "Successfully fetched services from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
 
     const services = await Services.findAll({
@@ -68,10 +66,9 @@ exports.getAllServices = async (req, res) => {
 
     await client.setEx(cacheKey, 3600, JSON.stringify(services));
 
-    res.status(200).json({
-      message: "Successfully fetched services",
-      data: services,
-    });
+    res.status(200).json(
+      services,
+    );
   } catch (error) {
     console.error("Error in getAllServices:", error.message);
     res.status(500).json({
@@ -96,10 +93,9 @@ exports.getServiceByStatus = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for services with status:", status_service, "and language:", lang);
-      return res.status(200).json({
-        message: "Successfully fetched services from cache",
-        data: JSON.parse(cachedData)
-      });
+      return res.status(200).json(
+         JSON.parse(cachedData)
+      );
     }
     console.log("Cache miss for services with status:", status_service, "and language:", lang);
 
@@ -118,10 +114,9 @@ exports.getServiceByStatus = async (req, res) => {
    
     await client.setEx(cacheKey, 3600, JSON.stringify(services));
 
-    res.status(200).json({
-      message: "Successfully fetched services",
-      data: services
-    });
+    res.status(200).json(
+       services
+    );
   } catch (error) {
     console.error("Error in getServiceByStatus:", error.message);
     res.status(500).json({
@@ -144,10 +139,9 @@ exports.getServiceByStatusOnlyLang = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for services with language:", lang);
-      return res.status(200).json({
-        message: "Successfully fetched services from cache",
-        data: JSON.parse(cachedData)
-      });
+      return res.status(200).json(
+       JSON.parse(cachedData)
+      );
     }
     console.log("Cache miss for services with language:", lang);
 
@@ -163,10 +157,9 @@ exports.getServiceByStatusOnlyLang = async (req, res) => {
   
     await client.setEx(cacheKey, 3600, JSON.stringify(services));
 
-    res.status(200).json({
-      message: "Successfully fetched services",
-      data: services
-    });
+    res.status(200).json(
+      services
+    );
   } catch (error) {
     console.error("Error in getServiceByStatusOnlyLang:", error.message);
     res.status(500).json({
@@ -223,10 +216,9 @@ exports.getServiceById = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for service with id:", id, "and language:", lang);
-      return res.status(200).json({
-        message: "Successfully fetched service from cache",
-        data: JSON.parse(cachedData)
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData)
+      );
     }
     console.log("Cache miss for service with id:", id, "and language:", lang);
 
@@ -244,10 +236,9 @@ exports.getServiceById = async (req, res) => {
     
     await client.setEx(cacheKey, 3600, JSON.stringify(service));
 
-    res.status(200).json({
-      message: "Successfully fetched service",
-      data: service
-    });
+    res.status(200).json(
+      service
+    );
   } catch (error) {
     console.error("Error in getServiceById:", error.message);
     res.status(500).json({

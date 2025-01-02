@@ -24,10 +24,9 @@ exports.createStatusChalet = async (req, res) => {
       image,
     });
 
-    res.status(201).json({
-      message: 'StatusChalet created successfully',
-      statusChalet: newStatusChalet,
-    });
+    res.status(201).json(
+     newStatusChalet,
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json(new ErrorResponse('Failed to create StatusChalet'));
@@ -43,10 +42,9 @@ exports.getAllStatusChalets = async (req, res) => {
     const cachedData = await client.get(cacheKey);
 
     if (cachedData) {
-      return res.status(200).json({
-        message: "Successfully fetched StatusChalets entries from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+       JSON.parse(cachedData),
+      );
     }
 
     const statusChalets = await StatusChalets.findAll({
@@ -61,10 +59,9 @@ exports.getAllStatusChalets = async (req, res) => {
 
     await client.setEx(cacheKey, 3600, JSON.stringify(statusChalets));
 
-    res.status(200).json({
-      message: "Successfully fetched StatusChalets entries",
-      data: statusChalets,
-    });
+    res.status(200).json(
+      statusChalets,
+    );
   } catch (error) {
     console.error("Error in getAllStatusChalets:", error.message);
     res.status(500).json({
@@ -115,10 +112,9 @@ exports.getStatusChaletById = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for statusChalet:", id);
-      return res.status(200).json({
-        message: "Successfully fetched StatusChalet By Id entry from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+       JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for statusChalet:", id);
 

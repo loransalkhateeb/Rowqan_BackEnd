@@ -141,10 +141,9 @@ exports.updateStatus = async (req, res) => {
 
     await statusRecord.save();
 
-    res.status(200).json({
-      message: 'Status updated successfully',
-      status: statusRecord,
-    });
+    res.status(200).json(
+     statusRecord,
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to update Status' });

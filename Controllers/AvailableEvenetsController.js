@@ -112,10 +112,9 @@ exports.getAvailableEventsById = async (req, res) => {
     if (cachedData) {
       console.log("Cache hit for available event:", id, lang);
 
-      return res.status(200).json({
-        message: "Successfully fetched Available Event from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for available event:", id, lang);
 
@@ -150,10 +149,9 @@ exports.getAvailableEventsById = async (req, res) => {
 
     await client.setEx(cacheKey, 3600, JSON.stringify(availableEvent));
 
-    return res.status(200).json({
-      message: "Successfully fetched Available Event",
-      data: availableEvent,
-    });
+    return res.status(200).json(
+      availableEvent,
+  );
   } catch (error) {
     console.error("Error in getAvailableEventsById:", error);
 
@@ -180,10 +178,9 @@ exports.getAvailableEventsBySubEventId = async (req, res) => {
         sub_event_id,
         lang
       );
-      return res.status(200).json({
-        message: "Successfully fetched Available Events from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+         JSON.parse(cachedData),
+      );
     }
     console.log(
       "Cache miss for available events by sub-event:",

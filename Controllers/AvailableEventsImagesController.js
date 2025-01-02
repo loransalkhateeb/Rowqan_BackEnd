@@ -49,10 +49,9 @@ exports.createAvailableEventImages = async (req, res) => {
       }
     );
 
-    res.status(201).json({
-      message: "Images added to Available Event successfully",
-      images: newImages,
-    });
+    res.status(201).json(
+       newImages,
+    );
   } catch (error) {
     console.error("Error in createAvailableEventImages:", error);
     res
@@ -70,10 +69,9 @@ exports.getAvailableEventImages = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for event images:", event_id);
-      return res.status(200).json({
-        message: "Successfully fetched event images from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+         JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for event images:", event_id);
 

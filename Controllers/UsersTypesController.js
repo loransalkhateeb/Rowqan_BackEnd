@@ -21,10 +21,9 @@ exports.getAllUserTypes = async (req, res) => {
           error: lang === 'en' ? 'No user types found for the specified language' : 'لم يتم العثور على أنواع للمستخدمين للغة المحددة',
         });
       }
-      res.status(200).json({
-        message: lang === 'en' ? 'User types fetched successfully' : 'تم جلب أنواع المستخدمين بنجاح',
+      res.status(200).json(
         userTypes,
-      });
+      );
     } catch (error) {
       console.error('Error fetching user types:', error);
       res.status(500).json({
@@ -64,12 +63,9 @@ exports.getAllUserTypes = async (req, res) => {
         });
       }
   
-      res.status(200).json({
-        message: lang === 'en' 
-          ? 'Users fetched successfully' 
-          : 'تم جلب المستخدمين بنجاح',
+      res.status(200).json(
         users,
-      });
+      );
     } catch (error) {
       console.error('Error fetching users by type:', error);
       res.status(500).json({
@@ -111,10 +107,9 @@ exports.getAllUserTypes = async (req, res) => {
         });
       }
   
-      res.status(200).json({
-        message: lang === 'en' ? 'Chalet owner fetched successfully' : 'تم جلب مالك الشاليه بنجاح',
+      res.status(200).json(
         user,
-      });
+      );
     } catch (error) {
       console.error('Error fetching chalet owner by ID:', error);
       res.status(500).json({
@@ -153,10 +148,9 @@ exports.getAllUserTypes = async (req, res) => {
         });
       }
   
-      res.status(200).json({
-        message: lang === 'en' ? 'Event owner fetched successfully' : 'تم جلب مالك الشاليه بنجاح',
+      res.status(200).json(
         user,
-      });
+      );
     } catch (error) {
       console.error('Error fetching chalet owner by ID:', error);
       res.status(500).json({
@@ -196,10 +190,10 @@ exports.getAllUserTypes = async (req, res) => {
         });
       }
   
-      res.status(200).json({
-        message: lang === 'en' ? 'Land owner fetched successfully' : 'تم جلب مالك الشاليه بنجاح',
+      res.status(200).json(
+       
         user,
-      });
+      );
     } catch (error) {
       console.error('Error fetching Land owner by ID:', error);
       res.status(500).json({
@@ -241,12 +235,9 @@ exports.getAllUserTypes = async (req, res) => {
         });
       }
   
-      res.status(200).json({
-        message: lang === 'en' 
-          ? 'Chalet owners fetched successfully' 
-          : 'تم جلب مالكي الشاليهات بنجاح',
+      res.status(200).json(
         users,
-      });
+      );
     } catch (error) {
       console.error('Error fetching chalet owners:', error);
       res.status(500).json({
@@ -290,12 +281,9 @@ exports.getAllUserTypes = async (req, res) => {
         });
       }
   
-      res.status(200).json({
-        message: lang === 'en' 
-          ? 'Event owners fetched successfully' 
-          : 'تم جلب مالكي الشاليهات بنجاح',
+      res.status(200).json(
         users,
-      });
+      );
     } catch (error) {
       console.error('Error fetching Event owners:', error);
       res.status(500).json({
@@ -337,12 +325,9 @@ exports.getAllUserTypes = async (req, res) => {
         });
       }
   
-      res.status(200).json({
-        message: lang === 'en' 
-          ? 'Land owners fetched successfully' 
-          : 'تم جلب مالكي الشاليهات بنجاح',
+      res.status(200).json(
         users,
-      });
+      );
     } catch (error) {
       console.error('Error fetching Land owners:', error);
       res.status(500).json({
@@ -378,10 +363,9 @@ exports.getAllUserTypes = async (req, res) => {
         });
       }
   
-      res.status(200).json({
-        message: lang === 'en' ? 'User Type fetched successfully' : 'تم جلب نوع المستخدم بنجاح',
+      res.status(200).json(
         userType,
-      });
+      );
     } catch (error) {
       console.error('Error fetching user type:', error);
       res.status(500).json({
@@ -402,10 +386,9 @@ exports.createUserType = async (req, res) => {
 
   try {
     const newUserType = await Users_Types.create({ type, lang });
-    res.status(201).json({
-      message: lang === 'en' ? 'User Type created successfully' : 'تم إنشاء نوع المستخدم بنجاح',
-      userType: newUserType,
-    });
+    res.status(201).json(
+       newUserType,
+    );
   } catch (error) {
     console.error('Error creating user type:', error);
     res.status(500).json({
@@ -435,10 +418,9 @@ exports.updateUserType = async (req, res) => {
     }
 
     await userType.update({ type, lang });
-    res.status(200).json({
-      message: lang === 'en' ? 'User Type updated successfully' : 'تم تحديث نوع المستخدم بنجاح',
+    res.status(200).json(
       userType,
-    });
+    );
   } catch (error) {
     console.error('Error updating user type:', error);
     res.status(500).json({
@@ -520,10 +502,9 @@ exports.updateChaletOwner = async (req, res) => {
       user_type_id: user_type_id || user.user_type_id,
     });
 
-    res.status(200).json({
-      message: lang === 'en' ? 'Chalet owner updated successfully' : 'تم تحديث مالك الشاليه بنجاح',
+    res.status(200).json(
       user,
-    });
+    );
   } catch (error) {
     console.error('Error updating chalet owner:', error);
     res.status(500).json({
@@ -575,10 +556,9 @@ exports.updateEventsOwner = async (req, res) => {
       user_type_id: user_type_id || user.user_type_id,
     });
 
-    res.status(200).json({
-      message: lang === 'en' ? 'Event owner updated successfully' : 'تم تحديث مالك الشاليه بنجاح',
+    res.status(200).json(
       user,
-    });
+    );
   } catch (error) {
     console.error('Error updating Event owner:', error);
     res.status(500).json({
@@ -634,10 +614,9 @@ exports.updateLandsOwner = async (req, res) => {
       user_type_id: user_type_id || user.user_type_id,
     });
 
-    res.status(200).json({
-      message: lang === 'en' ? 'Land owner updated successfully' : 'تم تحديث مالك الشاليه بنجاح',
+    res.status(200).json(
       user,
-    });
+    );
   } catch (error) {
     console.error('Error updating Land owner:', error);
     res.status(500).json({

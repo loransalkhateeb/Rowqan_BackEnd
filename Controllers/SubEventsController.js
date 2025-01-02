@@ -31,10 +31,9 @@ exports.createSubEvent = async (req, res) => {
       event_id,
     });
 
-    res.status(201).json({
-      message: 'Sub Event created successfully',
-      sub_event: subEvent,
-    });
+    res.status(201).json(
+       subEvent,
+  );
   } catch (error) {
     console.error(error);
     res.status(500).json(new ErrorResponse('Failed to create sub event'));
@@ -150,10 +149,9 @@ exports.getSubEventsByEventId = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for subevents:", event_id, lang);
-      return res.status(200).json({
-        message: "Successfully fetched Sub Events from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
 
     console.log("Cache miss for subevents:", event_id, lang);
@@ -220,10 +218,9 @@ exports.updateSubEvent = async (req, res) => {
 
     await subEvent.save();
 
-    res.status(200).json({
-      message: 'Sub Event updated successfully',
-      sub_event: subEvent,
-    });
+    res.status(200).json(
+     subEvent,
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json(new ErrorResponse('Failed to update sub event'));

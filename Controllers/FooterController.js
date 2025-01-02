@@ -170,10 +170,9 @@ exports.updateFooter = async (req, res) => {
    
     const updatedData = footerEntry.toJSON();
 
-    return res.status(200).json({
-      message: "Footer updated successfully",
-      footer: updatedData,
-    });
+    return res.status(200).json(
+     updatedData,
+    );
   } catch (error) {
     console.error("Error in updateFooter:", error);
 

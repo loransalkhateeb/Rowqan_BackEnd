@@ -89,10 +89,9 @@ exports.getAllReservations = async (req, res) => {
       return ErrorResponse(res, 404, lang === 'en' ? 'No reservations found' : 'لا توجد حجوزات');
     }
 
-    res.status(200).json({
-      message: lang === 'en' ? 'Reservations retrieved successfully' : 'تم استرجاع الحجوزات بنجاح',
+    res.status(200).json(
       reservations,
-    });
+    );
   } catch (error) {
     console.error(error);
     ErrorResponse(res, 500, lang === 'en' ? 'Failed to retrieve reservations' : 'فشل في استرجاع الحجوزات');
@@ -133,10 +132,9 @@ exports.getReservationById = async (req, res) => {
       return ErrorResponse(res, 404, lang === 'en' ? 'Reservation not found' : 'الحجز غير موجود');
     }
 
-    res.status(200).json({
-      message: lang === 'en' ? 'Reservation retrieved successfully' : 'تم استرجاع الحجز بنجاح',
+    res.status(200).json(
       reservation,
-    });
+    );
   } catch (error) {
     console.error(error);
     ErrorResponse(res, 500, lang === 'en' ? 'Failed to retrieve reservation' : 'فشل في استرجاع الحجز');
@@ -164,10 +162,9 @@ exports.updateReservation = async (req, res) => {
 
     await reservation.save();
 
-    res.status(200).json({
-      message: lang === 'en' ? 'Reservation updated successfully' : 'تم تحديث الحجز بنجاح',
+    res.status(200).json(
       reservation,
-    });
+    );
   } catch (error) {
     console.error(error);
     ErrorResponse(res, 500, lang === 'en' ? 'Failed to update reservation' : 'فشل في تحديث الحجز');

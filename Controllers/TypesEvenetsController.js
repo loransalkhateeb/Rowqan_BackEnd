@@ -20,10 +20,9 @@ exports.createEventType = async (req, res) => {
       lang,
     });
 
-    res.status(201).json({
-      message: 'Event type created successfully',
-      event_type: newEventType,
-    });
+    res.status(201).json(
+      newEventType,
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json(new ErrorResponse('Failed to create event type'));
@@ -43,10 +42,9 @@ exports.getAllEventTypes = async (req, res) => {
     const cachedData = await client.get(cacheKey);
 
     if (cachedData) {
-      return res.status(200).json({
-        message: "Successfully fetched event types from cache",
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
 
     const whereClause = lang ? { lang } : {};
@@ -67,10 +65,9 @@ exports.getAllEventTypes = async (req, res) => {
     await client.setEx(cacheKey, 3600, JSON.stringify(eventTypes));
 
 
-    res.status(200).json({
-      message: "Successfully fetched event types",
-      data: eventTypes,
-    });
+    res.status(200).json(
+      eventTypes,
+    );
   } catch (error) {
     console.error("Error in getAllEventTypes:", error.message);
     res.status(500).json(
