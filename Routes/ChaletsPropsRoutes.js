@@ -10,9 +10,12 @@ router.post('/createPropsChalet', rateLimiter, multer.single("image"), ChaletsPr
 
 
 router.get('/getAllPropsChalet/:lang', ChaletsPropsController.getAllChaletProps);
-router.get('/getPropChaletById/:id/:lang', ChaletsPropsController.getChaletPropById);
+
+
+router.get('/getPropChaletById/:Chalet_Id/:lang',ChaletsPropsController.getAllChaletPropsByChaletId)
 
 router.get('/getAllChaletPropsByChaletId/:Chalet_Id/:lang',rateLimiter,ChaletsPropsController.getAllChaletPropsByChaletId)
+
 
 
 router.put('/UpdatePropChalet/:id', rateLimiter, ChaletsPropsController.updateProperty);

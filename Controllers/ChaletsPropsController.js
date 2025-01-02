@@ -105,6 +105,7 @@ exports.getAllChaletProps = async (req, res) => {
 
 
 
+
 exports.getAllChaletPropsByChaletId = async (req, res) => {
   try {
     const { Chalet_Id, lang } = req.params;
@@ -166,6 +167,24 @@ exports.getAllChaletPropsByChaletId = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
