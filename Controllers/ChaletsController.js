@@ -151,7 +151,8 @@ exports.getAllChaletsByProps = async (req, res) => {
     const offset = (page - 1) * limit;
     const { lang } = req.params;
 
-   
+    client.del(`chaletProps:page:${page}:limit:${limit}:lang:${lang || 'allChaletProps'}`);
+
     if (lang && !['ar', 'en'].includes(lang)) {
       return res.status(400).json({
         error: 'Invalid language. Supported languages are "ar" and "en".',

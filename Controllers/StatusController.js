@@ -1,6 +1,7 @@
 const Status = require('../Models/StatusModel'); 
 const { validateInput } = require('../Utils/validateInput');
 const { ErrorResponse } = require('../Utils/validateInput');
+const {client} = require('../Utils/redisClient')
 
 
 exports.createStatus = async (req, res, next) => {
