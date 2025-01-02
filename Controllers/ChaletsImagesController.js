@@ -59,7 +59,7 @@ exports.createChaletImages = async (req, res) => {
 exports.getImagesByChaletId = async (req, res) => {
   try {
     const { chalet_id } = req.params;
-
+client.del(`chaletImages:${chalet_id}`);
     const cacheKey = `chaletImages:${chalet_id}`;
    
     const cachedData = await client.get(cacheKey);
