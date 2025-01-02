@@ -557,11 +557,17 @@ exports.getAvailableTimesByDate = async (req, res) => {
 
 exports.getReservationsByRightTimeName = async (req, res) => {
   try {
-    const { name, lang } = req.params;
+    const { id, name, lang } = req.params;
 
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
         error: lang === 'en' ? 'Invalid language' : 'اللغة غير صالحة',
+      });
+    }
+
+    if (!id || isNaN(Number(id))) {
+      return res.status(400).json({
+        error: lang === 'en' ? 'Invalid ID' : 'معرّف غير صالح',
       });
     }
 
@@ -571,30 +577,27 @@ exports.getReservationsByRightTimeName = async (req, res) => {
       });
     }
 
-    const cacheKey = `reservationsByRightTime:${name}:${lang}`;
+    const cacheKey = `reservationsByRightTime:${id}:${name}:${lang}`;
 
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
-      console.log("Cache hit for reservations by right time:", name);
-      return res.status(200).json(
-        JSON.parse(cachedData),
-      );
+      console.log('Cache hit for reservations by right time:', id, name);
+      return res.status(200).json(JSON.parse(cachedData));
     }
-    console.log("Cache miss for reservations by right time:", name);
+    console.log('Cache miss for reservations by right time:', id, name);
 
     let rightTimes;
     if (name === 'Full day') {
       rightTimes = await RightTimeModel.findAll({
         where: {
-          name: { [Op.in]: ['morning', 'evening'] }  
-        }
+          name: { [Op.in]: ['morning', 'evening'] },
+        },
       });
     } else {
       rightTimes = await RightTimeModel.findOne({
-        where: { name: name }
+        where: { name: name },
       });
 
-    
       rightTimes = rightTimes ? [rightTimes] : [];
     }
 
@@ -607,29 +610,32 @@ exports.getReservationsByRightTimeName = async (req, res) => {
     const rightTimeIds = rightTimes.map(rt => rt.id);
 
     const reservations = await Reservations_Chalets.findAll({
-      where: { right_time_id: { [Op.in]: rightTimeIds } },
+      where: { right_time_id: { [Op.in]: rightTimeIds }, user_id: id },
       include: [
         {
           model: Chalet,
-          as: 'chalet', 
-          attributes: ['id', 'title', 'reserve_price'], 
+          as: 'chalet',
+          attributes: ['id', 'title', 'reserve_price'],
         },
         {
           model: User,
-          as: 'user', 
-          attributes: ['id', 'name', 'email'], 
+          as: 'user',
+          attributes: ['id', 'name', 'email'],
         },
         {
           model: RightTimeModel,
-          as: 'rightTime', 
-          attributes: ['id', 'time', 'name', 'price'], 
-        }
-      ]
+          as: 'rightTime',
+          attributes: ['id', 'time', 'name', 'price'],
+        },
+      ],
     });
 
     if (!reservations || reservations.length === 0) {
       return res.status(404).json({
-        message: lang === 'en' ? 'No reservations found for this right time' : 'لا توجد حجوزات لهذا الوقت',
+        message:
+          lang === 'en'
+            ? 'No reservations found for this right time'
+            : 'لا توجد حجوزات لهذا الوقت',
       });
     }
 
@@ -650,18 +656,19 @@ exports.getReservationsByRightTimeName = async (req, res) => {
         user_id: reservation.user_id,
         chalet_id: reservation.chalet_id,
         right_time_id: reservation.right_time_id,
-        chalet: reservation.chalet, 
+        chalet: reservation.chalet,
         user: reservation.user,
         right_time: reservation.rightTime,
       })),
     );
   } catch (error) {
     console.error('Error fetching reservations:', error);
-    return res.status(500).json(
-      'Failed to fetch reservations',
-    );
+    return res.status(500).json({
+      message: lang === 'en' ? 'Failed to fetch reservations' : 'فشل في جلب الحجوزات',
+    });
   }
 };
+
 
 
 

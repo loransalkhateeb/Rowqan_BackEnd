@@ -2,6 +2,7 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../Config/dbConnect');
 const Users = require('../Models/UsersModel');
 
+
 const Messages = sequelize.define('Messages', {
   id: {
     type: DataTypes.INTEGER,

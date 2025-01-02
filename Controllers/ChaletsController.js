@@ -390,7 +390,6 @@ exports.getChaletByStatus = async (req, res) => {
 
     const cacheKey = `chalets:status:${status_id}:lang:${lang || 'not_provided'}:page:${page}:limit:${limit}`;
 
-   
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for chalets with status:", status_id);
@@ -405,7 +404,6 @@ exports.getChaletByStatus = async (req, res) => {
       whereClause.lang = lang;
     }
 
-    
     const chalets = await Chalet.findAll({
       where: whereClause,
       include: [
@@ -426,16 +424,15 @@ exports.getChaletByStatus = async (req, res) => {
       });
     }
 
-    
-    await client.setEx(cacheKey, 3600, JSON.stringify(chalets));
+    await client.setEx(cacheKey, 3600, JSON.stringify({ chalets }));
 
-    
-    res.status(200).json({ chalets });
+    res.status(200).json( chalets );
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch chalets' });
   }
 };
+
 
 
 
