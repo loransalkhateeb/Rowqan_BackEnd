@@ -37,10 +37,9 @@ exports.createRightTime = async (req, res) => {
         });
 
         
-        return res.status(201).json({
-            message: 'RightTime created successfully',
-            rightTime: newRightTime
-        });
+        return res.status(201).json(
+            newRightTime
+      );
     } catch (error) {
         console.error(error);
         return res.status(500).json(new ErrorResponse('Internal server error'));
@@ -56,10 +55,9 @@ exports.getRightTimeById = async (req, res) => {
       const cachedData = await redisClient.get(cacheKey);
       if (cachedData) {
         console.log("Cache hit for RightTime:", id);
-        return res.status(200).json({
-          message: "Successfully fetched RightTime by Id entry from cache", 
-          data: JSON.parse(cachedData),
-        });
+        return res.status(200).json(
+          JSON.parse(cachedData),
+        );
       }
       console.log("Cache miss for RightTime:", id);
   
@@ -101,10 +99,9 @@ exports.getRightTimeById = async (req, res) => {
       const cachedData = await redisClient.get(cacheKey);
       if (cachedData) {
         console.log("Cache hit for RightTimes by Chalet:", chalet_id);
-        return res.status(200).json({
-          message: "Successfully fetched RightTimes by Chalet from cache", 
-          data: JSON.parse(cachedData),
-        });
+        return res.status(200).json(
+          JSON.parse(cachedData),
+      );
       }
       console.log("Cache miss for RightTimes by Chalet:", chalet_id);
   
@@ -230,10 +227,9 @@ exports.get = async (req, res) => {
   
       if (cachedData) {
         console.log("Cache hit for RightTimes:", lang, page, limit);
-        return res.status(200).json({
-          message: "Successfully fetched RightTimes from cache", 
-          data: JSON.parse(cachedData),
-        });
+        return res.status(200).json(
+         JSON.parse(cachedData),
+        );
       }
       console.log("Cache miss for RightTimes:", lang, page, limit);
   
@@ -257,10 +253,9 @@ exports.get = async (req, res) => {
     
       await redisClient.setEx(cacheKey, 3600, JSON.stringify(rightTimes));
   
-      return res.status(200).json({
-        message: lang === 'en' ? 'Successfully fetched RightTimes' : 'تم جلب الأوقات المناسبة بنجاح',
-        data: rightTimes,
-      });
+      return res.status(200).json(
+        rightTimes,
+      );
     } catch (error) {
       console.error("Error in getRightTimes:", error);
   

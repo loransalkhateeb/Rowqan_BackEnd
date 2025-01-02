@@ -24,10 +24,9 @@ exports.createLocation = async (req, res) => {
       lang,
     });
 
-    res.status(201).json({
-      message: lang === "en" ? "Location created successfully" : "تم إنشاء الموقع بنجاح",
-      location: newLocation,
-    });
+    res.status(201).json(
+       newLocation,
+    );
   } catch (error) {
     console.error("Error creating location:", error);
     res.status(500).json(ErrorResponse("Failed to create location."));
@@ -56,10 +55,9 @@ exports.getAllLocations = async (req, res) => {
       return res.status(404).json(ErrorResponse(lang === "en" ? "No locations found" : "لم يتم العثور على مواقع"));
     }
 
-    res.status(200).json({
-      message: lang === "en" ? "Locations retrieved successfully" : "تم استرجاع المواقع بنجاح",
+    res.status(200).json(
       locations,
-    });
+    );
   } catch (error) {
     console.error("Error retrieving locations:", error);
     res.status(500).json(ErrorResponse("Failed to retrieve locations."));
@@ -90,10 +88,9 @@ exports.getLocationById = async (req, res) => {
       return res.status(404).json(ErrorResponse(lang === "en" ? "Location not found" : "الموقع غير موجود"));
     }
 
-    res.status(200).json({
-      message: lang === "en" ? "Location retrieved successfully" : "تم استرجاع الموقع بنجاح",
+    res.status(200).json(
       location,
-    });
+    );
   } catch (error) {
     console.error("Error retrieving location:", error);
     res.status(500).json(ErrorResponse("Failed to retrieve location."));

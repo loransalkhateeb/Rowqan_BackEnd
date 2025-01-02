@@ -33,12 +33,9 @@ exports.createWallet = async (req, res) => {
       cashback_balance,
     });
 
-    res.status(201).json({
-      message: lang === "en" 
-        ? "Wallet created successfully." 
-        : "تم إنشاء المحفظة بنجاح.",
+    res.status(201).json(
       wallet,
-    });
+    );
   } catch (error) {
     console.error("Error creating wallet:", error);
     res.status(500).json({
@@ -106,12 +103,9 @@ exports.updateWallet = async (req, res) => {
       last_updated: new Date(),
     });
 
-    res.status(200).json({
-      message: lang === "en" 
-        ? "Wallet updated successfully." 
-        : "تم تحديث المحفظة بنجاح.",
+    res.status(200).json(
       wallet,
-    });
+  );
   } catch (error) {
     console.error("Error updating wallet:", error);
     res.status(500).json({
@@ -161,12 +155,9 @@ exports.listWallets = async (req, res) => {
       include: [{ model: User, as: "user" }],
     });
 
-    res.status(200).json({
-      message: lang === "en" 
-        ? "Wallets retrieved successfully." 
-        : "تم استرجاع المحافظ بنجاح.",
+    res.status(200).json(
       wallets,
-    });
+    );
   } catch (error) {
     console.error("Error retrieving wallets:", error);
     res.status(500).json({

@@ -53,10 +53,9 @@ exports.getReservationEventById = async (req, res) => {
     const cachedData = await redisClient.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for reservation event:", id);
-      return res.status(200).json({
-        message: lang === 'en' ? 'Reservation Event fetched from cache successfully' : 'تم استرجاع حدث الحجز من الكاش بنجاح',
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for reservation event:", id);
 
@@ -80,10 +79,9 @@ exports.getReservationEventById = async (req, res) => {
 
     await redisClient.setex(cacheKey, 600, JSON.stringify(reservationEvent));
 
-    return res.status(200).json({
-      message: lang === 'en' ? 'Reservation Event fetched successfully' : 'تم استرجاع حدث الحجز بنجاح',
-      data: reservationEvent,
-    });
+    return res.status(200).json(
+      reservationEvent,
+    );
   } catch (error) {
     console.error("Error in getReservationEventById:", error);
 
@@ -109,10 +107,9 @@ exports.getAllReservationEvents = async (req, res) => {
     const cachedData = await redisClient.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for reservation events:", lang, page, limit);
-      return res.status(200).json({
-        message: lang === 'en' ? 'Successfully fetched Reservation Events from cache' : 'تم استرجاع الأحداث من الكاش بنجاح',
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+       JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for reservation events:", lang, page, limit);
 
@@ -173,10 +170,9 @@ exports.getAllReservationEventsByAvailableId = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for reservation events by available event:", available_event_id, lang);
-      return res.status(200).json({
-        message: lang === 'en' ? 'Successfully fetched Reservation Events from cache' : 'تم استرجاع الأحداث من الكاش بنجاح',
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for reservation events by available event:", available_event_id, lang);
 
@@ -233,10 +229,9 @@ exports.getEventStatusByDate = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for event status:", date, available_event_id);
-      return res.status(200).json({
-        message: lang === 'en' ? 'Successfully fetched Event Status from cache' : 'تم استرجاع حالة الحدث من الكاش بنجاح',
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for event status:", date, available_event_id);
 
@@ -272,10 +267,9 @@ exports.getEventStatusByDate = async (req, res) => {
   
     await client.setEx(cacheKey, 3600, JSON.stringify(statusData));
 
-    return res.status(200).json({
-      message: lang === 'en' ? 'Successfully fetched Event Status' : 'تم استرجاع حالة الحدث بنجاح',
-      data: statusData,
-    });
+    return res.status(200).json(
+     statusData,
+    );
   } catch (error) {
     console.error("Error in getEventStatusByDate:", error);
 
@@ -323,10 +317,9 @@ exports.updateReservationEvent = async (req, res) => {
 
     await reservationEvent.save();
 
-    res.status(200).json({
-      message: 'Reservation Event updated successfully',
+    res.status(200).json(
       reservationEvent
-    });
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json(new ErrorResponse('Failed to update Reservation Event', ['An error occurred while updating the event']));

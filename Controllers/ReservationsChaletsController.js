@@ -196,12 +196,9 @@ exports.getAllReservations = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for reservations:", lang);
-      return res.status(200).json({
-        message: lang === 'en' 
-          ? 'Reservations fetched from cache successfully' 
-          : 'تم استرجاع الحجوزات من الكاش بنجاح',
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for reservations:", lang);
 
@@ -237,11 +234,8 @@ exports.getAllReservations = async (req, res) => {
 
     await client.setEx(cacheKey, 3600, JSON.stringify(reservations));
 
-    return res.status(200).json({
-      message: lang === 'en' 
-        ? 'Reservations retrieved successfully' 
-        : 'تم استرجاع الحجوزات بنجاح',
-      reservations: reservations.map(reservation => ({
+    return res.status(200).json(
+       reservations.map(reservation => ({
         id: reservation.id,
         initial_amount: reservation.initial_amount,
         reserve_price: reservation.reserve_price,
@@ -259,7 +253,7 @@ exports.getAllReservations = async (req, res) => {
         user: reservation.user, 
         right_time: reservation.rightTime, 
       })),
-    });
+    );
   } catch (error) {
     console.error('Error fetching reservations:', error);
     return res.status(500).json(
@@ -295,12 +289,9 @@ exports.getReservationById = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for reservation:", id);
-      return res.status(200).json({
-        message: lang === 'en' 
-          ? 'Reservation fetched from cache successfully' 
-          : 'تم استرجاع الحجز من الكاش بنجاح',
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+         JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for reservation:", id);
 
@@ -336,11 +327,8 @@ exports.getReservationById = async (req, res) => {
 
     await client.setEx(cacheKey, 3600, JSON.stringify(reservation));
 
-    return res.status(200).json({
-      message: lang === 'en' 
-        ? 'Reservation retrieved successfully' 
-        : 'تم استرجاع الحجز بنجاح',
-      reservation: {
+    return res.status(200).json(
+      {
         id: reservation.id,
         initial_amount: reservation.initial_amount,
         reserve_price: reservation.reserve_price,
@@ -358,7 +346,7 @@ exports.getReservationById = async (req, res) => {
         user: reservation.user, 
         right_time: reservation.rightTime, 
       }
-    });
+  );
   } catch (error) {
     console.error('Error fetching reservation:', error);
     return res.status(500).json({
@@ -401,12 +389,9 @@ exports.getReservationsByChaletId = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for reservations:", chalet_id);
-      return res.status(200).json({
-        message: lang === 'en' 
-          ? 'Reservations fetched from cache successfully' 
-          : 'تم استرجاع الحجوزات من الكاش بنجاح',
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+         JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for reservations:", chalet_id);
 
@@ -442,11 +427,8 @@ exports.getReservationsByChaletId = async (req, res) => {
   
     await client.setEx(cacheKey, 3600, JSON.stringify(reservations));
 
-    return res.status(200).json({
-      message: lang === 'en' 
-        ? 'Reservations retrieved successfully' 
-        : 'تم استرجاع الحجوزات بنجاح',
-      reservations: reservations.map(reservation => ({
+    return res.status(200).json(
+       reservations.map(reservation => ({
         id: reservation.id,
         initial_amount: reservation.initial_amount,
         reserve_price: reservation.reserve_price,
@@ -464,7 +446,7 @@ exports.getReservationsByChaletId = async (req, res) => {
         user: reservation.user,
         right_time: reservation.rightTime,
       })),
-    });
+  );
   } catch (error) {
     console.error('Error fetching reservations:', error);
     return res.status(500).json({
@@ -505,12 +487,9 @@ exports.getAvailableTimesByDate = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for available times:", chalet_id, date);
-      return res.status(200).json({
-        message: lang === 'en' 
-          ? 'Available times fetched from cache successfully' 
-          : 'تم استرجاع الأوقات المتاحة من الكاش بنجاح',
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for available times:", chalet_id, date);
 
@@ -554,17 +533,14 @@ exports.getAvailableTimesByDate = async (req, res) => {
   
     await client.setEx(cacheKey, 3600, JSON.stringify(availableTimes));
 
-    return res.status(200).json({
-      message: lang === 'en' 
-        ? 'Available times retrieved successfully' 
-        : 'تم استرجاع الأوقات المتاحة بنجاح',
-      availableTimes: availableTimes.map(time => ({
+    return res.status(200).json(
+      availableTimes.map(time => ({
         id: time.id,
         time: time.time,
         name: time.name,
         price: time.price,
       })),
-    });
+    );
 
   } catch (error) {
     console.error('Error fetching available times:', error);
@@ -600,12 +576,9 @@ exports.getReservationsByRightTimeName = async (req, res) => {
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
       console.log("Cache hit for reservations by right time:", name);
-      return res.status(200).json({
-        message: lang === 'en' 
-          ? 'Reservations fetched from cache successfully' 
-          : 'تم استرجاع الحجوزات من الكاش بنجاح',
-        data: JSON.parse(cachedData),
-      });
+      return res.status(200).json(
+        JSON.parse(cachedData),
+      );
     }
     console.log("Cache miss for reservations by right time:", name);
 
@@ -662,11 +635,8 @@ exports.getReservationsByRightTimeName = async (req, res) => {
 
     await client.setEx(cacheKey, 3600, JSON.stringify(reservations));
 
-    return res.status(200).json({
-      message: lang === 'en' 
-        ? 'Reservations retrieved successfully' 
-        : 'تم استرجاع الحجوزات بنجاح',
-      reservations: reservations.map(reservation => ({
+    return res.status(200).json(
+      reservations.map(reservation => ({
         id: reservation.id,
         initial_amount: reservation.initial_amount,
         reserve_price: reservation.reserve_price,
@@ -684,7 +654,7 @@ exports.getReservationsByRightTimeName = async (req, res) => {
         user: reservation.user,
         right_time: reservation.rightTime,
       })),
-    });
+    );
   } catch (error) {
     console.error('Error fetching reservations:', error);
     return res.status(500).json(
@@ -726,10 +696,9 @@ exports.updateReservation = async (req, res) => {
 
     await reservation.save();
 
-    res.status(200).json({
-      message: updateData.lang === 'en' ? 'Reservation updated successfully' : 'تم تحديث الحجز بنجاح',
+    res.status(200).json(
       reservation,
-    });
+    );
   } catch (error) {
     console.error('Error updating reservation:', error);
     res.status(500).json({

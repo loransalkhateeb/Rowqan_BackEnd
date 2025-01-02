@@ -46,10 +46,9 @@ exports.createUser = async (req, res) => {
     });
 
     // Return success response
-    res.status(201).json({
-      message: lang === 'en' ? 'User created successfully' : 'تم إنشاء المستخدم بنجاح',
-      user: newUser,
-    });
+    res.status(201).json(
+     newUser,
+    );
   } catch (error) {
     console.error('Error creating user:', error);
 
@@ -80,10 +79,9 @@ exports.getAllUsers = async (req, res) => {
       ],
     });
 
-    res.status(200).json({
-      message: lang === 'en' ? 'Users fetched successfully' : 'تم جلب المستخدمين بنجاح',
+    res.status(200).json(
       users,
-    });
+    );
   } catch (error) {
     console.error('Error fetching users:', error);
     res.status(500).json({
@@ -122,10 +120,9 @@ exports.getUserById = async (req, res) => {
       });
     }
 
-    res.status(200).json({
-      message: lang === 'en' ? 'User fetched successfully' : 'تم جلب المستخدم بنجاح',
+    res.status(200).json(
       user,
-    });
+    );
   } catch (error) {
     console.error('Error fetching user:', error);
     res.status(500).json({
@@ -159,10 +156,9 @@ exports.updateUser = async (req, res) => {
       user_type_id,
     });
 
-    res.status(200).json({
-      message: lang === 'en' ? 'User updated successfully' : 'تم تحديث المستخدم بنجاح',
+    res.status(200).json(
       user,
-    });
+    );
   } catch (error) {
     console.error('Error updating user:', error);
     res.status(500).json({
@@ -270,10 +266,9 @@ exports.login = async (req, res) => {
       secure: false, // Set to true in production, false in development
     });
     
-    return res.status(200).json({
-      message: lang === 'en' ? 'Login successful' : 'تم تسجيل الدخول بنجاح',
+    return res.status(200).json(
       token,  
-    });
+    );
     
   } catch (error) {
     console.error('Error logging in:', error);
@@ -342,10 +337,9 @@ exports.createAdmin = async (req, res) => {
       lang,
     });
 
-    res.status(201).json({
-      message: lang === 'en' ? 'Admin created successfully' : 'تم إنشاء الأدمن بنجاح',
-      user: newAdmin,
-    });
+    res.status(201).json(
+      newAdmin,
+    );
   } catch (error) {
     console.error('Error creating admin:', error);
     res.status(500).json({
