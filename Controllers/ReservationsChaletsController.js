@@ -5,12 +5,7 @@ const User = require('../Models/UsersModel');
 const RightTimeModel = require('../Models/RightTimeModel');
 const Wallet = require('../Models/WalletModel')
 const { Op } = require('sequelize');
-
 const {client} = require('../Utils/redisClient')
-
-const moment = require('moment');
-
-
 
 
 exports.createReservation = async (req, res) => {
@@ -27,18 +22,21 @@ exports.createReservation = async (req, res) => {
     } = req.body;
 
 
-    // const inputValidation = validateInput(req.body, [
-    //   'date',
-    //   'lang',
-    //   'user_id',
-    //   'chalet_id',
-    //   'right_time_id'
-    // ]);
+    const inputValidation = validateInput(req.body, [
+      'initial_amount',
+      'date',
+      'lang',
+
+      'user_id',
+
+      'chalet_id',
+      'right_time_id'
+    ]);
     
 
-    // if (inputValidation.error) {
-    //   return res.status(400).json(inputValidation);
-    // }
+    if (inputValidation.error) {
+      return res.status(400).json(inputValidation);
+    }
 
     
     const formattedDate = new Date(date);
@@ -483,19 +481,23 @@ exports.getReservationsByChaletId = async (req, res) => {
 
 
 exports.getAvailableTimesByDate = async (req, res) => {
-
   try {
     const { chalet_id, date, lang } = req.params;
 
-  const { chalet_id, date } = req.params; // The date selected by the user
-  const formattedDate = moment(date).format('YYYY-MM-DD'); // Ensure the date is in 'YYYY-MM-DD' format
+    
+    if (!['ar', 'en'].includes(lang)) {
+      return res.status(400).json({
+        error: lang === 'en' ? 'Invalid language' : 'اللغة غير صالحة',
+      });
+    }
 
-
-  try {
-    // Start and end of the selected day (handling full date range)
-    const startOfDay = moment(formattedDate).startOf('day').toDate();  // 2024-12-23 00:00:00
-    const endOfDay = moment(formattedDate).endOf('day').toDate();      // 2024-12-23 23:59:59
-
+    
+    const formattedDate = new Date(date);
+    if (isNaN(formattedDate.getTime())) {
+      return res.status(400).json({
+        error: lang === 'en' ? 'Invalid date format' : 'تنسيق التاريخ غير صالح',
+      });
+    }
 
     const cacheKey = `availableTimes:${chalet_id}:${date}:lang:${lang}`;
 
@@ -538,38 +540,8 @@ exports.getAvailableTimesByDate = async (req, res) => {
     const reservedMorning = reservedTimes.includes('morning');
     const reservedEvening = reservedTimes.includes('evening');
 
- 
-    const reservations = await Reservations_Chalets.findAll({
-      where: {
-        date: {
-          [Op.gte]: startOfDay, 
-          [Op.lt]: endOfDay,    
-        },
-        chalet_id: chalet_id,
-      },
-      include: [{
-        model: RightTimeModel,
-        as: 'rightTime', 
-      }],
-    });
-
-    
-    const reservedTimes = reservations.map(reservation => reservation.rightTime.name);
-
- 
-    const allTimeSlots = await RightTimeModel.findAll({
-      where: {
-        chalet_id: chalet_id,
-      }
-    });
-
-    
-    let availableTimeSlots = allTimeSlots.filter(slot => !reservedTimes.includes(slot.name));
-
-
-
-    if (reservedTimes.includes('Morning') || reservedTimes.includes('Evening')) {
-      availableTimeSlots = availableTimeSlots.filter(slot => slot.name !== 'Full day');
+    if (reservedMorning || reservedEvening) {
+      availableTimes = availableTimes.filter(time => time.name !== 'Full day');
     }
 
    
@@ -594,16 +566,13 @@ exports.getAvailableTimesByDate = async (req, res) => {
       })),
     });
 
-
-    res.json(availableTimeSlots);
-
-
   } catch (error) {
-    console.error(error);
-    res.status(500).send('Server error');
+    console.error('Error fetching available times:', error);
+    return res.status(500).json({
+      error: lang === 'en' ? 'Failed to fetch available times' : 'فشل في استرجاع الأوقات المتاحة',
+    });
   }
 };
-
 
 
 
@@ -664,65 +633,24 @@ exports.getReservationsByRightTimeName = async (req, res) => {
 
     const rightTimeIds = rightTimes.map(rt => rt.id);
 
-
-exports.getReservationsByRightTimeName = async (req, res) => {
-  const { chalet_id, name, lang } = req.params;
-
-  try {
-   
-    const timePeriods = name.split(' ');
-
-  
-    let reservations = [];
-    let fullDayAdded = false; 
-
-   
-    for (let period of timePeriods) {
-      if (period === 'Full' || period === 'day') {
-        if (!fullDayAdded) {
-       
-          const fullDayRightTime = await RightTimeModel.findOne({
-            where: {
-              name: 'Full day',
-              lang: lang,
-            },
-          });
-
-          
-          if (fullDayRightTime) {
-            const fullDayReservations = await Reservations_Chalets.findAll({
-              where: {
-                lang: lang,
-                chalet_id:chalet_id,
-                right_time_id: fullDayRightTime.id, // Use Full day's right_time_id
-              },
-            });
-            reservations = [...reservations, ...fullDayReservations];
-            fullDayAdded = true; // Mark Full day as added
-          }
+    const reservations = await Reservations_Chalets.findAll({
+      where: { right_time_id: { [Op.in]: rightTimeIds } },
+      include: [
+        {
+          model: Chalet,
+          as: 'chalet', 
+          attributes: ['id', 'title', 'reserve_price'], 
+        },
+        {
+          model: User,
+          as: 'user', 
+          attributes: ['id', 'name', 'email'], 
+        },
+        {
+          model: RightTimeModel,
+          as: 'rightTime', 
+          attributes: ['id', 'time', 'name', 'price'], 
         }
-      } else {
-        // Fetch the corresponding right time (Morning or Evening)
-        const rightTime = await RightTimeModel.findOne({
-          where: {
-            name: period,
-            lang: lang,
-          },
-        });
-
-
-        // If the right time (Morning or Evening) is found, fetch the corresponding reservations
-        if (rightTime) {
-          const timeReservations = await Reservations_Chalets.findAll({
-            where: {
-              lang: lang,
-              chalet_id:chalet_id,
-              right_time_id: rightTime.id,
-            },
-          });
-          reservations = [...reservations, ...timeReservations];
-        }
-
       ]
     });
 
@@ -756,27 +684,12 @@ exports.getReservationsByRightTimeName = async (req, res) => {
         user: reservation.user,
         right_time: reservation.rightTime,
       })),
-
-      }
-    }
-
-    // Step 2: Return the combined results
-    res.json({
-      rightTime: name,
-      reservations: reservations,
-
     });
-
   } catch (error) {
-
     console.error('Error fetching reservations:', error);
     return res.status(500).json(
       'Failed to fetch reservations',
     );
-
-    console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
-
   }
 };
 

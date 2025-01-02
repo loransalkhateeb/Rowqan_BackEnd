@@ -11,8 +11,12 @@ router.post('/createPropsChalet', rateLimiter, multer.single("image"), ChaletsPr
 
 router.get('/getAllPropsChalet/:lang', ChaletsPropsController.getAllChaletProps);
 router.get('/getPropChaletById/:id/:lang', ChaletsPropsController.getChaletPropById);
+
+router.get('/getAllChaletPropsByChaletId/:chalet_id/:lang',rateLimiter,ChaletsPropsController.getAllChaletPropsByChaletId)
+
+
 router.put('/UpdatePropChalet/:id', rateLimiter, ChaletsPropsController.updateProperty);
-router.delete('/DeletePropChalet/:id/:lang', ChaletsPropsController.deleteChaletProp);
+router.delete('/DeletePropChalet/:id/:lang',rateLimiter, ChaletsPropsController.deleteChaletProp);
 
 module.exports = router;
 

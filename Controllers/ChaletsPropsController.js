@@ -102,6 +102,62 @@ exports.getAllChaletProps = async (req, res) => {
 
 
 
+
+
+
+exports.getAllChaletPropsByChaletId = async (req, res) => {
+  try {
+    const { chalet_id,lang} = req.params;
+    const { page = 1, limit = 20 } = req.query;
+    const offset = (page - 1) * limit;
+
+    const cacheKey = `chaletPropsByChaletId:lang:${lang}:page:${page}:limit:${limit}`;
+    const cachedData = await client.get(cacheKey);
+
+    if (cachedData) {
+      return res.status(200).json(
+       JSON.parse(cachedData),
+      );
+    }
+
+
+    if(!chalet_id || isNaN(chalet_id)){
+      return res.status(400).json({
+        error: "Invalid 'chalet_id'. It must be a valid numeric ID.",
+      });
+    }
+
+
+    const whereClause = { chalet_id };
+    if (lang) {
+      whereClause.lang = lang;
+    }
+    const properties = await Chalets_Props.findAll({
+      where: whereClause,
+      order: [["id", "DESC"]], 
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      attributes: ["id", "title", "image", "lang"],
+    });
+
+   
+    await client.setEx(cacheKey, 3600, JSON.stringify(properties));
+
+    res.status(200).json(
+    properties,
+    );
+  } catch (error) {
+    console.error("Error in getAllChaletProps:", error.message);
+    res.status(500).json(ErrorResponse("Failed to fetch Chalet properties", [
+      "An internal server error occurred.",
+    ]));
+  }
+};
+
+
+
+
+
 exports.getChaletPropById = async (req, res) => {
   const { id, lang } = req.params;
 
