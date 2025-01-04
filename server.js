@@ -10,40 +10,20 @@ const app = express();
 const compression = require('compression');
 app.use(compression());
 
-
-
-
 app.use(helmet({
   contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false,
 }));
 
-
 const server = http.createServer(app);
-const socketIoInstance = socketIo(server, {
-  cors: {
-    origin: ['http://localhost:5000', 'https://rowqan.com'],
-    methods: ['GET', 'POST'],
-    credentials: true,
-  },
-});
+const io = socketIo(server); 
 
-
-socketIoInstance.on('connection', (socket) => {
-  console.log(`User connected: ${socket.id}`);  
-  socket.on('disconnect', () => {
-    console.log(`User disconnected: ${socket.id}`);
-  });
-});
+app.use(express.json());
 
 app.use((req, res, next) => {
-  req.socketIoInstance = socketIoInstance; 
+  req.socketIoInstance = io;  
   next();
 });
-
-
-
-
 
 const UsersRoutes = require('./Routes/UsersRoutes');
 const LogoRoutes = require('./Routes/LogoRoutes');
@@ -82,13 +62,13 @@ const PropsChaletsRoutes = require('./Routes/ChaletsPropsRoutes');
 const FeedBackRoutes = require('./Routes/FeedBacksRoutes');
 const MessagesRoutes = require('./Routes/MessagesRoutes');
 const HeroLands = require('./Routes/HeroLandsRoutes');
+const PaymentsRoutes = require('./Routes/PaymentsRoutes')
 
 const allowedOrigins = [
   'http://localhost:5173',
   'https://rowqan.com',
   'https://rowqanbackend.rowqan.com',
 ];
-
 
 const corsOptions = {
   origin: (origin, callback) => {
@@ -104,7 +84,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
-
 
 app.use('/users', UsersRoutes);
 app.use('/logos', LogoRoutes);
@@ -143,20 +122,83 @@ app.use('/propschalets', PropsChaletsRoutes);
 app.use('/FeedBacks', FeedBackRoutes);
 app.use('/messages', MessagesRoutes);
 app.use('/heroLands', HeroLands);
+app.use('/payments', PaymentsRoutes); 
 
+const IP_LOOKUP_API = "https://ipqualityscore.com/api/json/ip/T0hMeOnMzeAnPVsmgH6AKMhguvmr1Yv9";
+
+async function checkVPN(userIP) {
+  try {
+    const response = await axios.get(`${IP_LOOKUP_API}?ip=${userIP}`);
+    const { vpn, proxy, fraud_score, isp, city, asn, is_proxy } = response.data;
+
+    if (vpn || proxy || is_proxy) {
+      console.log("VPN or Proxy detected.");
+      return false;
+    }
+
+    if (fraud_score > 50) {  
+      console.log("Fraud score is too high.");
+      return false;
+    }
+
+    if (isp && isp.toLowerCase().includes("vpn") || city === "unknown") {
+      console.log("Suspicious ISP or City.");
+      return false;
+    }
+
+    if (asn && (asn === "12345" || asn === "67890")) {  
+      console.log("Suspicious ASN detected.");
+      return false;
+    }
+
+    const geo = geoip.lookup(userIP);
+    if (!geo || geo.country !== "JO") {
+      console.log("Access denied due to non-Jordan IP.");
+      return false;
+    }
+
+    return true; 
+
+  } catch (error) {
+    console.error("Error checking VPN:", error);
+    return false; 
+  }
+}
+
+function checkAuth(req, res, next) {
+  const token = req.cookies.authToken || req.headers['authorization'];
+  if (!token) {
+    return res.status(401).json({ message: 'Authentication required' });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+    req.user = decoded;
+    next();
+  });
+}
+
+app.use('/dashboard', async (req, res, next) => {
+  const userIP = req.query.ip || requestIp.getClientIp(req);  
+
+  const isAllowed = await checkVPN(userIP); 
+
+  if (!isAllowed) {
+    return res.status(403).json({ message: "Access denied due to VPN/Proxy or non-Jordan IP" });
+  }
+
+  res.status(200).json({ message: "Access granted to the dashboard" });
+});
 
 sequelize.sync({ force: false }).then(() => {
   console.log('Database connected and synced!');
 });
 
-
 app.get("/", (req, res) => {
   res.send("Welcome to Rowqan!");
 });
-
-
-
-
 
 server.listen(process.env.PORT || 5000, () => {
   console.log(`Server is running on port ${process.env.PORT || 5000}`);

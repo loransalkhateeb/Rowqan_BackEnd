@@ -11,7 +11,9 @@ router.post('/createchalet', rateLimiter, multer.single('image'), chaletControll
 
 router.get('/getallchalets/:lang', chaletController.getAllChalets);
 router.get('/getchalets/:lang', chaletController.getAllChaletsFront);
+
 router.get('/getallchaletsbystatus/:status_id/:lang', chaletController.getChaletByStatus);
+
 router.get('/getchaletbyid/:id', chaletController.getChaletById);
 router.get('/getchaletsbydetailtype/:type/:lang', chaletController.getChaletsByDetailType);
 

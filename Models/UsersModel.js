@@ -34,6 +34,18 @@ const User = sequelize.define('User', {
     type: DataTypes.ENUM('ar', 'en'),
     allowNull: false,  
   },
+  device_id: {
+    type: DataTypes.JSON, 
+    allowNull: true,
+  },
+  reset_token: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  reset_token_expiration: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  }
 }, {
   timestamps: false,
 });

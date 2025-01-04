@@ -376,8 +376,8 @@ exports.deleteChalet = async (req, res) => {
 exports.getChaletByStatus = async (req, res) => {
   try {
     const { status_id, lang } = req.params;
-    const { page = 1, limit = 20 } = req.query;  
-    const offset = (page - 1) * limit;  
+    const { page = 1, limit = 20 } = req.query;
+    const offset = (page - 1) * limit;
 
     if (!status_id) {
       return res.status(400).json({ error: 'status_id is required' });
@@ -390,31 +390,28 @@ exports.getChaletByStatus = async (req, res) => {
     }
 
     const cacheKey = `chalets:status:${status_id}:lang:${lang || 'not_provided'}:page:${page}:limit:${limit}`;
-
+  
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
-      console.log("Cache hit for chalets with status:", status_id);
-      return res.status(200).json(
-        JSON.parse(cachedData),
-      );
+      console.log(`Cache hit for status_id: ${status_id}`);
+      return res.status(200).json(JSON.parse(cachedData));
     }
-    console.log("Cache miss for chalets with status:", status_id);
 
+   
     const whereClause = { status_id };
     if (lang) {
       whereClause.lang = lang;
     }
 
+   
     const chalets = await Chalet.findAll({
       where: whereClause,
+      attributes: ["id", "title", "image", "reserve_price", "lang", "status_id"],
       include: [
-        {
-          model: Status,
-          as: "Status",
-          attributes: ["status"], 
-        },
+        { model: Status, attributes: ["status"] },
+        { model: Chalet_props, attributes: ["id", "title", "image"] },
       ],
-      order: [["id", "DESC"]], 
+      order: [["id", "DESC"]],
       limit: parseInt(limit),
       offset: parseInt(offset),
     });
@@ -425,14 +422,19 @@ exports.getChaletByStatus = async (req, res) => {
       });
     }
 
-    await client.setEx(cacheKey, 3600, JSON.stringify({ chalets }));
+   
+    await client.setEx(cacheKey, 3600, JSON.stringify(chalets));
 
-    res.status(200).json( chalets );
+   
+    return res.status(200).json(chalets);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to fetch chalets' });
+    console.error("Error in getChaletByStatus:", error.message);
+    return res.status(500).json({ error: 'Failed to fetch chalets' });
   }
 };
+
+
+
 
 
 
