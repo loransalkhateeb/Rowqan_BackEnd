@@ -46,6 +46,10 @@ const Reservations_Chalets = sequelize.define('Reservations_Chalets', {
     type: DataTypes.INTEGER,
     allowNull: false,  
   },
+  remaining_amount: {  
+    type: DataTypes.FLOAT,
+    allowNull: true, 
+  },
 }, {
   tableName: 'Reservations_Chalets',
   timestamps: false,

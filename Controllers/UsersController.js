@@ -11,7 +11,7 @@ exports.createUser = async (req, res) => {
   const { name, email, phone_number, country, password, lang, user_type_id } = req.body;
 
   try {
-    // Check if email already exists in the database
+   
     const existingUser = await User.findOne({ where: { email } });
 
     if (existingUser) {
@@ -21,20 +21,20 @@ exports.createUser = async (req, res) => {
       });
     }
 
-    // Validate language input
+    
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
         error: lang === 'en' ? 'Invalid language. Please use "ar" or "en".' : 'اللغة غير صالحة. استخدم "ar" أو "en".',
       });
     }
 
-    // Hash the password
+    
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Set default user type if not provided
+    
     const finalUserType = user_type_id || 2;
 
-    // Create a new user
+   
     const newUser = await User.create({
       name,
       email,
@@ -45,14 +45,14 @@ exports.createUser = async (req, res) => {
       user_type_id: finalUserType,
     });
 
-    // Return success response
+    
     res.status(201).json(
      newUser,
     );
   } catch (error) {
     console.error('Error creating user:', error);
 
-    // Handle any server-side error (e.g., DB errors, validation errors)
+  
     res.status(500).json({
       error: lang === 'en' ? 'Failed to create user' : 'فشل في إنشاء المستخدم',
     });
