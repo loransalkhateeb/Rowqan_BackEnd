@@ -1,6 +1,7 @@
 const { validateInput } = require('../Utils/validateInput');
 const Services = require('../Models/ServicesModel');
 const path = require('path');
+const {client} = require('../Utils/redisClient')
 
 exports.createService = async (req, res) => {
   try {

@@ -5,7 +5,8 @@ const User = require('../Models/UsersModel');
 const RightTimeModel = require('../Models/RightTimeModel');
 const Wallet = require('../Models/WalletModel')
 const { Op } = require('sequelize');
-const {client} = require('../Utils/redisClient')
+const {client} = require('../Utils/redisClient');
+const { image } = require("../Config/CloudinaryConfig");
 
 
 exports.createReservation = async (req, res) => {
@@ -466,7 +467,8 @@ exports.getAvailableTimesByDate = async (req, res) => {
   try {
     const { chalet_id, date, lang } = req.params;
 
-    
+          client.del(`availableTimes:${chalet_id}`);
+
     if (!['ar', 'en'].includes(lang)) {
       return res.status(400).json({
         error: lang === 'en' ? 'Invalid language' : 'اللغة غير صالحة',
@@ -512,7 +514,7 @@ exports.getAvailableTimesByDate = async (req, res) => {
           [Op.notIn]: reservedTimes, 
         }
       },
-      attributes: ['id', 'time', 'name', 'price'],
+      attributes: ['id', 'time', 'name', 'price','image'],
     });
 
    
@@ -539,6 +541,7 @@ exports.getAvailableTimesByDate = async (req, res) => {
         time: time.time,
         name: time.name,
         price: time.price,
+        image: time.image,
       })),
     );
 
@@ -637,9 +640,72 @@ exports.getReservationsByRightTimeName = async (req, res) => {
             ? 'No reservations found for this right time'
             : 'لا توجد حجوزات لهذا الوقت',
       });
+
+  const { chalet_id, name, lang } = req.params;
+
+  try {
+    // Split the rightTimeName to handle cases like "Morning Full day" or "Evening Full day"
+    const timePeriods = name.split(' ');
+
+    // Initialize an array to hold all the reservations
+    let reservations = [];
+    let fullDayAdded = false; // To track if Full day has been added already
+
+    // Step 1: Fetch reservations for each time period requested
+    for (let period of timePeriods) {
+      if (period === 'Full' || period === 'day') {
+        if (!fullDayAdded) {
+          // Fetch Full day reservations (where right_time_id is a valid ID, not null)
+          const fullDayRightTime = await RightTimeModel.findOne({
+            where: {
+              name: 'Full day',
+              lang: lang,
+            },
+          });
+
+          // If Full day right time exists, fetch the corresponding reservations
+          if (fullDayRightTime) {
+            const fullDayReservations = await Reservations_Chalets.findAll({
+              where: {
+                lang: lang,
+                chalet_id:chalet_id,
+                right_time_id: fullDayRightTime.id, // Use Full day's right_time_id
+              },
+            });
+            reservations = [...reservations, ...fullDayReservations];
+            fullDayAdded = true; // Mark Full day as added
+          }
+        }
+      } else {
+        // Fetch the corresponding right time (Morning or Evening)
+        const rightTime = await RightTimeModel.findOne({
+          where: {
+            name: period,
+            lang: lang,
+          },
+        });
+
+        // If the right time (Morning or Evening) is found, fetch the corresponding reservations
+        if (rightTime) {
+          const timeReservations = await Reservations_Chalets.findAll({
+            where: {
+              lang: lang,
+              chalet_id:chalet_id,
+              right_time_id: rightTime.id,
+            },
+          });
+          reservations = [...reservations, ...timeReservations];
+        }
+      }
+
     }
 
-    await client.setEx(cacheKey, 3600, JSON.stringify(reservations));
+    // Step 2: Return the combined results
+    res.json({
+      rightTime: name,
+      reservations: reservations,
+    });
+
 
     return res.status(200).json(
       reservations.map(reservation => ({
@@ -666,6 +732,11 @@ exports.getReservationsByRightTimeName = async (req, res) => {
     return res.status(500).json({
       message: lang === 'en' ? 'Failed to fetch reservations' : 'فشل في جلب الحجوزات',
     });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+
   }
 };
 
