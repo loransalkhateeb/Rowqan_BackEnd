@@ -1,6 +1,6 @@
 const PropertiesLands = require("../Models/PropertiesLandsModel");
 const CategoriesLandsModel = require("../Models/CategoriesLandsModel");
-const { validateInput, ErrorResponse } = require("../Utils/validateInput");
+const { validateInput, ErrorResponse } = require('../Utils/ValidateInput')
 const {client} = require('../Utils/redisClient')
 
 exports.createPropertyLand = async (req, res) => {

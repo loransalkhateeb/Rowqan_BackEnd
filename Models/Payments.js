@@ -18,6 +18,10 @@ const Payments = sequelize.define('Payments', {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    user_id: {  
+      type: DataTypes.INTEGER,
+      allowNull: true,  
+  },
   }, {
     timestamps: true,
   });

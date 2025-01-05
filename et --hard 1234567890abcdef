@@ -1,0 +1,266 @@
+[33mcommit 81fc2e6bb68de75a5ed45c6af963ec006aff262e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: dania altarifi <dania.a.altarifi@gmail.com>
+Date:   Sat Jan 4 17:11:37 2025 +0300
+
+    reservation completed
+
+[33mcommit 636d70dbb4dd942a8c35886fd9ad303be15b76cc[m
+Author: dania altarifi <dania.a.altarifi@gmail.com>
+Date:   Thu Jan 2 16:14:25 2025 +0300
+
+    updated res
+
+[33mcommit 13ddba0c51b17448116f19ce6945f100137d9312[m
+Merge: aafe678 e134de3
+Author: Lorans_Alkhateeb <111646992+loransalkhateeb@users.noreply.github.com>
+Date:   Thu Jan 2 10:41:08 2025 +0300
+
+    Merge pull request #38 from loransalkhateeb/lorans
+    
+    New Update To Responseing data
+
+[33mcommit e134de3f913ab73a85d58415fefd5019d7226dd1[m
+Author: loransalkhateeb <lwrnsalkhtyb9@gmail.com>
+Date:   Thu Jan 2 10:40:29 2025 +0300
+
+    New Update To Responseing data
+
+[33mcommit aafe678de589d242f23afc22c0776321948e6e50[m
+Merge: 7764d36 1abee5a
+Author: Lorans_Alkhateeb <111646992+loransalkhateeb@users.noreply.github.com>
+Date:   Thu Jan 2 10:03:54 2025 +0300
+
+    Merge pull request #37 from loransalkhateeb/lorans
+    
+    Lorans
+
+[33mcommit 1abee5ac53faccb601d8e2d07917ef3f884c4851[m
+Merge: 5bf07f4 080ad99
+Author: loransalkhateeb <lwrnsalkhtyb9@gmail.com>
+Date:   Thu Jan 2 10:03:17 2025 +0300
+
+    New Update
+
+[33mcommit 5bf07f4f987fc8f755846517ac1ad62d4ac8ec48[m
+Author: loransalkhateeb <lwrnsalkhtyb9@gmail.com>
+Date:   Thu Jan 2 10:00:53 2025 +0300
+
+    New Update
+
+[33mcommit 7764d360dd57ab2508870b214673631fd0b8ffa4[m
+Merge: d78c4ed 080ad99
+Author: Lorans_Alkhateeb <111646992+loransalkhateeb@users.noreply.github.com>
+Date:   Tue Dec 31 16:56:46 2024 +0300
+
+    Merge pull request #36 from loransalkhateeb/lorans
+    
+    New Update Of Rowqan BackEnd
+
+[33mcommit 080ad9934e7995b1d6082aff87aa0d0d92381d0a[m
+Merge: 4305e88 d78c4ed
+Author: Lorans_Alkhateeb <111646992+loransalkhateeb@users.noreply.github.com>
+Date:   Tue Dec 31 16:56:39 2024 +0300
+
+    Merge branch 'main' into lorans
+
+[33mcommit 4305e88ce4bbfaaf86f810b5a69e06ba3b47f384[m
+Author: loransalkhateeb <lwrnsalkhtyb9@gmail.com>
+Date:   Tue Dec 31 16:54:43 2024 +0300
+
+    New Update Of Rowqan BackEnd
+
+[33mcommit d78c4ed7a1e2346c3653a6505a3d6538a8bab24d[m
+Merge: cbc2c8c 4265b4d
+Author: Lorans_Alkhateeb <111646992+loransalkhateeb@users.noreply.github.com>
+Date:   Tue Dec 31 14:37:20 2024 +0300
+
+    Merge pull request #35 from loransalkhateeb/lorans
+    
+    New update
+
+[33mcommit 4265b4d9197ebb58739a485826a67eb0f8fb278f[m
+Author: loransalkhateeb <lwrnsalkhtyb9@gmail.com>
+Date:   Tue Dec 31 14:36:45 2024 +0300
+
+    New update
+
+[33mcommit cbc2c8ce2122247b42e5dc50501e6bce96d486ca[m
+Merge: 473d8b4 aca8b56
+Author: Lorans_Alkhateeb <111646992+loransalkhateeb@users.noreply.github.com>
+Date:   Tue Dec 31 13:55:10 2024 +0300
+
+    Merge pull request #34 from loransalkhateeb/lorans
+    
+    New update Of Rowqan BackEnd
+
+[33mcommit aca8b56f2f972b5cc2c50f2b403acde1b9510089[m
+Author: loransalkhateeb <lwrnsalkhtyb9@gmail.com>
+Date:   Tue Dec 31 13:54:35 2024 +0300
+
+    New update Of Rowqan BackEnd
+
+[33mcommit 473d8b48dd9dd1700d153eee0b356cbec81d519f[m
+Merge: 1ea7d9c 86bff9e
+Author: Lorans_Alkhateeb <111646992+loransalkhateeb@users.noreply.github.com>
+Date:   Mon Dec 30 15:54:54 2024 +0300
+
+    Merge pull request #33 from loransalkhateeb/lorans
+    
+    New Update Of Rowqan BackEnd
+
+[33mcommit 86bff9e63ff83d770b0f6be7c9fe5da140e33acd[m
+Author: loransalkhateeb <lwrnsalkhtyb9@gmail.com>
+Date:   Mon Dec 30 15:54:25 2024 +0300
+
+    New Update Of Rowqan BackEnd
+
+[33mcommit 1ea7d9ca835b47d498b677fa02c4a033ef6c8f34[m
+Merge: a3ee953 742fc50
+Author: Lorans_Alkhateeb <111646992+loransalkhateeb@users.noreply.github.com>
+Date:   Mon Dec 16 13:39:56 2024 +0300
+
+    Merge pull request #32 from loransalkhateeb/lorans
+    
+    Update
+
+[33mcommit 742fc50b919e8971c25d03931112b63018419e69[m
+Author: loransalkhateeb <lwrnsalkhtyb9@gmail.com>
+Date:   Mon Dec 16 13:39:12 2024 +0300
+
+    Update
+
+[33mcommit a3ee953b9f20923939c8decfb7de166c54d303cd[m
+Merge: 6ed8325 041042b
+Author: Lorans_Alkhateeb <111646992+loransalkhateeb@users.noreply.github.com>
+Date:   Mon Dec 16 13:38:23 2024 +0300
+
+    Merge pull request #31 from loransalkhateeb/lorans
+    
+    New update Of Rowqan BackEnd
+
+[33mcommit 041042b916cc1b09dd211348306969549f5cf6a0[m
+Author: loransalkhateeb <lwrnsalkhtyb9@gmail.com>
+Date:   Mon Dec 16 13:37:50 2024 +0300
+
+    New update Of Rowqan BackEnd
+
+[33mcommit 6ed8325ac400940c20196088876e8b54975de783[m
+Author: dania altarifi <dania.a.altarifi@gmail.com>
+Date:   Sun Dec 15 16:58:33 2024 +0300
+
+    update reservation chalets
+
+[33mcommit 91027af02fff5b5c36ce0b44f6d5a7029a61c5ba[m
+Merge: 3f1d4f6 3b53763
+Author: Lorans_Alkhateeb <111646992+loransalkhateeb@users.noreply.github.com>
+Date:   Sun Dec 15 13:51:02 2024 +0300
+
+    Merge pull request #30 from loransalkhateeb/lorans
+    
+    Lorans
+
+[33mcommit 3b53763907305580a899108ab837d173cf12ba65[m
+Merge: 2a26b7e 3f1d4f6
+Author: Lorans_Alkhateeb <111646992+loransalkhateeb@users.noreply.github.com>
+Date:   Sun Dec 15 13:50:54 2024 +0300
+
+    Merge branch 'main' into lorans
+
+[33mcommit 2a26b7edf5337814d83f2b85354d0656ae9d7a51[m
+Merge: 4e5260d 40bf7bc
+Author: loransalkhateeb <lwrnsalkhtyb9@gmail.com>
+Date:   Sun Dec 15 13:50:03 2024 +0300
+
+    Update For ReservationChalets
+
+[33mcommit 4e5260dbd1d649f9916979e8f7728d61638833a5[m
+Author: loransalkhateeb <lwrnsalkhtyb9@gmail.com>
+Date:   Sun Dec 15 13:21:17 2024 +0300
+
+    Update
+
+[33mcommit 3f1d4f66d1d3600811ffe6ce2d6dd67b71ebaba0[m
+Author: dania altarifi <dania.a.altarifi@gmail.com>
+Date:   Sun Dec 15 13:04:59 2024 +0300
+
+    available time updated
+
+[33mcommit adbfe20808314b8ac6ec6ad88026abdbf2fbbb39[m
+Merge: b6d9405 40bf7bc
+Author: Lorans_Alkhateeb <111646992+loransalkhateeb@users.noreply.github.com>
+Date:   Sun Dec 15 12:05:35 2024 +0300
+
+    Merge pull request #29 from loransalkhateeb/lorans
+    
+    Create Existing reservations
+
+[33mcommit 40bf7bcad4b77a0ceb9828350572d3fce2b523c7[m
+Merge: 991ed13 b6d9405
+Author: Lorans_Alkhateeb <111646992+loransalkhateeb@users.noreply.github.com>
+Date:   Sun Dec 15 12:05:26 2024 +0300
+
+    Merge branch 'main' into lorans
+
+[33mcommit 991ed1351fd160667ddb26292607bcaba81756ee[m
+Author: loransalkhateeb <lwrnsalkhtyb9@gmail.com>
+Date:   Sun Dec 15 12:04:40 2024 +0300
+
+    Create Existing reservations
+
+[33mcommit b6d94059258ca0e5a0351c2f659257d45ca5d0ba[m
+Author: dania altarifi <dania.a.altarifi@gmail.com>
+Date:   Sun Dec 15 09:42:03 2024 +0300
+
+    right time
+
+[33mcommit fe5dc04e7af3622dfb3038f48c3f3ffbd020217d[m
+Author: dania altarifi <dania.a.altarifi@gmail.com>
+Date:   Sun Dec 15 09:40:50 2024 +0300
+
+    time update
+
+[33mcommit 3a41ad5a53ab54c81f618bca16e54379cccf56bb[m
+Author: dania altarifi <dania.a.altarifi@gmail.com>
+Date:   Sun Dec 15 09:37:04 2024 +0300
+
+    id
+
+[33mcommit 11bc36375411f6ff02f3553ea488382088fffd07[m
+Merge: 43593fe 3fefb3a
+Author: loransalkhateeb <lwrnsalkhtyb9@gmail.com>
+Date:   Sun Dec 15 09:27:42 2024 +0300
+
+    Merge branch 'main' of https://github.com/loransalkhateeb/Rowqan_BackEnd
+
+[33mcommit 43593febda8298b7519b10607f264eba408e2684[m
+Author: loransalkhateeb <lwrnsalkhtyb9@gmail.com>
+Date:   Sun Dec 15 09:26:48 2024 +0300
+
+    Update
+
+[33mcommit 3fefb3a9962f90fc7dc0b00d0653497bda1dd2f3[m
+Merge: 1b448ee 3fe399c
+Author: daniaaltarifi <127290875+daniaaltarifi@users.noreply.github.com>
+Date:   Sat Dec 14 16:58:40 2024 +0300
+
+    Merge pull request #28 from loransalkhateeb/dania
+    
+    update reservation chalets
+
+[33mcommit 3fe399c797167fff32394dfb0c4ad8be9f992c3d[m[33m ([m[1;31morigin/dania[m[33m)[m
+Merge: 92fd9ac 1b448ee
+Author: daniaaltarifi <127290875+daniaaltarifi@users.noreply.github.com>
+Date:   Sat Dec 14 16:58:31 2024 +0300
+
+    Merge branch 'main' into dania
+
+[33mcommit 92fd9ac416fdd74cdf43a8e7f364d31d2da8886e[m
+Author: dania altarifi <dania.a.altarifi@gmail.com>
+Date:   Sat Dec 14 16:57:40 2024 +0300
+
+    update reserve chalets
+
+[33mcommit 1b448ee2a8a0e6070174959e0b3675b7b1c4d74b[m
+Merge: 323ad99 8bdd8ff
+Author: Lorans_Alkhateeb <111646992+loransalkhateeb@users.noreply.github.com>
+Date:   Sat Dec 14 16:32:14 

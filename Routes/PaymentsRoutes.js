@@ -6,6 +6,9 @@ const rateLimiter = require('../MiddleWares/rateLimiter');
 
 router.post('/createPayment', rateLimiter, paymentsController.createPayment);
 
+router.post('/createPaymentIntent',rateLimiter, paymentsController.createPaymentIntent);
+
+
 router.put('/updatePayment/:id', rateLimiter, paymentsController.updatePayment);
 
 router.get('/getPayments',rateLimiter, paymentsController.getPayments);

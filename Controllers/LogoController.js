@@ -10,12 +10,6 @@ exports.createLogo = async (req, res) => {
       image: imageUrl,
     });
 
-    // if (req.user.user_type_id !== 1) {
-    //   return res.status(403).json({
-    //     error: 'You are not authorized to update users',
-    //   });
-    // }
-
     res.status(201).json(  newLogo );
   } catch (error) {
     console.error(error);

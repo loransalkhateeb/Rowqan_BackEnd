@@ -1,5 +1,5 @@
 const HeroLandsModel = require("../Models/HeroLandsModel");
-const { validateInput, ErrorResponse } = require("../Utils/validateInput");
+const { validateInput, ErrorResponse } = require('../Utils/ValidateInput');
 
 const {client} = require('../Utils/redisClient')
 

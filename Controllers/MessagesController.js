@@ -1,4 +1,3 @@
-
 const Messages = require('../Models/MessageModel');
 const Users = require('../Models/UsersModel');
 
@@ -17,7 +16,7 @@ exports.createMessage = async (req, res) => {
       lang,
     });
 
-
+   
     if (req.socketIoInstance) {
       req.socketIoInstance.emit('receive_message', {
         senderId,
@@ -25,7 +24,9 @@ exports.createMessage = async (req, res) => {
         message,
         lang,
       });
+      console.log('Message Recieved Successfully');
     } else {
+      console.log('Error to Recieved Message')
       console.error('socketIoInstance is undefined');
     }
 
@@ -37,7 +38,6 @@ exports.createMessage = async (req, res) => {
 };
 
 
-
 exports.getMessagesBetweenUsers = async (req, res) => {
   try {
     const { senderId, receiverId } = req.params;
@@ -45,7 +45,6 @@ exports.getMessagesBetweenUsers = async (req, res) => {
     if (!senderId || !receiverId) {
       return res.status(400).json({ message: 'Both senderId and receiverId are required' });
     }
-
 
     const messages = await Messages.findAll({
       where: {
@@ -61,8 +60,9 @@ exports.getMessagesBetweenUsers = async (req, res) => {
 
     res.status(200).json({ message: 'Messages retrieved successfully', data: messages });
 
-
+   
     if (req.socketIoInstance) {
+      console.log('Get All Mesasges Successfully')
       req.socketIoInstance.emit('receive_message_batch', messages);
     } else {
       console.error('socketIoInstance is undefined');
@@ -81,7 +81,6 @@ exports.getSentMessages = async (req, res) => {
       return res.status(400).json({ message: 'senderId is required' });
     }
 
-
     const messages = await Messages.findAll({
       where: { senderId },
       include: [
@@ -92,7 +91,6 @@ exports.getSentMessages = async (req, res) => {
 
     res.status(200).json({ message: 'Sent messages retrieved successfully', data: messages });
 
-  
     if (req.socketIoInstance) {
       req.socketIoInstance.emit('sent_messages', messages);
     } else {
@@ -104,7 +102,6 @@ exports.getSentMessages = async (req, res) => {
   }
 };
 
-
 exports.getReceivedMessages = async (req, res) => {
   try {
     const { receiverId } = req.params;
@@ -112,7 +109,6 @@ exports.getReceivedMessages = async (req, res) => {
     if (!receiverId) {
       return res.status(400).json({ message: 'receiverId is required' });
     }
-
 
     const messages = await Messages.findAll({
       where: { receiverId },
@@ -124,7 +120,6 @@ exports.getReceivedMessages = async (req, res) => {
 
     res.status(200).json({ message: 'Received messages retrieved successfully', data: messages });
 
-  
     if (req.socketIoInstance) {
       req.socketIoInstance.emit('received_messages', messages);
     } else {
@@ -136,7 +131,6 @@ exports.getReceivedMessages = async (req, res) => {
   }
 };
 
-
 exports.deleteMessage = async (req, res) => {
   try {
     const { messageId } = req.params;
@@ -145,13 +139,11 @@ exports.deleteMessage = async (req, res) => {
       return res.status(400).json({ message: 'messageId is required' });
     }
 
-   
     const deleted = await Messages.destroy({ where: { id: messageId } });
 
     if (!deleted) {
       return res.status(404).json({ message: 'Message not found' });
     }
-
 
     if (req.socketIoInstance) {
       req.socketIoInstance.emit('message_deleted', messageId);

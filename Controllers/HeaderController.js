@@ -1,5 +1,5 @@
 const Header = require('../Models/HeaderModel');
-const { validateInput, ErrorResponse } = require('../Utils/validateInput');
+const { validateInput, ErrorResponse } = require('../Utils/ValidateInput');
 const {client} = require('../Utils/redisClient')
 
 exports.createHeader = async (req, res) => {
