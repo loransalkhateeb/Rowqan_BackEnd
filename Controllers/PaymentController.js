@@ -2,8 +2,10 @@ const  Payments  = require('../Models/Payments');
 const  Users  = require('../Models/UsersModel');
 const  ReservationChalets  = require('../Models/Reservations_Chalets');
 const { client } = require('../Utils/redisClient');
-const { validateInput, ErrorResponse } = require('../Utils/ValidateInput');
+const { validateInput, ErrorResponse } = require('../Utils/validateInput');
+require('dotenv').config();
 
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 exports.createPayment = async (req, res) => {
     try {
@@ -62,6 +64,81 @@ exports.createPayment = async (req, res) => {
     }
   };
   
+
+
+  const axios = require('axios');
+
+
+  exports.createPaymentIntent = async (req, res) => {
+    try {
+      const { amount, currency, phone, payment_type } = req.body;
+      
+      if (!amount || isNaN(amount) || amount <= 0) {
+        return res.status(400).send({ error: 'Invalid amount provided.' });
+      }
+  
+      let convertedAmount = amount; 
+  
+
+      let paymentDescription = "";
+  
+      if (payment_type === "initial") {
+        
+      if (currency === 'jod') {
+        const response = await axios.get('https://v6.exchangerate-api.com/v6/48fb1b6e8b9bab92bb9abe37/latest/USD');
+        const exchangeRate = response.data.conversion_rates.JOD;  
+        convertedAmount = amount * exchangeRate;
+      }
+  
+     
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: convertedAmount * 100, 
+        currency: currency === 'jod' ? 'jod' : 'usd',
+        payment_method_types: ['card'],
+        description: paymentDescription, 
+      });
+  
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+        referenceId: paymentIntent.id,
+        phone: phone, 
+      });
+      } else if (payment_type === "total") {
+       
+      if (currency === 'jod') {
+        const response = await axios.get('https://v6.exchangerate-api.com/v6/48fb1b6e8b9bab92bb9abe37/latest/USD');
+        const exchangeRate = response.data.conversion_rates.JOD;  
+        convertedAmount = amount * exchangeRate;
+      }
+  
+     
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: convertedAmount * 100, 
+        currency: currency === 'jod' ? 'jod' : 'usd',
+        payment_method_types: ['card'],
+        description: paymentDescription, 
+      });
+  
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+        referenceId: paymentIntent.id,
+        phone: phone, 
+      });
+      } else {
+        return res.status(400).send({ error: "Invalid payment type. Please specify either 'initial' or 'total'." });
+      }
+  
+    } catch (error) {
+      console.error('Stripe Error:', error);
+      res.status(400).send({ error: error.message });
+    }
+  };
+  
+  
+  
+
+
+
 
 
 exports.getPayments = async (req, res) => {

@@ -215,8 +215,6 @@ exports.getAllUserTypes = async (req, res) => {
           error: 'Invalid language. Please use "ar" or "en".',
         });
       }
-  
-
       const users = await User.findAll({
         include: [
           {

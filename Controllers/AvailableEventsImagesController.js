@@ -2,7 +2,7 @@ const Available_Events_Images = require("../Models/Available_Events_Images");
 const Available_Events = require("../Models/AvailableEvents");
 const multer = require("../Config/Multer");
 const path = require("path");
-const { validateInput, ErrorResponse } = require("../Utils/validateInput");
+const { validateInput, ErrorResponse } = require('../Utils/ValidateInput');
 const {client} = require('../Utils/redisClient')
 
 exports.createAvailableEventImages = async (req, res) => {

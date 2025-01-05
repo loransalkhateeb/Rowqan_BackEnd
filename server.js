@@ -16,14 +16,40 @@ app.use(helmet({
 }));
 
 const server = http.createServer(app);
-const io = socketIo(server); 
+const io = socketIo(server);
 
-app.use(express.json());
 
 app.use((req, res, next) => {
   req.socketIoInstance = io;  
   next();
 });
+
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+}));
+
+app.use(express.json());
+
+
+io.on("connection", (socket) => {
+  console.log("A user connected");
+
+  socket.on("send_message", (message) => {
+    console.log("Message received: ", message);
+    io.emit("receive_message", message);
+  });
+  
+  socket.on('receive_message', (data) => {
+    console.log("Message received:", data);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("A user disconnected");
+  });
+});
+
+
 
 const UsersRoutes = require('./Routes/UsersRoutes');
 const LogoRoutes = require('./Routes/LogoRoutes');
@@ -66,6 +92,7 @@ const PaymentsRoutes = require('./Routes/PaymentsRoutes')
 
 const allowedOrigins = [
   'http://localhost:5173',
+  'http://localhost:3001',
   'https://rowqan.com',
   'https://rowqanbackend.rowqan.com',
 ];

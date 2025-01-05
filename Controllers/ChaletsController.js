@@ -8,7 +8,7 @@ const BreifDetailsChalets = require('../Models/BreifDetailsChalets');
 const RightTimeModel = require('../Models/RightTimeModel');
 const ReservationDate = require('../Models/ReservationDatesModel');
 const ReservationsModel = require('../Models/ReservationsModel');
-const { validateInput, ErrorResponse } = require('../Utils/validateInput');
+const { validateInput, ErrorResponse } = require('../Utils/ValidateInput');
 const {client} = require('../Utils/redisClient')
 const Chalet_props = require('../Models/ChaletsProps')
 

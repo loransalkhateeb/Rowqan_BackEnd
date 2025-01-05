@@ -1,6 +1,6 @@
 const FooterIcons = require('../Models/FooterIcons');
 const Footer = require('../Models/FooterModel');
-const { validateInput, ErrorResponse } = require('../Utils/validateInput');
+const { validateInput, ErrorResponse } = require('../Utils/ValidateInput');
 const {client} = require('../Utils/redisClient')
 
 exports.createFooterIcon = async (req, res) => {

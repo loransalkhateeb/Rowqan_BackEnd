@@ -1,6 +1,6 @@
 const Chalets_Props = require('../Models/ChaletsProps');
 const Chalets = require('../Models/ChaletsModel');
-const { validateInput, ErrorResponse } = require('../Utils/validateInput'); 
+const { validateInput, ErrorResponse } = require('../Utils/ValidateInput');
 const{client} = require('../Utils/redisClient')
 
 exports.createChaletProp = async (req, res) => {

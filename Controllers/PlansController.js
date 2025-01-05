@@ -1,6 +1,6 @@
 const Plans = require('../Models/PlansModel');
 const Available_Events = require('../Models/AvailableEvents');
-const { validateInput, ErrorResponse } = require('../Utils/validateInput');
+const { validateInput, ErrorResponse } = require('../Utils/ValidateInput');
 const {client} = require('../Utils/redisClient')
 
 exports.createPlan = async (req, res) => {

@@ -1,7 +1,7 @@
 const Location = require('../Models/LocationModel');
 const Chalet = require('../Models/ChaletsModel');
 const { Op } = require('sequelize');
-const { validateInput, ErrorResponse } = require('../Utils/validateInput');
+const { validateInput, ErrorResponse } = require('../Utils/ValidateInput');
 
 exports.createLocation = async (req, res) => {
   try {

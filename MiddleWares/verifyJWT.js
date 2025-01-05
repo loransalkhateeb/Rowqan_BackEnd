@@ -7,7 +7,7 @@ const dotenv = require("dotenv");
 const asyncHandler = require("../MiddleWares/asyncHandler.js");
 const { client } = require("../Utils/redisClient");
 const { Sequelize } = require("sequelize");
-const { ErrorResponse, validateInput } = require("../Utils/ValidateInput.js");
+const { ErrorResponse, validateInput } = require("../Utils/validateInput.js");
 const speakeasy = require("speakeasy");
 dotenv.config();
 const nodemailer = require("nodemailer");
@@ -182,25 +182,15 @@ exports.login = async (req, res) => {
 
   const deviceDetails = {
     ip: clientIp,
-    os: `${deviceInfo.os.name || "Unknown"} ${
-      deviceInfo.os.version || "Unknown"
-    }`,
-    browser: `${deviceInfo.browser.name || "Unknown"} ${
-      deviceInfo.browser.version || "Unknown"
-    }`,
+    os: `${deviceInfo.os.name || "Unknown"} ${deviceInfo.os.version || "Unknown"}`,
+    browser: `${deviceInfo.browser.name || "Unknown"} ${deviceInfo.browser.version || "Unknown"}`,
     platform: deviceInfo.device.type || deviceInfo.os.name || "Unknown",
   };
 
   if (deviceDetails.platform === "Unknown") {
-    if (
-      deviceDetails.os.includes("Windows") ||
-      deviceDetails.os.includes("Mac")
-    ) {
+    if (deviceDetails.os.includes("Windows") || deviceDetails.os.includes("Mac")) {
       deviceDetails.platform = "Desktop";
-    } else if (
-      deviceDetails.os.includes("Android") ||
-      deviceDetails.os.includes("iOS")
-    ) {
+    } else if (deviceDetails.os.includes("Android") || deviceDetails.os.includes("iOS")) {
       deviceDetails.platform = "Mobile";
     } else {
       deviceDetails.platform = "Unknown";
@@ -249,10 +239,10 @@ exports.login = async (req, res) => {
     }
 
     if (user.user_type_id === 1) {
-      // Admin logic
       if (!email.endsWith("@kasselsoft.com")) {
         return res.status(400).send("Email is not authorized for login process");
       }
+
 
       if (!mfaCode) {
         mfaCodeMemory = Math.floor(100000 + Math.random() * 900000);
@@ -264,6 +254,7 @@ exports.login = async (req, res) => {
           "MFA code has been sent to your email. Please enter the code to complete login."
         );
       }
+
 
       if (Date.now() > mfaCodeExpiration) {
         return res.status(400).send("MFA code has expired");
@@ -277,17 +268,38 @@ exports.login = async (req, res) => {
         return res.status(400).send("Invalid MFA code");
       }
     } else if (user.user_type_id === 2) {
-      // User logic
       const storedDeviceInfo = await User.getDeviceInfo(user.id);
       const parsedStoredDeviceInfo = storedDeviceInfo
         ? JSON.parse(storedDeviceInfo)
         : null;
 
+        if (!mfaCode) {
+          mfaCodeMemory = Math.floor(100000 + Math.random() * 900000);
+          mfaCodeExpiration = Date.now() + 5 * 60 * 1000;
+  
+          await sendVerificationCode(email, mfaCodeMemory);
+  
+          return res.status(200).send(
+            "MFA code has been sent to your email. Please enter the code to complete login."
+          );
+        }
+  
+  
+        if (Date.now() > mfaCodeExpiration) {
+          return res.status(400).send("MFA code has expired");
+        }
+  
+        if (String(mfaCode) !== String(mfaCodeMemory)) {
+          await AuditLog.create({
+            action: "Failed MFA Verification",
+            details: `Failed MFA verification for user: ${email} from IP: ${clientIp}`,
+          });
+          return res.status(400).send("Invalid MFA code");
+        }
       if (!storedDeviceInfo) {
         await User.updateDeviceInfo(user.id, deviceDetails);
         return res.status(200).json({
-          message:
-            "Your device information has been saved. You will only be able to log in from this device.",
+          message: "Your device information has been saved. You will only be able to log in from this device.",
           token: jwt.sign(
             { id: user.id, user_type_id: user.user_type_id, name: user.name },
             SECRET_KEY,
@@ -296,7 +308,6 @@ exports.login = async (req, res) => {
           name: user.name,
           user_type_id: user.user_type_id,
           id: user.id,
-
           deviceInfo: deviceDetails,
         });
       } else if (
@@ -310,7 +321,7 @@ exports.login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, user_type_id: user.user_type_id, name: user.name},
+      { id: user.id, user_type_id: user.user_type_id, name: user.name },
       SECRET_KEY,
       { expiresIn: "1h" }
     );
@@ -338,6 +349,7 @@ exports.login = async (req, res) => {
     res.status(500).send({ message: "Internal Server Error", error: err.message });
   }
 };
+
 
 
 
