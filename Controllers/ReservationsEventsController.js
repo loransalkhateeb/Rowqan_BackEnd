@@ -3,7 +3,7 @@ const Available_Events = require('../Models/AvailableEvents');
 const User = require('../Models/UsersModel');
 const Plan = require('../Models/PlansModel');
 const { ErrorResponse } = require('../MiddleWares/errorHandler');
-// const { client } = require('../Config/redisConfig');
+const { client } = require('../Utils/redisClient');
 
 
 exports.createReservationEvent = async (req, res) => {
