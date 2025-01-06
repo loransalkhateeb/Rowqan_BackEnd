@@ -89,6 +89,11 @@ const FeedBackRoutes = require('./Routes/FeedBacksRoutes');
 const MessagesRoutes = require('./Routes/MessagesRoutes');
 const HeroLands = require('./Routes/HeroLandsRoutes');
 const PaymentsRoutes = require('./Routes/PaymentsRoutes')
+const AboutRoutes = require('./Routes/AboutUsRoutes')
+const BlogRoutes = require('./Routes/BlogRoutes')
+
+
+
 
 const allowedOrigins = [
   'http://localhost:5173',
@@ -150,6 +155,13 @@ app.use('/FeedBacks', FeedBackRoutes);
 app.use('/messages', MessagesRoutes);
 app.use('/heroLands', HeroLands);
 app.use('/payments', PaymentsRoutes); 
+app.use('/aboutUs',AboutRoutes)
+app.use('/Blogs',BlogRoutes)
+
+
+
+
+
 
 const IP_LOOKUP_API = "https://ipqualityscore.com/api/json/ip/T0hMeOnMzeAnPVsmgH6AKMhguvmr1Yv9";
 
@@ -203,7 +215,7 @@ function checkAuth(req, res, next) {
       return res.status(403).json({ message: 'Forbidden' });
     }
     req.user = decoded;
-    next();
+    next(); 
   });
 }
 

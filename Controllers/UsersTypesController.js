@@ -59,7 +59,6 @@ exports.getAllUserTypes = async (req, res) => {
 
   exports.getUsersByType = async (req, res) => {
     const { lang, type } = req.params;
-  
     try {
       if (!['ar', 'en'].includes(lang)) {
         return res.status(400).json({
